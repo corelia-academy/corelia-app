@@ -7,7 +7,7 @@ import { Action } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { CourseResourceIcon } from "@/components/courses/CourseResourceIcon";
 import { resourceIconForUrl } from "@/features/learning/resourceGroups";
-import { ArrowUpRight, CheckCircle, CircleNotch, Question } from "@phosphor-icons/react";
+import { ArrowUpRight, CircleNotch, Question } from "@phosphor-icons/react";
 import { useAuth } from "@/stores/authStore";
 import { LessonRenderer } from "@/features/learning/LessonRenderer";
 import { LessonDataError } from "@/features/learning/LessonDataError";
@@ -25,6 +25,7 @@ import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { TooltipPreview } from "@/components/ui/tooltip";
+import { LessonOutline } from "./LessonOutline";
 
 type Props = {
   lesson: CourseLesson | null; lessonIndex: number | null; isDraftLesson: boolean; completed: boolean;
@@ -57,6 +58,7 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const registerAction = useCallback((next: LessonActionState | null) => setAction(next), []);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const reset = async (clear: boolean) => {
     if (!onReset || inFlight.current || busy || action?.pending) return;
     if (clear && !await confirm(t("learning.redoConfirm"))) return;
@@ -73,9 +75,9 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     void queryClient.invalidateQueries({ queryKey: xpAwardNotificationQueryKey });
     if (!active.current) return;
     toast.success(t("learning.completedToast"), { position: "top-right" });
-    // The floating bar is a complete/incomplete toggle, so it stays on the lesson.
-    if (actionSlot === undefined && nextLesson && lesson && ["article","video","practice"].includes(getLessonFormat(lesson))) onNavigateToLesson(nextLesson.id);
-  }, [mode, onMarkComplete, lesson, queryClient, nextLesson, onNavigateToLesson, t, actionSlot]);
+    // Completing a text lesson moves on to the next one ("Complete & Next" in Figma). The last lesson stays, so the course completion panel can show.
+    if (nextLesson && lesson && ["article","video","practice"].includes(getLessonFormat(lesson))) onNavigateToLesson(nextLesson.id);
+  }, [mode, onMarkComplete, lesson, queryClient, nextLesson, onNavigateToLesson, t]);
   if (!lesson || !courseId) return <LessonDataError />;
   const resources = validateLessonResources(lesson.resources ?? [], lesson.id, "vi", true).length ? [] : lesson.resources ?? [];
   const format = getLessonFormat(lesson);
@@ -83,6 +85,8 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
   // An exercise shows Hint until it has a result, then swaps to Ask AI; other lessons always show Ask AI.
   // A quiz is an assessment: Ask AI never carries its questions or answers.
   const hasResult = format === "quiz" ? action?.summary?.passed !== undefined : action?.checked === true;
+  // Text lessons (video, article, practice) share one footer: Content, Ask AI, and Mark as undone + Next once done.
+  const textLesson = format === "article" || format === "practice" || format === "video";
   const askAiInFooter = isExercise ? hasResult && (format === "quiz" || canAskAboutLesson(lesson)) : canAskAboutLesson(lesson);
   // Hint is the project's TooltipPreview (same delay, animation and touch behaviour as the component showcase):
   // a label that shows the instructor's hints, not an action button.
@@ -112,22 +116,12 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     } catch (e) { if (active.current) setError(e instanceof Error ? e.message : t("learning.systemError")); }
     finally { inFlight.current = false; if (active.current) setBusy(false); }
   };
-  const label = busy ? t("learning.saving") : mode === "learner" && !user ? t("learning.login") : completed && mode === "learner" ? t(nextLesson ? "learning.next" : hasFinalAssignment ? "learning.finalAssignmentLink" : "learning.finish") : action?.label ?? t("learning.unavailable");
+  const label = busy ? t("learning.saving") : mode === "learner" && !user ? t("learning.login") : completed && mode === "learner" ? t(nextLesson ? "learning.nextShort" : hasFinalAssignment ? "learning.finalAssignmentLink" : "learning.finish") : action?.label ?? t("learning.unavailable");
   // TODO(figma-learn): chỉ dùng cho nút "Làm lại từ đầu" đang tạm ẩn
   // const format = getLessonFormat(lesson);
   const inFooter = actionSlot !== undefined && mode === "learner";
   const canReset = mode === "learner" && !!user && !!onReset && hasFullCourseAccess && !isDraftLesson;
   const primaryDisabled = busy || action?.pending || (!(completed && mode === "learner") && (!action || (action.disabled && (mode === "preview" || !!user))));
-  // Only "mark complete" and "mark incomplete" have a short form; other labels come from the lesson itself.
-  const toggleLabel: { full: string; short?: string } = busy
-    ? { full: t("learning.saving") }
-    : completed
-      ? canReset
-        ? { full: t("learning.markIncomplete"), short: t("learning.markIncompleteShort") }
-        : { full: t("learning.completed") }
-      : action?.label === t("learning.completeContinue")
-        ? { full: t("learning.markComplete"), short: t("learning.markCompleteShort") }
-        : { full: label };
   const header = <>{mode === "preview" && <p className="rounded-lg bg-primary/10 p-3 text-sm">{t("learning.previewBanner")}</p>}<div><h1 className="text-heading-large font-display text-action-text">{lessonText(lesson.title)}</h1>{lesson.short_description && <p className="mt-3xl text-body-medium text-action-text">{lessonText(lesson.short_description)}</p>}{!inFooter && canAskAboutLesson(lesson) && <div className="mt-3"><AskAiMenu lesson={lesson} courseTitle={courseTitle} /></div>}</div></>;
   const resourcesNode = !!resources.length && (
     <section>
@@ -144,7 +138,7 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     </section>
   );
   return <div className="flex min-h-full flex-col">
-    <div className="flex-1">
+    <div ref={bodyRef} className="flex-1">
       <LessonRenderer lesson={lesson} courseId={courseId} mode={mode} contentLocale={contentLocale} completed={completed} onComplete={complete} onAction={registerAction} questions={questions} resetEpoch={resetEpoch} draftEpoch={draftEpoch} contentFrame={{ header, resources: resourcesNode || undefined }} />
     </div>
     {inFooter && (
@@ -180,17 +174,23 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     </footer>
     )}
     {inFooter && actionSlot && createPortal(
-      // One toggle: complete via the lesson's own action, uncomplete via reset.
-      <Button type="button" variant="cta" hierarchy={completed ? "secondary" : "primary"} size="small" aria-pressed={completed}
-        aria-label={toggleLabel.short ? toggleLabel.full : undefined}
-        disabled={completed ? !canReset || busy || action?.pending : primaryDisabled}
-        onClick={() => void (completed ? reset(false) : run())}
-        leadingIcon={busy ? <CircleNotch className="animate-spin" aria-hidden /> : <CheckCircle weight={completed ? "fill" : "regular"} className={completed ? "text-success" : undefined} aria-hidden />}>
-        {toggleLabel.short
-          ? <><span className="max-sm:hidden">{toggleLabel.full}</span><span className="sm:hidden">{toggleLabel.short}</span></>
-          : toggleLabel.full}
-      </Button>,
+      <>
+        {completed && textLesson && (
+          <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={!canReset || busy || action?.pending} onClick={() => void reset(false)}>
+            {t("learning.markIncompleteShort")}
+          </Button>
+        )}
+        <Button type="button" variant="cta" hierarchy="primary" size="small" disabled={primaryDisabled}
+          leadingIcon={busy ? <CircleNotch className="animate-spin" aria-hidden /> : undefined}
+          onClick={() => void run()}>
+          {label}
+        </Button>
+      </>,
       actionSlot,
+    )}
+    {inFooter && askAiSlot && textLesson && createPortal(
+      <LessonOutline bodyRef={bodyRef} lessonId={lesson.id} withDivider={askAiInFooter} />,
+      askAiSlot,
     )}
     {inFooter && askAiSlot && hintButton && createPortal(hintButton, askAiSlot)}
     {inFooter && askAiSlot && askAiInFooter && createPortal(<AskAiMenu lesson={lesson} courseTitle={courseTitle} compact />, askAiSlot)}

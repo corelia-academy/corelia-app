@@ -28,7 +28,7 @@ export function AskAiMenu({ lesson, courseTitle, compact = false }: { lesson: Co
     if (action.kind !== "copy") window.open(action.url, "_blank", "noopener,noreferrer");
   };
   return <DropdownMenu>
-    <DropdownMenuTrigger render={<Button type="button" variant="cta" hierarchy="tertiary" size="small" aria-label={compact ? t("learning.askAi.trigger") : undefined} className="px-3 text-[color:var(--accent-yellow-600)] dark:text-[color:var(--accent-yellow-300)]" trailingIcon={<img src={illusAi} alt="" aria-hidden className="size-5" />} />}>
+    <DropdownMenuTrigger render={<Button type="button" variant="cta" hierarchy="tertiary" size="small" aria-label={compact ? t("learning.askAi.trigger") : undefined} className="gap-xs px-3 text-[color:var(--accent-yellow-600)] dark:text-[color:var(--accent-yellow-300)]" trailingIcon={<img src={illusAi} alt="" aria-hidden className="size-5" />} />}>
       {compact
         ? <><span className="max-sm:hidden">{t("learning.askAi.trigger")}</span><span className="sm:hidden">{t("learning.askAi.triggerShort")}</span></>
         : t("learning.askAi.trigger")}

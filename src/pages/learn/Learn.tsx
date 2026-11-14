@@ -851,7 +851,7 @@ function LearnWorkspace() {
         </Button>
         <div ref={setAskAiSlot} className="flex items-center empty:hidden" />
         <div ref={setSummarySlot} className="flex items-center empty:hidden" />
-        <div ref={setFooterSlot} className="flex items-center empty:hidden" />
+        <div ref={setFooterSlot} className="flex items-center gap-md empty:hidden" />
         {footerMenu}
         {barDrag.resetState !== "closed" && (
           <div
@@ -879,10 +879,10 @@ function LearnWorkspace() {
   // Figma "Learn Footer": a 64px bar under the lesson column. The score sits in the middle from sm up.
   const pinnedBar = showFooterMenu ? (
     <div className="relative flex h-16 shrink-0 items-center justify-between gap-md border-t border-border bg-background px-lg sm:px-2xl">
-      <div ref={setAskAiSlot} className="flex items-center gap-lg empty:hidden" />
+      <div ref={setAskAiSlot} className="flex items-center gap-xs empty:hidden sm:-ml-2" />
       <div ref={setSummarySlot} className="flex items-center empty:hidden sm:absolute sm:left-1/2 sm:-translate-x-1/2" />
       <div className="ml-auto flex items-center gap-md">
-        <div ref={setFooterSlot} className="flex items-center empty:hidden" />
+        <div ref={setFooterSlot} className="flex items-center gap-md empty:hidden" />
         {footerMenu}
       </div>
     </div>
