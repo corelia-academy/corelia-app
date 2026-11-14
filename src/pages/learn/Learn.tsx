@@ -37,8 +37,8 @@ import { useAuth } from "@/stores/authStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
-// TODO(figma-learn): thêm lại ArrowLeft khi bỏ comment nút quay lại
 import { ArrowCounterClockwise, DotsSixVertical, SidebarSimple } from "@phosphor-icons/react";
+import { BackLink } from "@/components/navigation/BackLink";
 import { appPath } from "@/lib/appUrl";
 import { prefetchRouteChunk } from "@/lib/routePrefetch";
 import { useTheme } from "next-themes";
@@ -54,6 +54,8 @@ import {
   type CurriculumGroup,
 } from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
+import { LearnFooterMenu, type LearnFooterMode } from "./components/LearnFooterMenu";
+import { readStored, writeStored } from "./utils/dockPhysics";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
 import { useEdgeTabDrag } from "./hooks/useEdgeTabDrag";
 import { useFloatingBarDrag } from "./hooks/useFloatingBarDrag";
@@ -81,6 +83,8 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const DESKTOP_BREAKPOINT_QUERY = "(min-width: 1280px)";
+// "bar" = the full-width footer from Figma; "dock" = the floating bar the learner can drag.
+const FOOTER_MODE_KEY = "learn-footer-mode-v1";
 
 function subscribeDesktopBreakpoint(onStoreChange: () => void) {
   if (typeof window === "undefined") return () => {};
@@ -191,6 +195,14 @@ function LearnWorkspace() {
   const [curricOpen, setCurricOpen] = useState(true);
   const [footerSlot, setFooterSlot] = useState<HTMLDivElement | null>(null);
   const [askAiSlot, setAskAiSlot] = useState<HTMLDivElement | null>(null);
+  const [summarySlot, setSummarySlot] = useState<HTMLDivElement | null>(null);
+  const [footerMode, setFooterMode] = useState<LearnFooterMode>(() =>
+    readStored<string>(FOOTER_MODE_KEY) === "dock" ? "dock" : "bar",
+  );
+  const changeFooterMode = useCallback((mode: LearnFooterMode) => {
+    setFooterMode(mode);
+    writeStored(FOOTER_MODE_KEY, mode);
+  }, []);
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
   const reopenTabRef = useRef<HTMLButtonElement | null>(null);
   const lessonScrollRef = useRef<HTMLElement>(null);
@@ -724,6 +736,7 @@ function LearnWorkspace() {
         courseId={courseId}
         actionSlot={footerSlot}
         askAiSlot={askAiSlot}
+        summarySlot={summarySlot}
       />}
 
       {isFinalAssignment && shouldShowFinalAssignment ? (
@@ -758,17 +771,9 @@ function LearnWorkspace() {
     <AppHeaderBar>
         {/* Left: nút quay lại khóa học (icon) + logo, theo Figma */}
         <div className="flex items-center gap-2md">
-          {/* TODO(figma-learn): tạm ẩn nút quay lại khóa học trước logo, chờ thiết kế
-          <Button
-            variant="cta" hierarchy="tertiary" iconOnly
-            size="small"
-            nativeButton={false}
-            render={<Link to={`/courses/${courseId}`} />}
-            aria-label={translate("detail.learn.backToCourse")}
-          >
-            <ArrowLeft weight="duotone" aria-hidden />
-          </Button>
-          */}
+          <BackLink to={`/courses/${courseId}`} className="min-w-8 justify-center">
+            <span className="sr-only">{translate("detail.learn.backToCourse")}</span>
+          </BackLink>
           <Link
             to="/"
             className="flex h-10 items-center gap-2 text-sm font-medium"
@@ -815,7 +820,18 @@ function LearnWorkspace() {
     </AppHeaderBar>
   );
 
-  const footerBar = (
+  const showFooterMenu = Boolean(currentLesson) && !isFinalAssignment;
+  const footerMenu = showFooterMenu ? (
+    <LearnFooterMenu
+      mode={footerMode}
+      previousLessonId={previousLesson?.id ?? null}
+      nextLessonId={nextLessonInSequence?.id ?? null}
+      onNavigate={(id) => navigate(`/study/${courseId}/lesson/${id}`)}
+      onModeChange={changeFooterMode}
+    />
+  ) : null;
+
+  const dockBar = (
     <div className="pointer-events-none absolute inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex justify-center px-3">
       <div
         ref={barDrag.barRef}
@@ -834,7 +850,9 @@ function LearnWorkspace() {
           <DotsSixVertical weight="bold" className="size-4" aria-hidden />
         </Button>
         <div ref={setAskAiSlot} className="flex items-center empty:hidden" />
-        <div ref={setFooterSlot} className="flex items-center empty:hidden" />
+        <div ref={setSummarySlot} className="flex items-center empty:hidden" />
+        <div ref={setFooterSlot} className="flex items-center gap-md empty:hidden" />
+        {footerMenu}
         {barDrag.resetState !== "closed" && (
           <div
             data-state={barDrag.resetState}
@@ -858,6 +876,19 @@ function LearnWorkspace() {
     </div>
   );
 
+  // Figma "Learn Footer": a 64px bar under the lesson column. The score sits in the middle from sm up.
+  const pinnedBar = showFooterMenu ? (
+    <div className="relative flex h-16 shrink-0 items-center justify-between gap-md border-t border-border bg-background px-lg sm:px-2xl">
+      <div ref={setAskAiSlot} className="flex items-center gap-xs empty:hidden sm:-ml-2" />
+      <div ref={setSummarySlot} className="flex items-center empty:hidden sm:absolute sm:left-1/2 sm:-translate-x-1/2" />
+      <div className="ml-auto flex items-center gap-md">
+        <div ref={setFooterSlot} className="flex items-center gap-md empty:hidden" />
+        {footerMenu}
+      </div>
+    </div>
+  ) : null;
+  const footerBar = footerMode === "dock" ? dockBar : pinnedBar;
+
   return (
     <div className="relative flex h-full flex-col">
       {topBar}
@@ -874,7 +905,7 @@ function LearnWorkspace() {
               className="min-w-0 bg-background"
             >
               <div className="relative flex h-full min-w-0 flex-col">
-                <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName="pb-24" contentClassName="flex min-h-full min-w-0! flex-col">
+                <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName={footerMode === "dock" ? "pb-24" : undefined} contentClassName="flex min-h-full min-w-0! flex-col">
                   {lessonContent}
                 </ScrollArea>
                 {footerBar}
@@ -914,7 +945,7 @@ function LearnWorkspace() {
         </div>
       ) : (
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName="pb-24" contentClassName="flex min-h-full min-w-0! flex-col">
+          <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName={footerMode === "dock" ? "pb-24" : undefined} contentClassName="flex min-h-full min-w-0! flex-col">
             {lessonContent}
           </ScrollArea>
           {footerBar}

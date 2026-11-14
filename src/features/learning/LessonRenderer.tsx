@@ -7,7 +7,7 @@ import { getYoutubeEmbedUrlForLesson } from "@/types/courses";
 import { CodeExerciseLesson } from "@/features/code-exercise/CodeExerciseLesson";
 import { PracticeLesson } from "./PracticeLesson";
 import { QuizLesson } from "./QuizLesson";
-import { LessonColumn } from "./lessonLayout";
+import { LESSON_MEDIA_MAX_HEIGHT, LessonColumn } from "./lessonLayout";
 import { LessonDataError } from "./LessonDataError";
 import { validateLesson, validateLessonResources } from "./validation";
 import type { LessonRendererProps } from "./types";
@@ -42,8 +42,12 @@ function ContentLesson({ lesson, mode, onAction, onComplete, video = false, cont
   const updating = video && !url && !lesson.youtube_url?.trim();
   useEffect(() => { onAction(updating ? null : { label: t("learning.completeContinue"), run: complete }); return () => onAction(null); }, [onAction, complete, t, updating]);
   const videoNode = url && <YoutubeLessonVideo url={url} title={lesson.title} flush={!!contentFrame} />;
-  const updatingNode = updating && <p role="status" className="rounded-xl border border-border bg-surface-raised p-6 text-foreground-muted">{t("learning.videoUpdating")}</p>;
+  const updatingNode = updating && (
+    <div role="status" className="flex aspect-video w-full items-center justify-center border-b border-border bg-surface-raised px-4 text-center text-foreground-muted" style={{ maxHeight: LESSON_MEDIA_MAX_HEIGHT }}>
+      {t("learning.videoUpdating")}
+    </div>
+  );
   const body = <Markdown content={lesson.description_markdown ?? ""} variant="lesson" />;
-  if (contentFrame) return <Framed frame={contentFrame} media={videoNode}>{updatingNode}{body}</Framed>;
+  if (contentFrame) return <Framed frame={contentFrame} media={videoNode ?? updatingNode}>{body}</Framed>;
   return <div className="space-y-6">{videoNode}{updatingNode}{body}</div>;
 }

@@ -53,9 +53,11 @@ describe("quiz preview", () => {
     const onAction = (next: LessonActionState | null) => { action = next; };
     const onComplete = vi.fn();
     await act(async () => root.render(<QueryClientProvider client={client}><QuizLesson courseId="course" lesson={{ id: "lesson", section_id: "section", title: "Quiz", duration_seconds: 0, order: 0 }} mode="preview" contentLocale="en" questions={[question("Unsaved question")]} completed={false} onComplete={onComplete} onAction={onAction} /></QueryClientProvider>));
+    expect((action as LessonActionState | null)?.hint).toEqual({ items: [] });
     act(() => radios(container)[0].click());
     await act(async () => { await action?.run(); });
     expect((action as LessonActionState | null)?.summary).toEqual({ correct: 1, total: 1, passed: true });
+    expect((action as LessonActionState | null)?.hint).toBeUndefined();
     expect(container.querySelector('canvas[data-testid="lesson-confetti"]')).not.toBeNull();
     expect(getLearningQuiz).not.toHaveBeenCalled();
     expect(submitLearningQuiz).not.toHaveBeenCalled();
