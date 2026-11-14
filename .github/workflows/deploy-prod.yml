@@ -68,6 +68,14 @@ jobs:
           secrets_json="$(supabase secrets list --project-ref "$SUPABASE_PROJECT_REF" --output json)"
           jq --exit-status 'map(.name) | (index("CORELIA_JOBS_CRON_SECRET") != null and index("EMAIL_WORKER_SECRET") != null and index("RESEND_API_KEY") != null and index("RESEND_WEBHOOK_SIGNING_SECRET") != null)' <<< "$secrets_json" > /dev/null
 
+      - name: Provision PostgreSQL server binaries in PATH
+        run: |
+          PG_BIN_DIR=$(dirname "$(find /usr/lib/postgresql -name initdb -type f 2>/dev/null | sort -V | tail -n 1)")
+          if [ -n "$PG_BIN_DIR" ] && [ -d "$PG_BIN_DIR" ]; then
+            echo "$PG_BIN_DIR" >> "$GITHUB_PATH"
+            echo "Provisioned PostgreSQL server binaries from $PG_BIN_DIR into GITHUB_PATH"
+          fi
+
       - name: Verify migration governance and guardrails
         run: pnpm db:verify
 
