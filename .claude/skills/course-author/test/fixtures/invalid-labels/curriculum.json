@@ -1,0 +1,8 @@
+{
+  "modules": [
+    {
+      "module_id": "M1",
+      "lessons": [{ "lesson_id": "L1-1", "type": "article" }]
+    }
+  ]
+}

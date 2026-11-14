@@ -16,7 +16,7 @@ Trước khi bắt đầu, đọc `references/principles.md` và `references/pla
 - Phạm vi do người quản lý nêu (`scope_note`), nếu có
 - Path/track trong catalog, nếu có
 
-Nếu có file `.course-runs/<slug>/handoff.json`: lấy `slug` (chính là tên thư mục), tên khóa (`title`), chủ đề (`topic`), đối tượng (`audience`), trình độ (`level`), `scope_note`, `path`, `is_foundation`, `prerequisite_courses` từ file này; không hỏi lại các trường đã có. `brief.slug` bắt buộc trùng với `handoff.slug`.
+Nếu có file `.course-runs/<slug>/handoff.json`: lấy `slug` (chính là tên thư mục), tên khóa (`title`), chủ đề (`topic`), đối tượng (`audience`), trình độ (`level`), `scope_note`, `path`, `is_foundation`, `prerequisite_courses`, cùng các trường `promise`, `final_product`, `differentiation`, `corelia_hook` từ file này; không hỏi lại các trường đã có. `brief.slug` bắt buộc trùng với `handoff.slug`.
 
 Khi không có `handoff.json`: thiếu tên khóa hoặc đối tượng thì hỏi user, không tự đoán.
 
@@ -115,13 +115,13 @@ Khi gọi child, đặt `model` theo bảng:
 
 Ở bước 5, child viết lesson soạn danh sách bước cần chạy. Một child `haiku` riêng chạy các bước đó và ghi `verification/<id>.md`. Child viết lesson đọc kết quả rồi sửa bài nếu output thật khác `expected`.
 
-Child viết lesson chỉ nhận phần research thuộc `source_ids` của lesson và các `misconceptions`, `setup_steps`, `videos` của topic liên quan, không nhận toàn bộ `research.json`.
+Child viết lesson chỉ nhận phần research thuộc `source_ids` của lesson và các `misconceptions`, `setup_steps`, `videos` của topic liên quan (kèm hồ sơ nội dung video và đoạn phát được chọn nếu là bài video), không nhận toàn bộ `research.json`.
 
 ## Kiểm output và chạy lại
 
 Sau mỗi child, kiểm output theo phần **Output** trong file role: đủ trường bắt buộc, đúng kiểu, ID tham chiếu tồn tại, không vi phạm `platform.md`. Kết quả kiểm là: đạt, hoặc không đạt kèm lý do cụ thể (trường nào, sai gì).
 
-Với curriculum, kiểm cấu trúc gồm: mỗi outcome nằm trong `check_lesson_ids` hoặc `final_assignment.outcome_ids`; mọi `final_assignment.outcome_ids` thuộc `outcomes`; mỗi bài `fill` có tối đa 5 chỗ điền trong mô tả. Coordinator sinh nhãn bằng `node .claude/skills/course-author/scripts/labels.mjs .course-runs/<slug>` sau bước 3 và sau mỗi lần curriculum đổi thứ tự.
+Với curriculum, kiểm cấu trúc gồm: mỗi outcome nằm trong `check_lesson_ids` hoặc `final_assignment.outcome_ids`; mọi `final_assignment.outcome_ids` thuộc `outcomes`; mỗi bài `fill` có tối đa 5 chỗ điền trong mô tả. Coordinator chạy `node .claude/skills/course-author/scripts/curriculum-lint.mjs .course-runs/<slug>` để kiểm tra các ràng buộc tất định về bài video (ứng viên primary, trần mỗi module, đoạn phát ≤ 720s hoặc cả video ≤ 900s có bằng chứng, giải trình cho primary không dùng và cho khóa 0 video); còn dòng báo lỗi thì coi là không đạt. Coordinator sinh nhãn bằng `node .claude/skills/course-author/scripts/labels.mjs .course-runs/<slug>` sau bước 3 và sau mỗi lần curriculum đổi thứ tự.
 
 **Cổng trước reviewer (bước 5 → 6).** Lesson chỉ được chuyển cho reviewer khi: (1) `verification/<lesson_id>.md` có mục `## Tự review` đủ mọi tiêu chí của `roles/06-lesson-review/common.md` và file review loại bài (không có `ok` cho điều ghi `chưa kiểm`); (2) coordinator tự chạy `node .claude/skills/course-author/scripts/lesson-lint.mjs .course-runs/<slug> <lesson_id>` và kết quả là `ok`. Không đạt một trong hai thì gọi lại child bước 5 với đúng các dòng lỗi, chưa tốn lượt reviewer. Với khóa có bài `fill`, `lesson-lint` kiểm số ô điền, marker, và câu hứa app chạy test; thử mọi tổ hợp đáp án vẫn do child chạy bằng toolchain.
 

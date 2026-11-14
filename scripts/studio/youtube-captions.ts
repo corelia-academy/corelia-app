@@ -14,6 +14,34 @@ export interface CaptionWindow {
   excerpt: string;
 }
 
+export interface CaptionOutlineSegment {
+  start_seconds: number;
+  end_seconds: number;
+  text: string;
+}
+
+export interface CaptionOutlineResult {
+  ok: boolean;
+  video_id: string;
+  duration_seconds?: number;
+  duration_source?: "metadata" | "last_cue";
+  language?: string;
+  track?: CaptionTrack;
+  segments?: CaptionOutlineSegment[];
+  truncated?: boolean;
+  range?: {
+    start_seconds: number;
+    end_seconds: number;
+  };
+  reason?:
+    | "yt_dlp_not_found"
+    | "caption_download_failed"
+    | "english_captions_unavailable"
+    | "captions_do_not_match_query"
+    | "range_has_no_captions"
+    | "temporary_cleanup_failed";
+}
+
 export interface CaptionLookupResult {
   ok: boolean;
   video_id: string;
@@ -25,6 +53,7 @@ export interface CaptionLookupResult {
     | "caption_download_failed"
     | "english_captions_unavailable"
     | "captions_do_not_match_query"
+    | "range_has_no_captions"
     | "temporary_cleanup_failed";
 }
 
@@ -37,6 +66,9 @@ const YOUTUBE_HOSTS = new Set([
 const MAX_MATCHES = 3;
 const MAX_WINDOW_SECONDS = 45;
 const MAX_EXCERPT_CHARS = 280;
+export const MAX_OUTLINE_DURATION_SECONDS = 720;
+export const MAX_OUTLINE_SEGMENTS = 30;
+export const MAX_OUTLINE_CHARS = 10_000;
 
 const STOP_WORDS = new Set([
   "about",
@@ -237,20 +269,127 @@ export async function findCaptionWindows(
     if (selected.length === MAX_MATCHES) break;
   }
 
-  return Promise.all(selected.map(async ({ cues: window }) => {
-    const startSeconds = Math.floor(window[0].start_ms / 1000);
-    const endSeconds = Math.ceil(window[window.length - 1].end_ms / 1000);
-    const normalizedCues = window.map((cue) =>
-      `${cue.start_ms}-${cue.end_ms}:${cue.text}`
-    ).join("\n");
-    return {
-      start_seconds: startSeconds,
-      end_seconds: endSeconds,
-      cue_count: window.length,
-      cue_text_sha256: await sha256(normalizedCues),
-      excerpt: excerpt(window.map((cue) => cue.text).join(" ")),
-    };
-  }));
+  return Promise.all(selected.map(({ cues: window }) => describeWindow(window)));
+}
+
+/** The evidence record for a run of cues: one hashing path for matched windows and explicit ranges. */
+async function describeWindow(window: CaptionCue[]): Promise<CaptionWindow> {
+  const normalizedCues = window.map((cue) =>
+    `${cue.start_ms}-${cue.end_ms}:${cue.text}`
+  ).join("\n");
+  return {
+    start_seconds: Math.floor(window[0].start_ms / 1000),
+    end_seconds: Math.ceil(window[window.length - 1].end_ms / 1000),
+    cue_count: window.length,
+    cue_text_sha256: await sha256(normalizedCues),
+    excerpt: excerpt(window.map((cue) => cue.text).join(" ")),
+  };
+}
+
+/**
+ * Evidence for a playback range chosen by reading the transcript (a teaching segment longer than one matched window):
+ * the cues that lie fully inside [startSeconds, endSeconds]. Returns null when the range holds no cue. Anyone can
+ * re-run it with the same range and get the same start, end, cue_count and cue_text_sha256.
+ */
+export async function captionWindowForRange(
+  cues: CaptionCue[],
+  startSeconds: number,
+  endSeconds: number,
+): Promise<CaptionWindow | null> {
+  const inside = cues.filter((cue) =>
+    cue.start_ms >= startSeconds * 1000 && cue.end_ms <= endSeconds * 1000
+  );
+  return inside.length === 0 ? null : await describeWindow(inside);
+}
+
+/**
+ * Groups raw caption cues into coherent teaching segments covering the requested range (or the whole video).
+ * Applies size bounds (MAX_OUTLINE_DURATION_SECONDS, MAX_OUTLINE_SEGMENTS, MAX_OUTLINE_CHARS) and returns
+ * `truncated: true` with the covered range when the content exceeds the ceiling.
+ */
+export function buildCaptionOutline(
+  cues: CaptionCue[],
+  range?: { start: number; end: number },
+): {
+  segments: CaptionOutlineSegment[];
+  truncated: boolean;
+  range: { start_seconds: number; end_seconds: number };
+} | null {
+  const filteredCues = range
+    ? cues.filter((cue) =>
+      cue.start_ms >= range.start * 1000 && cue.end_ms <= range.end * 1000
+    )
+    : cues;
+
+  if (filteredCues.length === 0) return null;
+
+  const segments: CaptionOutlineSegment[] = [];
+  let currentSegmentCues: CaptionCue[] = [];
+  let truncated = false;
+  let totalChars = 0;
+
+  for (let i = 0; i < filteredCues.length; i++) {
+    const cue = filteredCues[i];
+    currentSegmentCues.push(cue);
+
+    const segStartMs = currentSegmentCues[0].start_ms;
+    const segEndMs = cue.end_ms;
+    const segDurationMs = segEndMs - segStartMs;
+    const isSentenceEnd = /[.!?]$/.test(cue.text.trim());
+    const isLastCue = i === filteredCues.length - 1;
+
+    if (
+      isLastCue ||
+      segDurationMs >= 45_000 ||
+      (segDurationMs >= 20_000 && isSentenceEnd) ||
+      segDurationMs >= 35_000
+    ) {
+      const segStartSec = Math.floor(currentSegmentCues[0].start_ms / 1000);
+      const segEndSec = Math.ceil(currentSegmentCues[currentSegmentCues.length - 1].end_ms / 1000);
+      const text = currentSegmentCues.map((c) => c.text).join(" ");
+      segments.push({
+        start_seconds: segStartSec,
+        end_seconds: segEndSec,
+        text,
+      });
+      totalChars += text.length;
+      currentSegmentCues = [];
+
+      const coveredDuration = segEndSec - segments[0].start_seconds;
+      if (!isLastCue) {
+        if (
+          coveredDuration >= MAX_OUTLINE_DURATION_SECONDS ||
+          segments.length >= MAX_OUTLINE_SEGMENTS ||
+          totalChars >= MAX_OUTLINE_CHARS
+        ) {
+          truncated = true;
+          break;
+        }
+      }
+    }
+  }
+
+  if (currentSegmentCues.length > 0 && !truncated) {
+    const segStartSec = Math.floor(currentSegmentCues[0].start_ms / 1000);
+    const segEndSec = Math.ceil(currentSegmentCues[currentSegmentCues.length - 1].end_ms / 1000);
+    const text = currentSegmentCues.map((c) => c.text).join(" ");
+    segments.push({
+      start_seconds: segStartSec,
+      end_seconds: segEndSec,
+      text,
+    });
+  }
+
+  const outlineRange = {
+    start_seconds: segments[0].start_seconds,
+    end_seconds: segments[segments.length - 1].end_seconds,
+  };
+
+  return {
+    segments,
+    truncated,
+    range: outlineRange,
+  };
 }
 
 export function getYoutubeVideoId(rawUrl: string): string | null {
@@ -339,6 +478,7 @@ async function downloadTrack(
 export async function lookupYoutubeCaptionWindows(
   url: string,
   query: string,
+  range?: { start: number; end: number },
 ): Promise<CaptionLookupResult> {
   const videoId = getYoutubeVideoId(url);
   if (!videoId) {
@@ -394,17 +534,165 @@ export async function lookupYoutubeCaptionWindows(
           : "english_captions_unavailable",
       };
     } else if (chosen) {
-      const matches = await findCaptionWindows(chosen.cues, query);
+      const language = languageFromCaptionFilename(chosen.file, videoId);
+      if (range) {
+        const window = await captionWindowForRange(chosen.cues, range.start, range.end);
+        response = {
+          ok: true,
+          video_id: videoId,
+          language,
+          track: chosen.track,
+          matches: window ? [window] : [],
+          ...(window ? {} : { reason: "range_has_no_captions" as const }),
+        };
+      } else {
+        const matches = await findCaptionWindows(chosen.cues, query);
+        response = {
+          ok: true,
+          video_id: videoId,
+          language,
+          track: chosen.track,
+          matches,
+          ...(matches.length === 0
+            ? { reason: "captions_do_not_match_query" as const }
+            : {}),
+        };
+      }
+    }
+  } catch (error) {
+    response = {
+      ok: false,
+      video_id: videoId,
+      reason: error instanceof Error && error.message.includes("yt-dlp")
+        ? "yt_dlp_not_found"
+        : "caption_download_failed",
+    };
+  } finally {
+    if (tempDir) {
+      try {
+        await Deno.remove(tempDir, { recursive: true });
+      } catch {
+        cleanupFailed = true;
+      }
+    }
+  }
+
+  if (cleanupFailed) {
+    return { ok: false, video_id: videoId, reason: "temporary_cleanup_failed" };
+  }
+  return response ??
+    { ok: false, video_id: videoId, reason: "caption_download_failed" };
+}
+
+export async function fetchVideoDuration(url: string): Promise<number | null> {
+  try {
+    const result = await new Deno.Command("yt-dlp", {
+      args: ["--no-playlist", "--skip-download", "--print", "%(duration)s", url],
+      stdin: "null",
+      stdout: "piped",
+      stderr: "null",
+    }).output();
+    if (result.code !== 0) return null;
+    const text = new TextDecoder().decode(result.stdout).trim();
+    const parsed = Number(text);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function lookupYoutubeCaptionOutline(
+  url: string,
+  range?: { start: number; end: number },
+): Promise<CaptionOutlineResult> {
+  const videoId = getYoutubeVideoId(url);
+  if (!videoId) {
+    return { ok: false, video_id: "", reason: "caption_download_failed" };
+  }
+
+  let tempDir: string | null = null;
+  let response: CaptionOutlineResult | undefined;
+  let cleanupFailed = false;
+  try {
+    tempDir = await Deno.makeTempDir({ prefix: "corelia-youtube-captions-" });
+    let chosen:
+      | { file: string; track: CaptionTrack; cues: CaptionCue[] }
+      | undefined;
+    let downloadFailure = false;
+    for (const track of ["manual", "auto"] as const) {
+      const directory = `${tempDir}${
+        Deno.build.os === "windows" ? "\\" : "/"
+      }${track}`;
+      let result: Awaited<ReturnType<typeof downloadTrack>>;
+      try {
+        result = await downloadTrack(videoId, url, track, directory);
+      } catch (error) {
+        if (error instanceof Deno.errors.NotFound) {
+          response = {
+            ok: false,
+            video_id: videoId,
+            reason: "yt_dlp_not_found",
+          };
+          break;
+        }
+        throw error;
+      }
+      if (result.files.length > 0) {
+        const preferred = result.files.find((file) =>
+          languageFromCaptionFilename(file, videoId).toLowerCase() === "en"
+        ) ?? result.files[0];
+        const cues = parseWebVtt(await Deno.readTextFile(preferred));
+        if (cues.length > 0) {
+          chosen = { file: preferred, track, cues };
+          break;
+        }
+      }
+      downloadFailure ||= result.code !== 0;
+    }
+
+    if (!response && !chosen) {
       response = {
-        ok: true,
+        ok: false,
         video_id: videoId,
-        language: languageFromCaptionFilename(chosen.file, videoId),
-        track: chosen.track,
-        matches,
-        ...(matches.length === 0
-          ? { reason: "captions_do_not_match_query" as const }
-          : {}),
+        reason: downloadFailure
+          ? "caption_download_failed"
+          : "english_captions_unavailable",
       };
+    } else if (chosen) {
+      const language = languageFromCaptionFilename(chosen.file, videoId);
+      const metadataDuration = await fetchVideoDuration(url);
+      const lastCueSeconds = chosen.cues.length > 0
+        ? Math.ceil(chosen.cues[chosen.cues.length - 1].end_ms / 1000)
+        : 0;
+      const duration_seconds = metadataDuration ?? lastCueSeconds;
+      const duration_source = metadataDuration ? "metadata" as const : "last_cue" as const;
+
+      const outline = buildCaptionOutline(chosen.cues, range);
+      if (!outline) {
+        response = {
+          ok: true,
+          video_id: videoId,
+          language,
+          track: chosen.track,
+          duration_seconds,
+          duration_source,
+          segments: [],
+          truncated: false,
+          reason: "range_has_no_captions",
+        };
+      } else {
+        response = {
+          ok: true,
+          video_id: videoId,
+          language,
+          track: chosen.track,
+          duration_seconds,
+          duration_source,
+          segments: outline.segments,
+          truncated: outline.truncated,
+          range: outline.range,
+        };
+      }
     }
   } catch (error) {
     response = {
@@ -439,23 +727,47 @@ function readOption(args: string[], name: string): string | undefined {
 async function main(args: string[]) {
   if (args.includes("--help") || args.includes("-h")) {
     console.log(
-      "Usage: deno run -A --no-config scripts/studio/youtube-captions.ts --url <YouTube URL> --query <lesson title and outcomes>",
+      "Usage: deno run -A --no-config scripts/studio/youtube-captions.ts --url <YouTube URL> --query <lesson title and outcomes>\n" +
+        "       deno run -A --no-config scripts/studio/youtube-captions.ts --url <YouTube URL> --range <start>-<end>   (evidence for a segment chosen from the transcript)\n" +
+        "       deno run -A --no-config scripts/studio/youtube-captions.ts --url <YouTube URL> --outline [--range <start>-<end>]   (read video outline and duration for research)",
     );
     return;
   }
+  const outline = args.includes("--outline");
   const url = readOption(args, "--url");
   const query = readOption(args, "--query");
-  if (!url || !query) {
+  const rangeText = readOption(args, "--range");
+  const range = rangeText?.match(/^(\d+)-(\d+)$/);
+  const rangeValue = range && Number(range[2]) > Number(range[1])
+    ? { start: Number(range[1]), end: Number(range[2]) }
+    : undefined;
+
+  if (outline) {
+    if (!url || (rangeText && !rangeValue)) {
+      console.log(
+        JSON.stringify({
+          ok: false,
+          video_id: "",
+          reason: "usage: provide --url and --outline [--range <start>-<end>]",
+        }),
+      );
+      return;
+    }
+    console.log(JSON.stringify(await lookupYoutubeCaptionOutline(url, rangeValue)));
+    return;
+  }
+
+  if (!url || (rangeText ? !rangeValue : !query)) {
     console.log(
       JSON.stringify({
         ok: false,
         video_id: "",
-        reason: "usage: provide --url and --query",
+        reason: "usage: provide --url and --query, or --url and --range <start>-<end>",
       }),
     );
     return;
   }
-  console.log(JSON.stringify(await lookupYoutubeCaptionWindows(url, query)));
+  console.log(JSON.stringify(await lookupYoutubeCaptionWindows(url, query ?? "", rangeValue)));
 }
 
 if (import.meta.main && typeof Deno !== "undefined") {

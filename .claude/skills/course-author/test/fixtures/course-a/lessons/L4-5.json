@@ -1,0 +1,30 @@
+{
+  "lesson_id": "L4-5",
+  "title": "Bài kiểm tra 4",
+  "short_description": "Mô tả ngắn L4-5",
+  "summary": "Tóm tắt L4-5",
+  "source_ids": [
+    "S01"
+  ],
+  "type": "quiz",
+  "quiz": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "Câu hỏi kiểm tra số 4?",
+        "options": [
+          {
+            "id": "a",
+            "text": "Phương án đúng chính xác tuyệt đối"
+          },
+          {
+            "id": "b",
+            "text": "Phương án sai số một"
+          }
+        ],
+        "correct_index": 0,
+        "explanation": "Giải thích chi tiết hơn bốn mươi ký tự để qua được kiểm tra chất lượng."
+      }
+    ]
+  }
+}

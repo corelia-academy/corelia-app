@@ -19,15 +19,31 @@ if (fs.existsSync(currPath)) {
 }
 
 const targetMinutesMap = new Map();
+const curriculumLessonsById = new Map();
 if (curriculum?.modules) {
   for (const m of curriculum.modules) {
     for (const l of m.lessons ?? []) {
-      if (l.lesson_id && typeof l.target_minutes === "number" && l.target_minutes > 0) {
-        targetMinutesMap.set(l.lesson_id, l.target_minutes);
+      if (l.lesson_id) {
+        curriculumLessonsById.set(l.lesson_id, l);
+        if (typeof l.target_minutes === "number" && l.target_minutes > 0) {
+          targetMinutesMap.set(l.lesson_id, l.target_minutes);
+        }
       }
     }
   }
 }
+
+let research = null;
+const resPath = path.join(dir, "research.json");
+if (fs.existsSync(resPath)) {
+  try {
+    research = readJson(resPath);
+  } catch (err) {
+    console.log(`research.json không đọc được: ${err.message}`);
+    process.exit(1);
+  }
+}
+const researchVideosById = new Map((research?.videos ?? []).map((v) => [v.video_id, v]));
 
 const labels = fs.existsSync(path.join(dir, "labels.json")) ? readJson(path.join(dir, "labels.json")) : null;
 if (labels && (!labels.lessons || typeof labels.lessons !== "object" || Array.isArray(labels.lessons))) {
@@ -92,6 +108,14 @@ for (const id of ids) {
   const file = path.join(dir, "lessons", `${id}.json`);
   if (!fs.existsSync(file)) { add(id, "thiếu-file", file); continue; }
   const rec = readJson(file);
+  const curLesson = curriculumLessonsById.get(id);
+  if (curLesson && curLesson.title) {
+    if (!rec.title || !rec.title.trim()) {
+      add(id, "khớp-tiêu-đề", "lesson thiếu trường title hoặc title rỗng");
+    } else if (rec.title.trim() !== curLesson.title.trim()) {
+      add(id, "khớp-tiêu-đề", `tiêu đề lesson "${rec.title}" không khớp với curriculum "${curLesson.title}"`);
+    }
+  }
   for (const [where, raw] of visibleTexts(rec)) {
     const t = stripCode(raw);
     const internal = t.match(/\b(?:L\d+-\d+|M\d+|S\d{2})\b/);
@@ -118,6 +142,57 @@ for (const id of ids) {
     const have = (rec.article.diagrams ?? []).map((d) => d.id);
     for (const r of refs) if (!have.includes(r)) add(id, "sơ-đồ", `tham chiếu ${r} không có trong diagrams`);
     for (const h of have) if (refs.filter((r) => r === h).length !== 1) add(id, "sơ-đồ", `${h} phải được tham chiếu đúng một lần`);
+  }
+
+  if (rec.video) {
+    const currLesson = curriculumLessonsById.get(id);
+    if (currLesson) {
+      if (currLesson.type !== "video") {
+        add(id, "khớp-curriculum", `lesson có video nhưng curriculum quy định type "${currLesson.type}"`);
+      } else {
+        if (currLesson.video_id != null && rec.video.video_id !== currLesson.video_id) {
+          add(id, "khớp-curriculum", `video_id "${rec.video.video_id}" không khớp video_id "${currLesson.video_id}" trong curriculum`);
+        }
+        if (currLesson.start_seconds != null && rec.video.start_seconds !== currLesson.start_seconds) {
+          add(id, "khớp-curriculum", `start_seconds ${rec.video.start_seconds} không khớp start_seconds ${currLesson.start_seconds} trong curriculum`);
+        }
+        if (currLesson.end_seconds != null && rec.video.end_seconds !== currLesson.end_seconds) {
+          add(id, "khớp-curriculum", `end_seconds ${rec.video.end_seconds} không khớp end_seconds ${currLesson.end_seconds} trong curriculum`);
+        }
+      }
+    }
+
+    const targetMins = targetMinutesMap.get(id);
+    if (typeof targetMins === "number" && targetMins > 0) {
+      const vMd = rec.video.description_markdown ?? rec.article?.description_markdown ?? "";
+      const textWithoutCode = stripCode(vMd);
+      const wordCount = textWithoutCode.trim().split(/\s+/).filter(Boolean).length;
+      const readingMinutes = wordCount / WORDS_PER_MINUTE;
+      let playbackSeconds = 0;
+      let hasPlaybackDuration = false;
+
+      const isWholeVideo = (rec.video.start_seconds === 0 && rec.video.end_seconds === 0);
+      if (isWholeVideo) {
+        const vCand = researchVideosById.get(rec.video.video_id);
+        if (vCand && typeof vCand.duration_seconds === "number" && vCand.duration_seconds > 0) {
+          playbackSeconds = vCand.duration_seconds;
+          hasPlaybackDuration = true;
+        } else {
+          add(id, "thời-lượng-video", `phát cả video (0/0) nhưng không tìm thấy duration_seconds hợp lệ cho video "${rec.video.video_id}" trong research.json`);
+        }
+      } else if (typeof rec.video.start_seconds === "number" && typeof rec.video.end_seconds === "number" && rec.video.end_seconds > rec.video.start_seconds) {
+        playbackSeconds = rec.video.end_seconds - rec.video.start_seconds;
+        hasPlaybackDuration = true;
+      }
+
+      if (hasPlaybackDuration) {
+        const videoMinutes = playbackSeconds / 60;
+        const estMinutes = videoMinutes + readingMinutes;
+        if (estMinutes > targetMins * LENGTH_TOLERANCE) {
+          add(id, "độ-dài", `ước tính ${Math.round(estMinutes)} phút (${Math.round(videoMinutes)} phút video + ${wordCount} từ, vượt target_minutes ${targetMins} × ${LENGTH_TOLERANCE})`);
+        }
+      }
+    }
   }
 
   if (rec.quiz) {

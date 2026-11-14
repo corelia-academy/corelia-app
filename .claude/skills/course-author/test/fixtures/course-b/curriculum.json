@@ -1,0 +1,59 @@
+{
+  "status": "draft",
+  "outcomes": [
+    {
+      "outcome_id": "O1",
+      "text": "Outcome B",
+      "check_lesson_ids": [
+        "L2-2"
+      ]
+    }
+  ],
+  "no_video_reason": "Khóa B không dùng video",
+  "unused_primary_videos": [],
+  "modules": [
+    {
+      "module_id": "M1",
+      "title": "Module 1",
+      "description": "Mô tả M1",
+      "lessons": [
+        {
+          "lesson_id": "L1-1",
+          "title": "Bài 1",
+          "type": "article",
+          "outcome_ids": [
+            "O1"
+          ],
+          "target_minutes": 10,
+          "source_ids": [
+            "S01"
+          ]
+        },
+        {
+          "lesson_id": "L1-4",
+          "title": "Bài 2",
+          "type": "article",
+          "outcome_ids": [
+            "O1"
+          ],
+          "target_minutes": 10,
+          "source_ids": [
+            "S01"
+          ]
+        },
+        {
+          "lesson_id": "L2-2",
+          "title": "Bài 3",
+          "type": "quiz",
+          "outcome_ids": [
+            "O1"
+          ],
+          "target_minutes": 5,
+          "source_ids": [
+            "S01"
+          ]
+        }
+      ]
+    }
+  ]
+}

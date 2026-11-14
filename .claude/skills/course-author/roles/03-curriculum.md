@@ -21,6 +21,27 @@ Outcome dạng "tự viết/tự làm trọn vẹn" mà nền tảng chỉ kiể
 - Bài đầu khóa không mở bằng lịch sử hay cài đặt; người học thấy kết quả đầu tiên trong vài phút.
 - Mô tả lesson đầu mỗi module nêu: (1) đích của bài, tức người học làm hoặc phân biệt được gì sau bài; (2) tình huống mở bài là một thứ cụ thể người học nhìn thấy (chương trình nhỏ hoàn chỉnh kèm kết quả chạy thật, màn hình, một giá trị), không phải một câu mô tả trừu tượng hay một dòng dữ liệu rời; (3) khái niệm được dạy theo thứ tự vấn đề trước, cú pháp sau: người học thấy vấn đề xảy ra rồi mới học công cụ giải quyết nó.
 
+## Quy tắc đặt tên bài và module
+
+- **Tên module (`module.title`)**:
+  - Là hành động/năng lực cụ thể người học làm được ("Đọc một file cấu hình"), không dùng chủ đề trừu tượng ("Xử lý lỗi").
+  - Tên module là một việc, không nối hai việc bằng "và" (ví dụ không đặt "Phòng thủ Reentrancy và Kiểm soát quyền hạn").
+  - Trần độ dài tối đa 50 ký tự (`MAX_MODULE_TITLE_CHARS = 50`, mặc định chưa hiệu chỉnh).
+  - Không chứa tiền tố đánh số (không viết "Module 1:", "Chương 1:", "Phần 1:", "1."). UI đã tự động hiển thị số thứ tự.
+  - Không chứa mẫu nhãn kèm dấu hai chấm ở đầu (`^[^:]{1,40}:\s`).
+  - Không trùng tên với bất kỳ module nào khác trong toàn khóa.
+- **Tên lesson (`lesson.title`)**:
+  - Nêu việc người học làm được hoặc tình huống bài giải quyết.
+  - Viết hoa kiểu câu tiếng Việt (sentence case: chỉ viết hoa chữ cái đầu và danh từ riêng), thuật ngữ tiếng Anh giữ nguyên cách viết chuẩn (ví dụ "Kiểm tra quyền với Ownable", không viết hoa mọi từ).
+  - Không dùng mã định danh (như SWC-115, tên detector) trừ khi bài dạy chính mã đó.
+  - Trần độ dài tối đa 60 ký tự (`MAX_LESSON_TITLE_CHARS = 60`, mặc định chưa hiệu chỉnh).
+  - Không chứa mẫu nhãn rồi dấu hai chấm ở đầu tên (`^[^:]{1,40}:\s`, ví dụ "Trắc nghiệm đánh giá: ...", "Bẫy Phishing SWC-115: ...").
+  - Không chứa tiền tố bị cấm ở đầu tên (các nhãn `formats` đọc từ `src/locales/vi/courses.json`: "Bài đọc", "Video", "Trắc nghiệm", "Thực hành", "Bài tập code", cộng thêm "Quiz", "Bài kiểm tra", "Tự kiểm", "Tình huống"). UI đã hiển thị badge định dạng bài học.
+  - Không chứa tiền tố đánh số (không viết "Bài 1:", "Bài 1 -", "Lesson 1:", "L1-1:", "1.", "1.1."). UI đã hiển thị vị trí bài học.
+  - Không dùng mẫu nhãn gắn trong ngoặc vuông (như `[Lý thuyết]`, `[Thực hành]`, `[Video]`).
+  - Không trùng tên với bất kỳ lesson nào khác trong toàn khóa (mỗi bài có tiêu đề phân biệt duy nhất).
+  - Tiêu đề trong file bài học (`lessons/<lesson_id>.json`) phải khớp chính xác với `curriculum.json`.
+
 ## Flow trong module
 
 Gắn `purpose` cho từng lesson theo flow học:
@@ -28,7 +49,7 @@ Gắn `purpose` cho từng lesson theo flow học:
 | purpose | Vai trò | Loại bài phù hợp |
 |---|---|---|
 | `explanation` | Dạy khái niệm | article, video |
-| `worked_example` | Dạy qua lời giải mẫu có giải thích từng bước | article |
+| `worked_example` | Dạy qua lời giải mẫu có giải thích từng bước | article, video |
 | `supported_practice` | Làm có hỗ trợ, ngay sau bài dạy | code_exercise `fill`, practice, quiz tình huống |
 | `independent_practice` | Tự làm, ít gợi ý hơn | code_exercise `edit`, practice, quiz tình huống |
 | `recall` | Gọi lại kiến thức vừa dạy hoặc của module trước | quiz 2–3 câu |
@@ -42,6 +63,8 @@ Quy tắc:
 - Mỗi module 3–6 bài (không tính `final_check`). Lệch khoảng này thì ghi `size_reason`.
 - Mỗi lesson có `target_minutes` (số nguyên dương). Article có `target_minutes` trên 15 phải có `length_reason`; không có lý do thì tách bài.
 - Module cuối kết thúc bằng 1–2 bài `final_check` liền nhau, gộp lại phủ mọi outcome kiểm được trên nền tảng, dùng tình huống mới.
+- Khi khóa có `brief.promise`: mô tả của lesson đầu tiên (L1-1) bắt buộc nêu rõ `brief.promise` để người học nắm được lời hứa năng lực của toàn khóa.
+- Bài cuối khóa (`final_assignment.json`): khi khóa có `brief.final_product`, bài cuối khóa BẮT BUỘC hiện thực hóa `final_product` này trong bối cảnh tình huống thực tế của khóa. Khóa không có handoff/brief.final_product tiếp tục hoạt động theo chuẩn hiện có.
 - Kỹ năng cần làm trên máy người học (cài đặt, chạy lệnh, deploy) luyện bằng `practice` dạng checklist. Practice không chặn bài sau, nên outcome của nó phải được kiểm thêm bằng bài cuối khóa hoặc bằng một quiz/code_exercise.
 
 ## Loại bài
@@ -49,9 +72,15 @@ Quy tắc:
 - `code_exercise` chỉ khi `brief.code_language` khác `null`; dùng đúng ngôn ngữ đó cho toàn khóa. `code_mode` mặc định: `fill` cho `supported_practice`, `edit` cho `independent_practice` và `final_check`. Chọn khác mặc định được, nhưng mô tả lesson phải nêu rõ điền chỗ nào hoặc viết/sửa gì.
 - Chọn dạng theo mục "Chọn dạng `code_exercise`" trong `platform.md`. Mô tả mỗi bài `fill` liệt kê các chỗ điền (tối đa 5, chỉ phần cốt lõi) và phần cho sẵn; mô tả mỗi bài `edit` nêu chữ ký cố định và lý do test so khớp chuỗi đủ để chấm. Không chắc chấm được đáng tin thì dùng `fill` hoặc `practice`, không chọn `edit`.
 - Các bài code dùng chung một khung code xuyên suốt. Mô tả mỗi bài code ghi rõ tên file, hàm, kiểu mà bài dùng; bài `independent_practice` ghi rõ phần nào của module trước nối vào.
-- `video` chỉ mang purpose `explanation`, chỉ khi `research.videos` có ứng viên cho topic đó. Sau bài video phải có bài kiểm tra outcome tương ứng.
-- Chỉ đòi một đoạn cắt của video (điểm dừng trước nội dung chưa dạy) khi đã tìm được điểm đó bằng `youtube-captions.ts`; ghi trong mô tả lesson cue caption xác định nó. Không tìm được thì chọn ứng viên khác của cùng topic, hoặc để video phát toàn bộ nếu toàn bộ video chỉ dùng kiến thức đã dạy, hoặc bỏ video. Không ghi mốc thời gian chưa có bằng chứng.
-- **Vị trí bài video theo thứ tự học, không theo thứ tự thêm vào.** Mỗi video đứng sau bài dạy nó bổ trợ và trước bài thực hành hoặc kiểm tra dùng kiến thức đó. Khi có nhiều video cho cùng một chủ đề, xếp từ tổng quát đến cụ thể: video xem nhanh cả một trang hay một thao tác đứng trước video đi sâu vào một thao tác (ví dụ xem nhanh trang contract trước, tự verify một contract sau); khái niệm áp dụng cho nhiều hàm (ví dụ modifier) đứng trước từ khóa của một nhóm hàm cụ thể (ví dụ view, pure). Video không nhắc kiến thức mà bài đứng trước chưa dạy; nếu phải nhắc trước thì nói rõ bài nào sẽ dạy kỹ.
+- `video`:
+  - Chỉ được tạo từ ứng viên `fit: "primary"` trong `research.videos`, mang purpose `explanation` hoặc `worked_example`, và LÀ bài dạy chính của kiến thức đó. Lesson ghi `video_id` và đoạn đã chọn từ `segments` (hoặc cả video). Một video chỉ làm bài `primary` một lần trong toàn khóa.
+  - Ứng viên `supplement` chỉ dùng qua `suggested_videos` của bài liên quan, không thành bài riêng.
+  - Ngân sách: tối đa 1 bài video mỗi module (`MAX_VIDEOS_PER_MODULE = 1`). Không có số tối thiểu.
+  - Giải trình bắt buộc ghi trong `curriculum.json`: mỗi ứng viên `primary` không được dùng có một dòng lý do trong `unused_primary_videos`; khóa có 0 bài video có lý do ở mức khóa trong `no_video_reason`.
+  - Đoạn phát: dùng một đoạn trong `segments` đã có `caption_evidence`, dài tối đa 720 giây (`MAX_VIDEO_SEGMENT_SECONDS = 720`). Phát cả video được mã hóa bằng `start_seconds: 0, end_seconds: 0` (chỉ khi `duration_seconds` ≤ 900 và `assumes` không chứa khái niệm chưa được dạy ở bài đứng trước). Không ghi mốc thời gian không có `caption_evidence`. Bài video bắt buộc ghi rõ số giây ở `start_seconds` và `end_seconds` (không được để `null`).
+  - Thứ tự bài trong module được xếp theo trình tự của video khi không vi phạm `prerequisite_lesson_ids`.
+  - `target_minutes` của bài video = thời lượng đoạn phát (làm tròn lên phút) + thời gian đọc article (số từ / 200).
+  - Sau bài video phải có bài kiểm tra outcome tương ứng; video không nhắc kiến thức mà bài đứng trước chưa dạy.
 - Quiz: ít nhất 5 câu, trừ `recall` (2–3 câu). `pass_threshold` là phần trăm trong (0, 100]. Mọi quiz có `review_lesson_ids` trỏ tới bài dạy đứng trước.
 - Dùng đúng `stack_choice` của research cho toàn khóa; không tự chọn công cụ khác.
 
@@ -66,10 +95,13 @@ Chỉ dùng chủ đề và `source_id` có trong research. Thiếu nguồn cho 
 ```json
 { "status": "draft|needs_research",
   "outcomes": [{ "outcome_id": "O1", "text": "", "check_lesson_ids": ["L1-3"] }],
+  "no_video_reason": null,
+  "unused_primary_videos": [{ "video_id": "", "reason": "" }],
   "modules": [{ "module_id": "M1", "title": "", "description": "", "size_reason": null,
     "lessons": [{ "lesson_id": "L1-1", "title": "", "description": "", "type": "article|video|quiz|code_exercise|practice",
       "purpose": "explanation|worked_example|supported_practice|independent_practice|recall|final_check",
-      "code_mode": null, "outcome_ids": ["O1"], "target_minutes": 10, "length_reason": null,
+      "code_mode": null, "video_id": null, "start_seconds": 0, "end_seconds": 0,
+      "outcome_ids": ["O1"], "target_minutes": 10, "length_reason": null,
       "prerequisites": [""], "prerequisite_lesson_ids": [],
       "review_lesson_ids": [], "pass_threshold": null, "completion_rule": "", "source_ids": ["S01"] }] }],
   "missing": [] }

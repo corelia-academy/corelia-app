@@ -1,0 +1,63 @@
+{
+  "verdict": "pass",
+  "checks": [
+    {
+      "criterion": "factual_accuracy",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "tool_versions",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "outcome_and_level",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "lesson_flow",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "answers",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "verification",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "language",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "tone_and_flow",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    }
+  ],
+  "issues": [
+    {
+      "location": "L4-5",
+      "criterion": "answers",
+      "problem": "Đáp án có thể gây hiểu nhầm về logic",
+      "fix": "Điều chỉnh câu chữ đáp án",
+      "category": "other",
+      "severity": "minor"
+    }
+  ]
+}

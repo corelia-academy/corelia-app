@@ -1,0 +1,308 @@
+{
+  "status": "draft",
+  "outcomes": [
+    {
+      "outcome_id": "O1",
+      "text": "Phân tích luồng gọi hàm external call để chỉ ra chính xác vị trí xảy ra trạng thái không nhất quán trong một smart contract bị lỗi Reentrancy.",
+      "check_lesson_ids": ["L1-4", "L4-3"]
+    },
+    {
+      "outcome_id": "O2",
+      "text": "Áp dụng Checks-Effects-Interactions (CEI) pattern để sắp xếp lại thứ tự cập nhật state trước khi thực hiện external call.",
+      "check_lesson_ids": ["L1-3", "L1-4", "L4-3"]
+    },
+    {
+      "outcome_id": "O3",
+      "text": "Sử dụng modifier ReentrancyGuard của OpenZeppelin để chặn các cuộc gọi đệ quy chéo hàm (cross-function reentrancy).",
+      "check_lesson_ids": ["L2-3", "L2-4", "L4-3"]
+    },
+    {
+      "outcome_id": "O4",
+      "text": "Phân biệt rủi ro bảo mật giữa tx.origin và msg.sender, thay thế tx.origin bằng Ownable modifier trong các hàm nhạy cảm.",
+      "check_lesson_ids": ["L3-2", "L3-3", "L4-3"]
+    },
+    {
+      "outcome_id": "O5",
+      "text": "Viết test case Foundry tái hiện khai thác Reentrancy thành công trên hợp đồng lỗi, và chứng minh test case revert sau khi vá lỗi.",
+      "check_lesson_ids": ["L4-1"]
+    },
+    {
+      "outcome_id": "O6",
+      "text": "Chạy công cụ kiểm thử tĩnh Slither trên mã nguồn contract và giải thích các cảnh báo phát hiện được.",
+      "check_lesson_ids": ["L4-2"]
+    }
+  ],
+  "modules": [
+    {
+      "module_id": "M1",
+      "title": "Nhận diện lỗ hổng Reentrancy và Phòng thủ bằng Checks-Effects-Interactions",
+      "description": "Hiểu luồng kiểm soát của EVM khi thực hiện external call, nhận diện lỗi cập nhật state trễ và áp dụng chuẩn mực Checks-Effects-Interactions để vô hiệu hóa tấn công reentrancy cơ bản.",
+      "size_reason": null,
+      "lessons": [
+        {
+          "lesson_id": "L1-1",
+          "title": "Luồng trao quyền EVM và cơ chế tấn công Reentrancy",
+          "description": "Người học thấy được quyền kiểm soát luồng thực thi bị chuyển sang contract nhận qua external call .call{value: ...}() trước khi hàm kịp kết thúc; phân tích tình huống hợp đồng EtherStore bị rút cạn ETH.",
+          "type": "article",
+          "purpose": "explanation",
+          "code_mode": null,
+          "outcome_ids": ["O1"],
+          "target_minutes": 10,
+          "length_reason": null,
+          "prerequisites": ["Hiểu khái niệm transaction và external call trên Ethereum"],
+          "prerequisite_lesson_ids": [],
+          "review_lesson_ids": [],
+          "pass_threshold": null,
+          "completion_rule": "read_completely",
+          "source_ids": ["S01"]
+        },
+        {
+          "lesson_id": "L1-2",
+          "title": "Phân tích hợp đồng EtherStore bị khai thác và vị trí state sai lệch",
+          "description": "Người học phân tích mã nguồn hợp đồng mẫu EtherStore.sol và Attack.sol để chỉ ra chính xác dòng code balances[msg.sender] = 0 bị thực thi quá muộn, tạo kẽ hở cho hàm receive() gọi lặp lại.",
+          "type": "article",
+          "purpose": "worked_example",
+          "code_mode": null,
+          "outcome_ids": ["O1"],
+          "target_minutes": 12,
+          "length_reason": null,
+          "prerequisites": ["Biết đọc cú pháp hàm Solidity và biến trạng thái mapping"],
+          "prerequisite_lesson_ids": ["L1-1"],
+          "review_lesson_ids": [],
+          "pass_threshold": null,
+          "completion_rule": "read_completely",
+          "source_ids": ["S01"]
+        },
+        {
+          "lesson_id": "L1-3",
+          "title": "Điền code vá lỗ hổng EtherStore bằng Checks-Effects-Interactions pattern",
+          "description": "Người học điền 3 chỗ trống trong hàm withdraw() của EtherStore.sol: (1) kiểm tra balance với require, (2) trừ số dư balances[msg.sender] = 0 trước, (3) thực hiện external call sau cùng.",
+          "type": "code_exercise",
+          "purpose": "supported_practice",
+          "code_mode": "fill",
+          "outcome_ids": ["O2"],
+          "target_minutes": 10,
+          "length_reason": null,
+          "prerequisites": ["Đã học nguyên lý Checks-Effects-Interactions ở bài L1-2"],
+          "prerequisite_lesson_ids": ["L1-2"],
+          "review_lesson_ids": ["L1-2"],
+          "pass_threshold": null,
+          "completion_rule": "pass_string_match_tests",
+          "source_ids": ["S01"]
+        },
+        {
+          "lesson_id": "L1-4",
+          "title": "Tình huống trắc nghiệm: Nhận diện thứ tự thực thi an toàn và bẫy gas",
+          "description": "Quiz 5 câu kiểm tra khả năng phát hiện thứ tự Checks-Effects-Interactions trong các biến thể code khác nhau và giải thích vì sao transfer()/send() không còn là giải pháp tối ưu thay thế CEI.",
+          "type": "quiz",
+          "purpose": "independent_practice",
+          "code_mode": null,
+          "outcome_ids": ["O1", "O2"],
+          "target_minutes": 8,
+          "length_reason": null,
+          "prerequisites": ["Đã hoàn thành bài điền code CEI L1-3"],
+          "prerequisite_lesson_ids": ["L1-3"],
+          "review_lesson_ids": ["L1-1", "L1-2", "L1-3"],
+          "pass_threshold": 80,
+          "completion_rule": "score_at_least_80_percent",
+          "source_ids": ["S01"]
+        }
+      ]
+    },
+    {
+      "module_id": "M2",
+      "title": "Chặn Cross-Function Reentrancy với OpenZeppelin ReentrancyGuard",
+      "description": "Mở rộng bài toán sang các tình huống tấn công đệ quy chéo hàm và cài đặt modifier nonReentrant chuẩn hóa từ OpenZeppelin như một lớp bảo vệ đa tầng.",
+      "size_reason": null,
+      "lessons": [
+        {
+          "lesson_id": "L2-1",
+          "title": "Ôn tập CEI và rủi ro Reentrancy chéo hàm (Cross-Function)",
+          "description": "Quiz recall 3 câu kiểm tra lại quy tắc CEI ở Module 1 và đặt câu hỏi tình huống: nếu hàm A tuân thủ CEI nhưng hàm B đọc chung state lại bị gọi xen vào thì điều gì xảy ra?",
+          "type": "quiz",
+          "purpose": "recall",
+          "code_mode": null,
+          "outcome_ids": ["O2"],
+          "target_minutes": 5,
+          "length_reason": null,
+          "prerequisites": ["Hoàn thành Module 1"],
+          "prerequisite_lesson_ids": ["L1-4"],
+          "review_lesson_ids": ["L1-3", "L1-4"],
+          "pass_threshold": 70,
+          "completion_rule": "score_at_least_70_percent",
+          "source_ids": ["S01"]
+        },
+        {
+          "lesson_id": "L2-2",
+          "title": "Nguyên lý Mutex Lock và cách dùng ReentrancyGuard của OpenZeppelin",
+          "description": "Bài học giải thích cơ chế khóa logic (status: NOT_ENTERED vs ENTERED) của modifier nonReentrant trong OpenZeppelin ReentrancyGuard và cách nó khóa toàn bộ các hàm được bảo vệ trong thời gian thực thi.",
+          "type": "article",
+          "purpose": "explanation",
+          "code_mode": null,
+          "outcome_ids": ["O3"],
+          "target_minutes": 10,
+          "length_reason": null,
+          "prerequisites": ["Biết khái niệm modifier trong Solidity"],
+          "prerequisite_lesson_ids": ["L2-1"],
+          "review_lesson_ids": [],
+          "pass_threshold": null,
+          "completion_rule": "read_completely",
+          "source_ids": ["S03"]
+        },
+        {
+          "lesson_id": "L2-3",
+          "title": "Điền modifier nonReentrant vào hợp đồng EtherStore",
+          "description": "Người học điền import ReentrancyGuard, khai báo kế thừa contract EtherStore is ReentrancyGuard và gắn modifier nonReentrant vào hàm withdraw() để hoàn thiện phòng thủ.",
+          "type": "code_exercise",
+          "purpose": "supported_practice",
+          "code_mode": "fill",
+          "outcome_ids": ["O3"],
+          "target_minutes": 10,
+          "length_reason": null,
+          "prerequisites": ["Hiểu cú pháp kế thừa và modifier nonReentrant"],
+          "prerequisite_lesson_ids": ["L2-2"],
+          "review_lesson_ids": ["L2-2"],
+          "pass_threshold": null,
+          "completion_rule": "pass_string_match_tests",
+          "source_ids": ["S03"]
+        },
+        {
+          "lesson_id": "L2-4",
+          "title": "Trắc nghiệm đánh giá: So sánh CEI pattern và ReentrancyGuard",
+          "description": "Quiz 5 câu phân tích chi phí gas, trường hợp bắt buộc phải có ReentrancyGuard (cross-function/cross-contract) và lý do tại sao không nên bỏ qua CEI dù đã có guard.",
+          "type": "quiz",
+          "purpose": "independent_practice",
+          "code_mode": null,
+          "outcome_ids": ["O3"],
+          "target_minutes": 8,
+          "length_reason": null,
+          "prerequisites": ["Đã thực hành gắn ReentrancyGuard ở L2-3"],
+          "prerequisite_lesson_ids": ["L2-3"],
+          "review_lesson_ids": ["L2-2", "L2-3"],
+          "pass_threshold": 80,
+          "completion_rule": "score_at_least_80_percent",
+          "source_ids": ["S03"]
+        }
+      ]
+    },
+    {
+      "module_id": "M3",
+      "title": "Kiểm soát quyền hạn với Ownable và Tránh bẫy Phishing tx.origin",
+      "description": "Phân biệt bản chất caller trong EVM giữa tx.origin và msg.sender, nhận diện kịch bản lừa đảo ủy quyền và chuẩn hóa phân quyền admin bằng OpenZeppelin Ownable.",
+      "size_reason": null,
+      "lessons": [
+        {
+          "lesson_id": "L3-1",
+          "title": "Bẫy Phishing SWC-115: Tại sao tx.origin lừa được hợp đồng ủy quyền",
+          "description": "Phân tích kịch bản tấn công kinh điển: chủ sở hữu ví bị dụ tương tác với trang web/contract lạ, contract này gọi tiếp vào ví của họ để chuyển tiền do ví kiểm tra sai bằng tx.origin.",
+          "type": "article",
+          "purpose": "explanation",
+          "code_mode": null,
+          "outcome_ids": ["O4"],
+          "target_minutes": 11,
+          "length_reason": null,
+          "prerequisites": ["Hiểu địa chỉ EOA và địa chỉ Smart Contract"],
+          "prerequisite_lesson_ids": [],
+          "review_lesson_ids": [],
+          "pass_threshold": null,
+          "completion_rule": "read_completely",
+          "source_ids": ["S02", "S05"]
+        },
+        {
+          "lesson_id": "L3-2",
+          "title": "Điền modifier onlyOwner và kế thừa OpenZeppelin Ownable thay thế tx.origin",
+          "description": "Người học sửa hàm emergencyWithdraw của EtherStore: xóa bỏ kiểm tra require(tx.origin == owner), nhập Ownable và áp dụng modifier onlyOwner để bảo vệ hàm rút tiền khẩn cấp.",
+          "type": "code_exercise",
+          "purpose": "supported_practice",
+          "code_mode": "fill",
+          "outcome_ids": ["O4"],
+          "target_minutes": 10,
+          "length_reason": null,
+          "prerequisites": ["Đã học lỗ hổng tx.origin ở bài L3-1"],
+          "prerequisite_lesson_ids": ["L3-1"],
+          "review_lesson_ids": ["L3-1"],
+          "pass_threshold": null,
+          "completion_rule": "pass_string_match_tests",
+          "source_ids": ["S02", "S04"]
+        },
+        {
+          "lesson_id": "L3-3",
+          "title": "Tình huống trắc nghiệm: Phân tích đường đi của msg.sender và tx.origin",
+          "description": "Quiz 5 câu theo dõi giao dịch gọi lồng nhau qua 3 contract: Alice -> Contract A -> Contract B -> Contract C; yêu cầu xác định chính xác giá trị msg.sender và tx.origin ở từng tầng.",
+          "type": "quiz",
+          "purpose": "independent_practice",
+          "code_mode": null,
+          "outcome_ids": ["O4"],
+          "target_minutes": 8,
+          "length_reason": null,
+          "prerequisites": ["Đã hoàn thành bài điền Ownable L3-2"],
+          "prerequisite_lesson_ids": ["L3-2"],
+          "review_lesson_ids": ["L3-1", "L3-2"],
+          "pass_threshold": 80,
+          "completion_rule": "score_at_least_80_percent",
+          "source_ids": ["S02", "S04"]
+        }
+      ]
+    },
+    {
+      "module_id": "M4",
+      "title": "Tái hiện Exploit bằng Foundry và Rà quét với Slither",
+      "description": "Thực hành viết test case đối kháng (adversarial testing) trên Foundry để chứng minh lỗ hổng và kiểm tra tự động mã nguồn bằng công cụ phân tích tĩnh Slither.",
+      "size_reason": null,
+      "lessons": [
+        {
+          "lesson_id": "L4-1",
+          "title": "Dựng Attacker Contract và viết test Foundry tái hiện khai thác Reentrancy",
+          "description": "Thực hành có hướng dẫn (guided project) trên máy local: tạo Attack.sol, viết EtherStoreSecurity.t.sol với vm.deal và vm.prank, chạy forge test thấy test exploit rút cạn tiền pass, sau đó đổi sang hợp đồng đã vá CEI thấy test bị revert đúng kỳ vọng.",
+          "type": "practice",
+          "purpose": "supported_practice",
+          "code_mode": null,
+          "outcome_ids": ["O5"],
+          "target_minutes": 15,
+          "length_reason": null,
+          "prerequisites": ["Đã cài đặt Foundry và nắm vững CEI/ReentrancyGuard"],
+          "prerequisite_lesson_ids": ["L2-3"],
+          "review_lesson_ids": ["L1-3", "L2-3"],
+          "pass_threshold": null,
+          "completion_rule": "complete_all_practice_steps",
+          "source_ids": ["S06"]
+        },
+        {
+          "lesson_id": "L4-2",
+          "title": "Chạy Slither phát hiện detector reentrancy-eth và tx-origin trên dự án",
+          "description": "Thực hành có hướng dẫn: chạy lệnh slither . trên thư mục dự án Foundry, đọc báo cáo phân tích, nhận diện 2 cảnh báo đỏ thuộc detector reentrancy-eth và tx-origin, áp dụng bản vá và chạy lại thấy cảnh báo được dọn sạch.",
+          "type": "practice",
+          "purpose": "supported_practice",
+          "code_mode": null,
+          "outcome_ids": ["O6"],
+          "target_minutes": 12,
+          "length_reason": null,
+          "prerequisites": ["Đã có hợp đồng EtherStore và môi trường Python/Slither"],
+          "prerequisite_lesson_ids": ["L4-1"],
+          "review_lesson_ids": ["L3-2", "L4-1"],
+          "pass_threshold": null,
+          "completion_rule": "complete_all_practice_steps",
+          "source_ids": ["S05"]
+        },
+        {
+          "lesson_id": "L4-3",
+          "title": "Tự kiểm tổng hợp: Phòng thủ Reentrancy và Phân quyền Access Control",
+          "description": "Quiz tổng hợp 6 câu trước bài cuối khóa: đánh giá toàn diện khả năng phát hiện lỗ hổng Reentrancy, thứ tự CEI, cơ chế ReentrancyGuard, rủi ro tx.origin và đọc báo cáo Slither.",
+          "type": "quiz",
+          "purpose": "final_check",
+          "code_mode": null,
+          "outcome_ids": ["O1", "O2", "O3", "O4"],
+          "target_minutes": 10,
+          "length_reason": null,
+          "prerequisites": ["Đã hoàn thành toàn bộ bài học lý thuyết và thực hành"],
+          "prerequisite_lesson_ids": ["L4-2"],
+          "review_lesson_ids": ["L1-4", "L2-4", "L3-3"],
+          "pass_threshold": 85,
+          "completion_rule": "score_at_least_85_percent",
+          "source_ids": ["S01", "S02", "S03", "S04", "S05"]
+        }
+      ]
+    }
+  ],
+  "missing": []
+}

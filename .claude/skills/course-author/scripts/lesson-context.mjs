@@ -111,6 +111,7 @@ const filteredSetupSteps = (research?.setup_steps ?? []).filter((s) =>
 
 const filteredVideos = (research?.videos ?? []).filter(
   (v) =>
+    (targetLesson.video_id && v.video_id === targetLesson.video_id) ||
     (v.topic_id && relatedTopicIds.has(v.topic_id)) ||
     (v.evidence_source_ids ?? []).some((sid) => lessonSourceIds.has(sid))
 );

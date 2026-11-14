@@ -1,0 +1,75 @@
+{
+  "sources": [
+    {
+      "source_id": "S01",
+      "url": "https://example.com/a",
+      "title": "Nguồn chính thức A",
+      "access": "read",
+      "checked_at": "2026-11-14"
+    },
+    {
+      "source_id": "S02",
+      "url": "https://example.com/unrelated",
+      "title": "Nguồn độc lập B",
+      "access": "read",
+      "checked_at": "2026-11-14"
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": "T01",
+      "title": "Chủ đề cốt lõi A",
+      "key_points": [
+        {
+          "text": "Khái niệm 1",
+          "source_ids": [
+            "S01"
+          ]
+        },
+        {
+          "text": "Khái niệm 2",
+          "source_ids": [
+            "S01"
+          ]
+        },
+        {
+          "text": "Khái niệm 3",
+          "source_ids": [
+            "S01"
+          ]
+        },
+        {
+          "text": "Khái niệm 4",
+          "source_ids": [
+            "S01"
+          ]
+        }
+      ]
+    },
+    {
+      "topic_id": "T02",
+      "title": "Chủ đề không liên quan B",
+      "key_points": [
+        {
+          "text": "Kiến thức riêng của topic B không liên quan",
+          "source_ids": [
+            "S02"
+          ]
+        }
+      ]
+    }
+  ],
+  "prerequisites": [
+    "Kiến thức cơ bản"
+  ],
+  "misconceptions": [],
+  "setup_steps": [],
+  "videos": [],
+  "open_questions": [
+    {
+      "question": "Câu hỏi nghiên cứu?",
+      "tried": "Đã kiểm tra",
+      "blocking": false
+    }
+  ]
+}

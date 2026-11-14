@@ -1,0 +1,15 @@
+{
+  "title": "Bài cuối khóa B",
+  "description": "Dự án cuối khóa B",
+  "instructions": "Hướng dẫn nộp bài",
+  "criteria": [
+    "Đúng yêu cầu"
+  ],
+  "fields": [
+    "github_url",
+    "notes"
+  ],
+  "outcome_ids": [
+    "O1"
+  ]
+}

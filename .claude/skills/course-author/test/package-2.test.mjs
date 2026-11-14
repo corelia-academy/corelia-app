@@ -26,10 +26,10 @@ function run(cmd, opts = {}) {
   }
 }
 
-test("AC2.1: course-digest trên hai khóa hiện có: JSON hợp lệ, đủ số bài, kích thước < 30% thư mục lessons/", () => {
+test("AC2.1: course-digest trên hai fixtures: JSON hợp lệ, đủ số bài, kích thước < 30% thư mục lessons/", () => {
   const runs = [
-    ".course-runs/rust-error-handling",
-    ".course-runs/smart-contract-reading-before-interacting",
+    ".claude/skills/course-author/test/fixtures/course-a",
+    ".claude/skills/course-author/test/fixtures/course-b",
   ];
 
   for (const dir of runs) {
@@ -107,12 +107,12 @@ test("AC2.2: test lint độ dài: 3.000 từ với target_minutes 10 -> lỗi, 
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
-test("AC2.3: lesson-lint trên 2 khóa hiện có không phát sinh dòng độ-dài", () => {
-  const resRust = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} .course-runs/rust-error-handling`);
-  assert.doesNotMatch(resRust.stdout, /(?<!quiz-)độ-dài:/);
+test("AC2.3: lesson-lint trên 2 fixtures không phát sinh dòng độ-dài", () => {
+  const resA = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} ${path.join(rootDir, ".claude/skills/course-author/test/fixtures/course-a")}`);
+  assert.doesNotMatch(resA.stdout, /(?<!quiz-)độ-dài:/);
 
-  const resSmart = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} .course-runs/smart-contract-reading-before-interacting`);
-  assert.doesNotMatch(resSmart.stdout, /(?<!quiz-)độ-dài:/);
+  const resB = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} ${path.join(rootDir, ".claude/skills/course-author/test/fixtures/course-b")}`);
+  assert.doesNotMatch(resB.stdout, /(?<!quiz-)độ-dài:/);
 });
 
 test("AC2.4: bảng Các bước và bảng Model trong SKILL.md nhất quán với các file role", () => {

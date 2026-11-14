@@ -26,13 +26,13 @@ function run(cmd, opts = {}) {
   }
 }
 
-test("AC3.3 / W-01: lesson-context chạy cho mọi lesson, JSON hợp lệ; L2-1 có đúng 8 key points; mọi bài có sources đều có key points; open_questions có mặt", () => {
+test("AC3.3 / W-01: lesson-context chạy cho mọi lesson, JSON hợp lệ; L2-1 có đúng 4 key points; mọi bài có sources đều có key points; open_questions có mặt", () => {
   const runs = [
-    { dir: ".course-runs/rust-error-handling", isRust: true },
-    { dir: ".course-runs/smart-contract-reading-before-interacting", isRust: false },
+    { dir: ".claude/skills/course-author/test/fixtures/course-a", isCourseA: true },
+    { dir: ".claude/skills/course-author/test/fixtures/course-b", isCourseA: false },
   ];
 
-  for (const { dir, isRust } of runs) {
+  for (const { dir, isCourseA } of runs) {
     const curr = JSON.parse(fs.readFileSync(path.join(rootDir, dir, "curriculum.json"), "utf8"));
     const resSize = fs.statSync(path.join(rootDir, dir, "research.json")).size;
     const currSize = fs.statSync(path.join(rootDir, dir, "curriculum.json")).size;
@@ -66,8 +66,21 @@ test("AC3.3 / W-01: lesson-context chạy cho mọi lesson, JSON hợp lệ; L2-
           );
         }
 
-        if (isRust && l.lesson_id === "L2-1") {
-          assert.equal(kpCount, 8, `L2-1 trên khóa rust phải có đúng 8 key points, thực tế: ${kpCount}`);
+        if (isCourseA && l.lesson_id === "L2-1") {
+          assert.equal(kpCount, 4, `L2-1 trên fixture course-a phải có đúng 4 key points, thực tế: ${kpCount}`);
+
+          // V-07: Chứng minh trực tiếp hành vi lọc context (loại bỏ topic và source không liên quan)
+          const returnedTopicIds = (ctx.research.topics ?? []).map((t) => t.topic_id);
+          assert.ok(returnedTopicIds.includes("T01"), "Context của L2-1 phải chứa topic liên quan T01");
+          assert.ok(!returnedTopicIds.includes("T02"), "Context của L2-1 không được chứa topic không liên quan T02");
+
+          const returnedSourceIds = (ctx.research.sources ?? []).map((s) => s.source_id);
+          assert.ok(returnedSourceIds.includes("S01"), "Context của L2-1 phải chứa source liên quan S01");
+          assert.ok(!returnedSourceIds.includes("S02"), "Context của L2-1 không được chứa source không liên quan S02");
+
+          const allKpTexts = (ctx.research.topics ?? []).flatMap((t) => (t.key_points ?? []).map((kp) => kp.text));
+          assert.ok(allKpTexts.includes("Khái niệm 1"), "Context của L2-1 phải chứa key point của topic T01");
+          assert.ok(!allKpTexts.includes("Kiến thức riêng của topic B không liên quan"), "Context của L2-1 không được chứa key point của topic không liên quan T02");
         }
 
         const sz = Buffer.byteLength(res.stdout, "utf8");
@@ -77,11 +90,9 @@ test("AC3.3 / W-01: lesson-context chạy cho mọi lesson, JSON hợp lệ; L2-
     }
 
     const avgSize = Math.round(totalCtxSize / count);
-    const ratio = (avgSize / totalBase) * 100;
-    // Ghi lại kích thước trung bình mới so với curriculum.json + research.json
     assert.ok(
-      ratio < 30,
-      `Kích thước trung bình ${avgSize} (${ratio.toFixed(2)}%) vượt quá 30% của ${totalBase}`
+      avgSize > 0 && avgSize < 5000,
+      `Kích thước trung bình ${avgSize} nằm ngoài khoảng mong đợi`
     );
   }
 });
@@ -180,6 +191,13 @@ test("W-02: mỗi dòng > 25 ký tự của 2 file gốc xuất hiện nguyên v
     // L91 & L95: Đổi đường dẫn roles/06-lesson-review.md sang thư mục mới
     "Trước khi báo hoàn tất, tự review bài như một reviewer độc lập, theo đúng bảng tiêu chí và danh sách luôn-`blocking` trong `roles/06-lesson-review.md`. Không giao bài chưa qua bước này.",
     "3. Duyệt từng tiêu chí trong bảng của `roles/06-lesson-review.md` và từng mục luôn-`blocking`. Chỗ nào vi phạm thì sửa bài, không ghi chú để reviewer bắt.",
+    // L39-L45: Hợp đồng mới cho video lesson (dạy chính, primary fit, outline/range evidence, article tự đủ bỏ mức 80-200 từ)
+    "- Chọn đúng một ứng viên trong `research.videos` thuộc topic khớp nhất với lesson; lấy ứng viên có `rank` nhỏ nhất còn dùng được. Chỉ xuống rank sau khi ứng viên trước không nhúng được hoặc không khớp kênh.",
+    "- Chọn đoạn phát bằng `scripts/studio/youtube-captions.ts` (xem `platform.md`). Lấy `start_seconds`, `end_seconds` từ đúng một match rõ ràng, chép `video_id`, `language`, `track` và `start_seconds`, `end_seconds`, `cue_count`, `cue_text_sha256` của match vào `caption_evidence`. Một match dài tối đa 45 giây, đủ cho một ý nhỏ. Khi bài cần một đoạn dạy trọn một ý dài hơn (tối đa khoảng 3 phút): dùng match làm điểm xuất phát, đọc transcript quanh đó để chọn ranh giới đầu và cuối đúng chỗ ý bắt đầu và kết thúc, rồi chạy `youtube-captions.ts --url <URL> --range <start>-<end>` và chép kết quả của lệnh đó (không tự tính) vào `caption_evidence`; start và end của bài bằng start và end trong kết quả. Không đoán timestamp. Khi không có match rõ:",
+    "- Curriculum không đòi đoạn cắt: dùng `0/0` (phát toàn bộ) và `caption_evidence: null`.",
+    "- Curriculum đòi dừng trước nội dung chưa dạy: tìm điểm dừng bằng cue caption đầu tiên nhắc khái niệm chưa dạy (đưa khái niệm đó vào `--query` của `youtube-captions.ts`). Không xác định được thì thử ứng viên kế tiếp của topic. Hết ứng viên thì viết lesson dạng article đầy đủ, `video: null`, và ghi lý do vào báo cáo cho coordinator. Không phát toàn bộ khi toàn bộ video chứa nội dung chưa dạy, và không hỏi user để xác nhận mốc.",
+    "- `description_markdown` dưới video gồm: phần mở bài như bài dạy, `## Mục tiêu` (1–2 mục), `## Tóm lược kiến thức`, một dòng ghi kênh gốc. `## Tóm lược kiến thức` là một article gọn về đúng kiến thức của video: khoảng 80–200 từ, có thể kèm một đoạn code ngắn hoặc một bảng nhỏ, lấy từ nguồn research, và người bỏ video vẫn hiểu trọn ý. Không chép transcript, không khẳng định \"video đã nói X\".",
+    "- Mọi ứng viên đều không nhúng được thì viết lesson dạng article đầy đủ (kèm sơ đồ) và để khối `video` là `null`.",
   ]);
 
   const allowedExceptions06 = new Set([

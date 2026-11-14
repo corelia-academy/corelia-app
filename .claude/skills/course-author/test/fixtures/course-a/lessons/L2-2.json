@@ -1,0 +1,26 @@
+{
+  "lesson_id": "L2-2",
+  "title": "Thực hành 2",
+  "short_description": "Mô tả ngắn L2-2",
+  "summary": "Tóm tắt L2-2",
+  "source_ids": [
+    "S01"
+  ],
+  "type": "practice",
+  "practice": {
+    "mode": "checklist",
+    "instructions_markdown": "Làm theo các bước thực hành dưới đây.",
+    "checklist_items": [
+      {
+        "id": "p1",
+        "title": "Bước thực hành 1",
+        "action": "Chạy lệnh kiểm tra môi trường",
+        "expected": "Môi trường sẵn sàng",
+        "record": "Ghi nhận phiên bản",
+        "common_errors": [
+          "Chưa cài đặt công cụ"
+        ]
+      }
+    ]
+  }
+}

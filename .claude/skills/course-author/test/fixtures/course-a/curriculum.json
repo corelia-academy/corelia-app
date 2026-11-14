@@ -1,0 +1,102 @@
+{
+  "status": "draft",
+  "outcomes": [
+    {
+      "outcome_id": "O1",
+      "text": "Nắm vững kiến thức A",
+      "check_lesson_ids": [
+        "L1-2"
+      ]
+    }
+  ],
+  "no_video_reason": "Khóa học A dùng article để truyền tải toàn diện",
+  "unused_primary_videos": [],
+  "modules": [
+    {
+      "module_id": "M1",
+      "title": "Module 1",
+      "description": "Mô tả M1",
+      "lessons": [
+        {
+          "lesson_id": "L1-1",
+          "title": "Bài học 1",
+          "type": "article",
+          "outcome_ids": [
+            "O1"
+          ],
+          "target_minutes": 10,
+          "source_ids": [
+            "S01"
+          ]
+        },
+        {
+          "lesson_id": "L1-2",
+          "title": "Bài kiểm tra 1",
+          "type": "quiz",
+          "outcome_ids": [
+            "O1"
+          ],
+          "target_minutes": 5,
+          "source_ids": [
+            "S01"
+          ]
+        }
+      ]
+    },
+    {
+      "module_id": "M2",
+      "title": "Module 2",
+      "description": "Mô tả M2",
+      "lessons": [
+        {
+          "lesson_id": "L2-1",
+          "title": "Bài học 2",
+          "type": "article",
+          "outcome_ids": [
+            "O1"
+          ],
+          "target_minutes": 10,
+          "source_ids": [
+            "S01"
+          ]
+        },
+        {
+          "lesson_id": "L2-2",
+          "title": "Thực hành 2",
+          "type": "practice",
+          "outcome_ids": [
+            "O1"
+          ],
+          "target_minutes": 15,
+          "source_ids": [
+            "S01"
+          ]
+        },
+        {
+          "lesson_id": "L3-4",
+          "title": "Bài học 3",
+          "type": "article",
+          "outcome_ids": [
+            "O1"
+          ],
+          "target_minutes": 10,
+          "source_ids": [
+            "S01"
+          ]
+        },
+        {
+          "lesson_id": "L4-5",
+          "title": "Bài kiểm tra 4",
+          "type": "quiz",
+          "outcome_ids": [
+            "O1"
+          ],
+          "target_minutes": 5,
+          "source_ids": [
+            "S01"
+          ]
+        }
+      ]
+    }
+  ]
+}

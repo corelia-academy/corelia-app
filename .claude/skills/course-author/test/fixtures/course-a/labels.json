@@ -1,0 +1,14 @@
+{
+  "modules": {
+    "M1": "Part A",
+    "M2": "Part B"
+  },
+  "lessons": {
+    "L1-1": "Part A, Bài 1",
+    "L1-2": "Part A, Bài 2",
+    "L2-1": "Part B, Bài 1",
+    "L2-2": "Part B, Bài 2",
+    "L3-4": "Part B, Bài 3",
+    "L4-5": "Part B, Bài 4"
+  }
+}

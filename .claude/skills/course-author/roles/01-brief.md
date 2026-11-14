@@ -22,7 +22,9 @@ Không tính điểm tổng, không xếp hạng giữa các khóa.
 - `title`: tiêu đề tiếng Việt hiển thị.
 - `topic`: một nhiệm vụ cụ thể người học hoàn thành được khi học xong, dùng động từ quan sát được ("viết bộ đọc một file cấu hình và báo lỗi đầu tiên"). Toàn khóa xoay quanh nhiệm vụ này.
 - `audience`, `level`.
-- `goals`: hành động người học làm được và quan sát được. Không viết "hiểu X". Không hứa năng lực mà khóa không kiểm được.
+- `promise`: khi có `handoff.json`, giữ nguyên văn trường `promise` từ handoff; khi không có handoff, ghi `null`.
+- `final_product`: khi có `handoff.json`, giữ nguyên văn trường `final_product` từ handoff; khi không có handoff, ghi `null`.
+- `goals`: hành động người học làm được và quan sát được. Khi có `promise`, mục tiêu (goal) đầu tiên bắt buộc khớp với `promise`. Không viết "hiểu X". Không hứa năng lực mà khóa không kiểm được.
 - `scope`, `out_of_scope`: chốt từng chủ đề lớn là trong hay ngoài khóa, vừa với trình độ và thời lượng. Bước sau không quyết định lại phạm vi. Nếu có `scope_note`: mọi chủ đề trong đó nằm trong `scope`, hoặc nằm trong `out_of_scope` kèm lý do.
 - `prerequisites`: kiến thức cần có trước. Không ghi điều kiện như biết đọc tiếng Việt hay có máy tính; những điều đó thuộc `audience`.
 - `tools`: công cụ dùng trong ví dụ, practice và bài cuối khóa. Không ghi phiên bản; bước research chốt sau.
@@ -48,6 +50,7 @@ Không xác định được chủ đề hoặc đối tượng: trả `status: 
 
 ```json
 { "status": "ready", "title_en": "", "slug": "", "title": "", "topic": "", "audience": "", "level": "beginner|intermediate|advanced",
+  "promise": null, "final_product": null,
   "goals": [""], "scope": [""], "out_of_scope": [""], "prerequisites": [""], "tools": [""],
   "code_language": null, "is_foundation": false, "prerequisite_courses": [], "duration_hours": 0, "assumptions": [""], "open_questions": [] }
 ```

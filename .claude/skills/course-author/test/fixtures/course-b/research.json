@@ -1,0 +1,38 @@
+{
+  "sources": [
+    {
+      "source_id": "S01",
+      "url": "https://example.com/b",
+      "title": "Nguồn B",
+      "access": "read",
+      "checked_at": "2026-11-14"
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": "T01",
+      "title": "Chủ đề B",
+      "key_points": [
+        {
+          "text": "Ý cốt lõi B1",
+          "source_ids": [
+            "S01"
+          ]
+        },
+        {
+          "text": "Ý cốt lõi B2",
+          "source_ids": [
+            "S01"
+          ]
+        }
+      ]
+    }
+  ],
+  "prerequisites": [
+    "Cơ bản"
+  ],
+  "misconceptions": [],
+  "setup_steps": [],
+  "videos": [],
+  "open_questions": []
+}

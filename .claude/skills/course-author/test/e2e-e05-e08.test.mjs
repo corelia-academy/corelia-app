@@ -27,23 +27,30 @@ function run(cmd, opts = {}) {
   }
 }
 
-test("E-05: course-status chạy trên bản sao khóa rust phân loại đúng các bài đạt và cần sửa", () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "author-status-rust-"));
+test("E-05: course-status chạy trên bản sao fixture course-a phân loại đúng các bài đạt và cần sửa", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "author-status-fixture-a-"));
   try {
-    fs.cpSync(".course-runs/rust-error-handling", tmpDir, { recursive: true });
+    fs.cpSync(path.join(__dirname, "fixtures", "course-a"), tmpDir, { recursive: true });
+    // Chỉnh L2-2 không còn lỗi mã-nội-bộ để trở thành bài đạt
+    const l22Path = path.join(tmpDir, "lessons", "L2-2.json");
+    const l22 = JSON.parse(fs.readFileSync(l22Path, "utf8"));
+    l22.short_description = "Mô tả ngắn thực hành hợp lệ";
+    l22.summary = "Tóm tắt thực hành hợp lệ";
+    fs.writeFileSync(l22Path, JSON.stringify(l22));
+
     const res = run(`node ${path.join(scriptsDir, "course-status.mjs")} ${tmpDir} --json`);
     assert.equal(res.status, 0);
 
     const data = JSON.parse(res.stdout);
-    assert.equal(data.summary.total, 27);
+    assert.equal(data.summary.total, 6);
     assert.equal(data.summary.chưa_viết, 0);
-    assert.equal(data.summary.đạt, 3);
-    assert.equal(data.summary.cần_sửa, 24);
+    assert.equal(data.summary.đạt, 1);
+    assert.equal(data.summary.cần_sửa, 5);
 
-    const l24 = data.lessons.find((l) => l.lesson_id === "L2-4");
-    assert.ok(l24);
-    assert.equal(l24.status, "đạt");
-    assert.equal(l24.next_step, "Hoàn thành");
+    const l22Result = data.lessons.find((l) => l.lesson_id === "L2-2");
+    assert.ok(l22Result);
+    assert.equal(l22Result.status, "đạt");
+    assert.equal(l22Result.next_step, "Hoàn thành");
 
     const l11 = data.lessons.find((l) => l.lesson_id === "L1-1");
     assert.ok(l11);
@@ -227,14 +234,14 @@ test("E-06: lesson-lint kiểm tra chuỗi frame.md (bài trích sai một ký t
 
 test("F-01: import-local.ts chạy --dry-run trên bản sao hai khóa không kết nối DB, khớp chính xác counts và SQL hợp lệ", () => {
   const expected = {
-    "rust-error-handling": { sections: 5, lessons: 27, questions: 32, images: 9, course_id: "254c524c-ceaf-4bde-abd4-85799e248e7b" },
-    "smart-contract-reading-before-interacting": { sections: 3, lessons: 19, questions: 29, images: 8, course_id: "8861a7bf-8642-4874-bc72-9542f1a24cda" },
+    "course-a": { sections: 2, lessons: 6, questions: 2, images: 0, course_id: "254c524c-ceaf-4bde-abd4-85799e248e7b" },
+    "course-b": { sections: 1, lessons: 3, questions: 1, images: 0, course_id: "8861a7bf-8642-4874-bc72-9542f1a24cda" },
   };
 
-  for (const slug of ["rust-error-handling", "smart-contract-reading-before-interacting"]) {
+  for (const slug of ["course-a", "course-b"]) {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "author-import-"));
     try {
-      fs.cpSync(`.course-runs/${slug}`, tmpDir, { recursive: true });
+      fs.cpSync(path.join(__dirname, "fixtures", slug), tmpDir, { recursive: true });
       const res = run(`deno run -A --no-config ${path.join(scriptsDir, "import-local.ts")} ${tmpDir} --dry-run`);
       assert.equal(res.status, 0, `import-local.ts thất bại trên ${slug}: ${res.stderr}`);
 
@@ -266,7 +273,7 @@ test("F-01: import-local.ts chạy --dry-run trên bản sao hai khóa không k�
 test("F-01: bài cố ý sai dạng trong fixture bị import-local chặn với thông báo nêu lesson_id", () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "author-import-invalid-"));
   try {
-    fs.cpSync(".course-runs/rust-error-handling", tmpDir, { recursive: true });
+    fs.cpSync(path.join(__dirname, "fixtures", "course-a"), tmpDir, { recursive: true });
     // Cố ý sửa bài L1-1 thành định dạng sai (invalid lesson_format)
     const l11Path = path.join(tmpDir, "lessons", "L1-1.json");
     const l11 = JSON.parse(fs.readFileSync(l11Path, "utf8"));

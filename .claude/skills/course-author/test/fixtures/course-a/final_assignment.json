@@ -1,0 +1,16 @@
+{
+  "title": "Bài cuối khóa A",
+  "description": "Xây dựng dự án hoàn chỉnh",
+  "instructions": "Hướng dẫn nộp bài",
+  "criteria": [
+    "Hoàn thành mã nguồn",
+    "Giải thích rõ ràng"
+  ],
+  "fields": [
+    "github_url",
+    "notes"
+  ],
+  "outcome_ids": [
+    "O1"
+  ]
+}

@@ -30,7 +30,7 @@ Mọi lựa chọn dưới đây chỉ dùng các dạng bài đã có, không �
 
 ## Đoạn phát của video
 
-`start_seconds` và `end_seconds` chỉ được xác định bằng `youtube-captions.ts` (một match rõ, kèm `caption_evidence`). Không có match thì phát toàn bộ (`0/0`, `caption_evidence: null`). Vì vậy một bài không được đòi đoạn cắt mà caption không xác định được; yêu cầu cắt trước nội dung chưa dạy xử lý theo `roles/05-lesson/video.md`.
+`start_seconds` và `end_seconds` chỉ được xác định từ các đoạn trong `segments` đã có `caption_evidence` qua `youtube-captions.ts`. Đoạn phát tối đa 720 giây (`MAX_VIDEO_SEGMENT_SECONDS`). Phát cả video chỉ khi `duration_seconds` ≤ 900 (`MAX_FULL_VIDEO_SECONDS`) và `assumes` không chứa khái niệm chưa được dạy ở bài đứng trước. Không đoán timestamp và không ghi mốc thời gian không có `caption_evidence`.
 
 ## Practice
 
@@ -56,7 +56,9 @@ Người chấm là instructor; cách chấm nằm ngoài phạm vi skill này.
 
 - Kiểm sơ đồ của một lesson (chữ đè đường hoặc node, cạnh xuyên node, quá lưới, cùng các gợi ý bố cục ở trên): `deno run -A --no-config scripts/studio/diagram-lint.ts <lessons/<lesson_id>.json>`. Thoát mã 1 và in lý do khi có lỗi.
 - Tìm video trên kênh được phép: `deno run -A --no-config scripts/studio/youtube-search.ts --query "<2-4 từ khóa>"`
-- Đọc caption để chọn đoạn video: `deno run -A --no-config scripts/studio/youtube-captions.ts --url "<URL>" --query "<tiêu đề bài và outcome>"`
-- Lấy bằng chứng cho một đoạn dạy dài hơn một match (đã chọn ranh giới từ transcript, tối đa khoảng 3 phút): `deno run -A --no-config scripts/studio/youtube-captions.ts --url "<URL>" --range <start>-<end>`. Kết quả tái lập được: cùng đoạn cho cùng `cue_text_sha256`.
+- Đọc dàn ý video cho bước research: `deno run -A --no-config scripts/studio/youtube-captions.ts --url "<URL>" --outline [--range <start>-<end>]`. Trả về thời lượng (`duration_seconds`, `duration_source`), track (`language`, `track`), danh sách các đoạn (`segments`) và `truncated: true` kèm phạm vi đã trả nếu chạm trần kích thước.
+- Đọc caption theo truy vấn: `deno run -A --no-config scripts/studio/youtube-captions.ts --url "<URL>" --query "<tiêu đề bài và outcome>"`
+- Lấy bằng chứng cho một đoạn dạy (đã chọn ranh giới từ outline, tối đa 720 giây): `deno run -A --no-config scripts/studio/youtube-captions.ts --url "<URL>" --range <start>-<end>`. Kết quả tái lập được: cùng đoạn cho cùng `cue_text_sha256`.
+- Kiểm tra các ràng buộc tất định về bài video trong curriculum: `node .claude/skills/course-author/scripts/curriculum-lint.mjs <thư-mục-khóa>`.
 
-Cả hai cần `yt-dlp`. Không tự cài package; không tải video hoặc audio.
+Cần `yt-dlp`. Không tự cài package; không tải video hoặc audio.

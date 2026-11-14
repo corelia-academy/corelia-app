@@ -1,0 +1,30 @@
+{
+  "lesson_id": "L2-2",
+  "title": "Bài 3",
+  "short_description": "Mô tả",
+  "summary": "Tóm tắt",
+  "source_ids": [
+    "S01"
+  ],
+  "type": "quiz",
+  "quiz": {
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "Câu hỏi B?",
+        "options": [
+          {
+            "id": "a",
+            "text": "Đúng"
+          },
+          {
+            "id": "b",
+            "text": "Sai"
+          }
+        ],
+        "correct_index": 0,
+        "explanation": "Giải thích chi tiết hơn bốn mươi ký tự để qua được kiểm tra chất lượng."
+      }
+    ]
+  }
+}

@@ -26,15 +26,15 @@ function run(cmd, opts = {}) {
   }
 }
 
-test("AC1.1: review-lint trên .course-runs/rust-error-handling báo L3-4 (unverified) và L4-5 (issue answers)", () => {
-  const res = run(`node ${path.join(scriptsDir, "review-lint.mjs")} .course-runs/rust-error-handling L3-4 L4-5`);
+test("AC1.1: review-lint trên fixture course-a báo L3-4 (unverified) và L4-5 (issue answers)", () => {
+  const res = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${path.join(rootDir, ".claude/skills/course-author/test/fixtures/course-a")} L3-4 L4-5`);
   assert.equal(res.status, 1);
   assert.match(res.stdout, /L3-4: unverified:/);
   assert.match(res.stdout, /L4-5: issue-cốt-lõi:.*answers/);
 });
 
-test("AC1.1 (smart-contract): review-lint trên smart-contract báo L2-2 và L1-4", () => {
-  const res = run(`node ${path.join(scriptsDir, "review-lint.mjs")} .course-runs/smart-contract-reading-before-interacting L2-2 L1-4`);
+test("AC1.1 (course-b): review-lint trên fixture course-b báo L2-2 và L1-4", () => {
+  const res = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${path.join(rootDir, ".claude/skills/course-author/test/fixtures/course-b")} L2-2 L1-4`);
   assert.equal(res.status, 1);
   assert.match(res.stdout, /L2-2:.*answers/);
   assert.match(res.stdout, /L1-4:.*factual_accuracy/);
@@ -115,17 +115,17 @@ test("AC1.2: test với fixture cho review-lint", () => {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
-test("AC1.3: lesson-lint trên khóa smart-contract không crash; in lỗi dạng labels.json", () => {
-  const res = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} .course-runs/smart-contract-reading-before-interacting`);
+test("AC1.3: lesson-lint trên fixture invalid-labels không crash; in lỗi dạng labels.json", () => {
+  const res = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} ${path.join(rootDir, ".claude/skills/course-author/test/fixtures/invalid-labels")}`);
   assert.equal(res.status, 1);
   assert.match(res.stdout, /labels\.json sai định dạng/);
   assert.doesNotMatch(res.stderr, /TypeError/);
 });
 
-test("AC1.4: labels.mjs trên bản sao curriculum.json của khóa rust cho nhãn trùng labels.json hiện có", () => {
+test("AC1.4: labels.mjs trên bản sao curriculum.json của fixture course-a cho nhãn trùng labels.json hiện có", () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "labels-verify-"));
   fs.copyFileSync(
-    path.join(rootDir, ".course-runs/rust-error-handling/curriculum.json"),
+    path.join(rootDir, ".claude/skills/course-author/test/fixtures/course-a/curriculum.json"),
     path.join(tmpDir, "curriculum.json")
   );
 
@@ -134,7 +134,7 @@ test("AC1.4: labels.mjs trên bản sao curriculum.json của khóa rust cho nh�
 
   const gen = JSON.parse(fs.readFileSync(path.join(tmpDir, "labels.json"), "utf8"));
   const orig = JSON.parse(
-    fs.readFileSync(path.join(rootDir, ".course-runs/rust-error-handling/labels.json"), "utf8")
+    fs.readFileSync(path.join(rootDir, ".claude/skills/course-author/test/fixtures/course-a/labels.json"), "utf8")
   );
 
   assert.deepEqual(gen.lessons, orig.lessons);
@@ -143,11 +143,11 @@ test("AC1.4: labels.mjs trên bản sao curriculum.json của khóa rust cho nh�
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
-test("AC1.5: lesson-lint trên khóa rust vẫn ra đúng 24 dòng", () => {
-  const res = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} .course-runs/rust-error-handling`);
+test("AC1.5: lesson-lint trên fixture course-a ra đúng 14 dòng lỗi", () => {
+  const res = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} ${path.join(rootDir, ".claude/skills/course-author/test/fixtures/course-a")}`);
   assert.equal(res.status, 1);
   const lines = res.stdout.trim().split("\n");
-  assert.equal(lines.length, 24);
+  assert.equal(lines.length, 14);
 });
 
 test("W-03: review-lint nhận loại bài code_exercise và đòi frame_consistency khi có frame.md", () => {

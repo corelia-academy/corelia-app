@@ -1,0 +1,63 @@
+{
+  "verdict": "pass",
+  "checks": [
+    {
+      "criterion": "factual_accuracy",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "tool_versions",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "outcome_and_level",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "lesson_flow",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "answers",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "verification",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "language",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    },
+    {
+      "criterion": "tone_and_flow",
+      "result": "ok",
+      "basis": "đạt chuẩn",
+      "refs": []
+    }
+  ],
+  "issues": [
+    {
+      "location": "L2-2",
+      "criterion": "answers",
+      "problem": "Đáp án answers cần chỉnh",
+      "fix": "Sửa",
+      "category": "other",
+      "severity": "minor"
+    }
+  ]
+}

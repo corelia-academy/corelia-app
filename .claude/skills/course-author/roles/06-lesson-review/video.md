@@ -12,3 +12,4 @@
 ## Luôn là blocking với Video
 
 - Khối code người học thấy không có kết quả chạy thật, hoặc kết quả chỉ đúng một hệ điều hành/phiên bản mà bài không nói; ví dụ trong tóm lược video không có verification.
+- **Tiêu chí "chỉ đọc":** reviewer đọc phần `## Tóm lược kiến thức` mà không dựa vào video, đối chiếu với từng outcome trong `outcome_ids` của bài và từng câu của bài kiểm tra ngay sau. Bất kỳ outcome hoặc câu hỏi nào không trả lời được từ bài tóm lược cùng các bài đứng trước là `blocking` (category: `outcome_mismatch` hoặc `flow_violation`). Người học chỉ đọc bài tóm lược bên dưới video vẫn phải đạt trọn vẹn outcome của bài.

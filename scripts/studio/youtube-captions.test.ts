@@ -1,4 +1,6 @@
 import {
+  buildCaptionOutline,
+  captionWindowForRange,
   findCaptionWindows,
   getYoutubeVideoId,
   languageFromCaptionFilename,
@@ -132,4 +134,81 @@ Deno.test("normalizes yt-dlp language filenames that include an NA prefix", () =
     "en-US",
     "English locale",
   );
+});
+
+Deno.test("explicit range: evidence covers the cues inside it and is reproducible", async () => {
+  const cues = [
+    { start_ms: 1000, end_ms: 3000, text: "Intro words." },
+    { start_ms: 4000, end_ms: 6000, text: "The concept starts here." },
+    { start_ms: 6000, end_ms: 9000, text: "And it ends here." },
+    { start_ms: 12000, end_ms: 14000, text: "Outro words." },
+  ];
+  const first = await captionWindowForRange(cues, 4, 9);
+  assert(first !== null, "a range with cues should produce a window");
+  assertEquals(
+    [first.start_seconds, first.end_seconds, first.cue_count],
+    [4, 9, 2],
+    "the window should span exactly the cues inside the range",
+  );
+  const again = await captionWindowForRange(cues, 4, 9);
+  assertEquals(again?.cue_text_sha256, first.cue_text_sha256, "the same range must give the same hash");
+  const other = await captionWindowForRange(cues, 1, 9);
+  assert(other !== null && other.cue_text_sha256 !== first.cue_text_sha256, "a different range must give a different hash");
+  assertEquals(await captionWindowForRange(cues, 20, 30), null, "a range without cues has no window");
+  // A cue that crosses the range edge is not half-included.
+  assertEquals((await captionWindowForRange(cues, 5, 9))?.cue_count, 1, "only cues fully inside the range count");
+});
+
+Deno.test("outline: groups cues into segments with start_seconds, end_seconds, text and covers requested range", () => {
+  const cues = [
+    { start_ms: 0, end_ms: 15000, text: "First introductory thought." },
+    { start_ms: 16000, end_ms: 36000, text: "Second thought completing idea." },
+    { start_ms: 37000, end_ms: 60000, text: "Third thought in next segment." },
+  ];
+  const outline = buildCaptionOutline(cues);
+  assert(outline !== null, "outline should be produced");
+  assertEquals(outline.truncated, false, "short video should not be truncated");
+  assertEquals(outline.range.start_seconds, 0, "outline should start at 0");
+  assertEquals(outline.range.end_seconds, 60, "outline should end at 60");
+  assert(outline.segments.length >= 1, "should have at least one segment");
+  assertEquals(outline.segments[0].start_seconds, 0, "segment should start at 0");
+  assert(outline.segments[0].text.includes("First introductory thought."), "text should include first cue");
+
+  // With explicit range
+  const scoped = buildCaptionOutline(cues, { start: 16, end: 60 });
+  assert(scoped !== null, "scoped outline should not be null");
+  assertEquals(scoped.range.start_seconds, 16, "scoped start should match");
+  assertEquals(scoped.range.end_seconds, 60, "scoped end should match");
+  assertEquals(scoped.truncated, false, "scoped should not be truncated");
+});
+
+Deno.test("outline: reports truncated: true and returned range when cues exceed duration ceiling", () => {
+  // Create 50 cues spanning 1500 seconds (exceeding MAX_OUTLINE_DURATION_SECONDS = 720)
+  const cues = Array.from({ length: 50 }, (_, i) => ({
+    start_ms: i * 30_000,
+    end_ms: (i + 1) * 30_000,
+    text: `Segment sentence number ${i}.`,
+  }));
+
+  const outline = buildCaptionOutline(cues);
+  assert(outline !== null, "outline should not be null");
+  assertEquals(outline.truncated, true, "video longer than 720s ceiling should be truncated");
+  assert(outline.range.end_seconds >= 720, "range should span up to the ceiling");
+  assert(outline.range.end_seconds < 1500, "range should not span whole 1500s video");
+  assertEquals(outline.segments[0].start_seconds, 0, "outline should start at 0");
+
+  // But with specific range under ceiling, truncated is false
+  const ranged = buildCaptionOutline(cues, { start: 100, end: 300 });
+  assert(ranged !== null, "ranged outline should not be null");
+  assertEquals(ranged.truncated, false, "range <= ceiling should not be truncated");
+  assertEquals(ranged.range.start_seconds, 120, "first cue >= 100s starts at 120s");
+  assertEquals(ranged.range.end_seconds, 300, "last cue in range ends at 300s");
+});
+
+Deno.test("outline: returns null when requested range has no cues", () => {
+  const cues = [
+    { start_ms: 1000, end_ms: 5000, text: "Early cue." },
+  ];
+  const outline = buildCaptionOutline(cues, { start: 100, end: 200 });
+  assertEquals(outline, null, "range with no cues returns null");
 });
