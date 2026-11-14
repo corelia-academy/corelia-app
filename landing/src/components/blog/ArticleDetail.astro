@@ -127,7 +127,7 @@ const defaultOgImage = `https://corelia.academy/corelia-og-site-v2-${locale}.png
               <span class="shrink-0" aria-hidden="true">/</span>
               <span class="min-w-0 truncate" aria-current="page" title={articleLabel}>{articleLabel}</span>
             </nav>
-            <h1 class="max-w-[900px] text-3xl font-semibold leading-[1.25] tracking-[-0.02em] md:text-4xl" data-reveal="text-up">{post.data.title}</h1>
+            <h1 class="text-3xl font-semibold leading-[1.25] tracking-[-0.02em] md:text-4xl" data-reveal="text-up">{post.data.title}</h1>
             <div class="flex flex-wrap items-center gap-2 text-sm leading-[1.4]" data-reveal="fade-up" data-reveal-delay="150">
               <div class="inline-flex items-center gap-2 border border-border-strong px-2 py-1 text-border-strong">
                 {isCaseStudy
@@ -143,14 +143,14 @@ const defaultOgImage = `https://corelia.academy/corelia-og-site-v2-${locale}.png
                 <p class="text-border-strong">{t("blog.by")} {authorName}</p>
               </>}
             </div>
-            {post.data.description && <p class="max-w-160 text-base leading-[1.6] text-border-strong md:text-lg" data-reveal="fade-up" data-reveal-delay="250">{post.data.description}</p>}
+            {post.data.description && <p class="text-base leading-[1.6] text-border-strong md:text-lg" data-reveal="fade-up" data-reveal-delay="250">{post.data.description}</p>}
           </header>
 
           <div data-reveal="fade-up" data-reveal-delay="350">
             <BlogMedia media={post.data.media} title={post.data.title} mode="post" />
           </div>
 
-          <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_240px] xl:gap-30">
+          <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_240px] xl:gap-12">
             <div class="min-w-0">
               <article
                 id="blog-article"
