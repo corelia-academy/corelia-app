@@ -120,15 +120,15 @@ const defaultOgImage = `https://corelia.academy/corelia-og-site-v2-${locale}.png
   <main class="min-h-screen pt-[var(--site-header-height,56px)]">
     <div class="container mx-auto flex max-w-(--app-max-width) flex-col px-3 xl:px-0">
       <div class="border-x border-border">
-        <div class="space-y-16 px-4 py-10 md:px-8 md:py-16 xl:px-10">
+        <div class="space-y-10 px-4 py-10 md:space-y-14 md:px-8 md:py-16 xl:px-10">
           <header class="space-y-6">
-            <nav class="flex min-w-0 items-center gap-2 text-sm leading-[1.2] text-border-strong md:text-base" aria-label={locale === "vi" ? "Đường dẫn trang" : "Breadcrumb"}>
+            <nav class="flex min-w-0 items-center gap-2 text-sm leading-[1.4] text-border-strong" aria-label={locale === "vi" ? "Đường dẫn trang" : "Breadcrumb"}>
               <a href={breadcrumbHome} class="shrink-0 transition-colors hover:text-foreground">{breadcrumbLabel}</a>
               <span class="shrink-0" aria-hidden="true">/</span>
               <span class="min-w-0 truncate" aria-current="page" title={articleLabel}>{articleLabel}</span>
             </nav>
-            <h1 class="text-4xl font-semibold leading-[1.15] md:text-5xl" data-reveal="text-up">{post.data.title}</h1>
-            <div class="flex flex-wrap items-center gap-2 text-sm leading-[1.2] md:text-lg" data-reveal="fade-up" data-reveal-delay="150">
+            <h1 class="max-w-[900px] text-3xl font-semibold leading-[1.25] tracking-[-0.02em] md:text-4xl" data-reveal="text-up">{post.data.title}</h1>
+            <div class="flex flex-wrap items-center gap-2 text-sm leading-[1.4]" data-reveal="fade-up" data-reveal-delay="150">
               <div class="inline-flex items-center gap-2 border border-border-strong px-2 py-1 text-border-strong">
                 {isCaseStudy
                   ? <span>{blogCategoryLabel(locale, post.data.category)}</span>
@@ -143,7 +143,7 @@ const defaultOgImage = `https://corelia.academy/corelia-og-site-v2-${locale}.png
                 <p class="text-border-strong">{t("blog.by")} {authorName}</p>
               </>}
             </div>
-            {post.data.description && <p class="text-sm leading-[1.4] text-border-strong md:text-base" data-reveal="fade-up" data-reveal-delay="250">{post.data.description}</p>}
+            {post.data.description && <p class="max-w-160 text-base leading-[1.6] text-border-strong md:text-lg" data-reveal="fade-up" data-reveal-delay="250">{post.data.description}</p>}
           </header>
 
           <div data-reveal="fade-up" data-reveal-delay="350">
@@ -155,16 +155,26 @@ const defaultOgImage = `https://corelia.academy/corelia-og-site-v2-${locale}.png
               <article
                 id="blog-article"
                 data-blog-article
-                class="space-y-6 text-sm leading-[1.4] md:text-base
-                  [&_h2]:scroll-mt-22 [&_h2]:mt-12 [&_h2]:text-[28px] [&_h2]:font-semibold [&_h2]:leading-[1.15]
-                  [&_h3]:scroll-mt-22 [&_h3]:mt-8 [&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:leading-[1.15]
-                  md:[&_h2]:text-4xl md:[&_h3]:text-[28px]
-                  [&_p]:text-border-strong [&_p]:leading-[1.4]
-                  [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:text-border-strong
-                  [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:text-border-strong
-                  [&_a]:text-primary-a [&_a:hover]:underline [&_a]:underline-offset-4
-                  [&_code]:rounded-md [&_code]:bg-white/10 [&_code]:px-1.5 [&_code]:py-0.5
-                  [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-black/30 [&_pre]:p-4"
+                class="max-w-152 space-y-5 text-base leading-[1.7] md:text-lg
+                  [&_h2]:scroll-mt-22 [&_h2]:mt-12 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:leading-[1.3]
+                  [&_h3]:scroll-mt-22 [&_h3]:mt-8 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:leading-[1.3]
+                  [&_h4]:mt-6 [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:leading-[1.4]
+                  md:[&_h2]:text-[28px] md:[&_h3]:text-2xl md:[&_h4]:text-xl
+                  [&>*:first-child]:mt-0
+                  [&_p]:text-foreground-muted
+                  [&_strong]:font-semibold [&_strong]:text-foreground
+                  [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6 [&_ul]:text-foreground-muted
+                  [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_ol]:text-foreground-muted
+                  [&_li_ul]:mt-2 [&_li_ol]:mt-2 [&_li]:pl-1
+                  [&_blockquote]:border-l-2 [&_blockquote]:border-border-strong [&_blockquote]:pl-4 [&_blockquote]:italic
+                  [&_img]:my-8 [&_img]:block [&_img]:h-auto [&_img]:max-w-full
+                  [&_hr]:my-10 [&_hr]:border-border
+                  [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_table]:text-sm md:[&_table]:text-base
+                  [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:text-left
+                  [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-foreground-muted
+                  [&_a]:text-primary-a [&_a:hover]:underline [&_a]:underline-offset-4 [&_a]:break-words
+                  [&_code]:rounded-md [&_code]:bg-white/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.9em]
+                  [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-black/30 [&_pre]:p-4 [&_pre]:text-sm [&_pre]:leading-[1.6]"
               >
                 <Fragment set:html={articleHtml} />
               </article>

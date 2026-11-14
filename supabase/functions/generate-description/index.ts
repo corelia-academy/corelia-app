@@ -43,7 +43,7 @@ function parseLocale(value: unknown): Locale | null {
 }
 
 type Role = "student" | "instructor" | "support_staff" | "admin";
-type GenerateType = "course" | "lesson" | "hackathon";
+type GenerateType = "course" | "lesson" | "hackathon" | "blog";
 type ActionType = "generate" | "translate";
 type TargetField =
   | "title"
@@ -52,7 +52,7 @@ type TargetField =
   | "description_markdown"
   | "learning_outcomes";
 type SourceKind = "short_description" | "description_markdown" | "transcript";
-type BundleKind = "course_info" | "section" | "lesson" | "assignment" | "hackathon";
+type BundleKind = "course_info" | "section" | "lesson" | "assignment" | "hackathon" | "blog";
 
 type RequestBody = {
   action?: unknown;
@@ -118,6 +118,7 @@ type TranslationBundle = {
   instructions?: string;
   resourcesMarkdown?: string;
   prizeDescriptionMarkdown?: string;
+  imageAlt?: string;
   tracks?: TranslationItem[];
   sectors?: TranslationItem[];
   techStacks?: TranslationItem[];
@@ -307,7 +308,7 @@ function parseBody(body: RequestBody): {
       : body.action === "generate" || body.action == null
         ? "generate"
         : null;
-  const type = body.type === "lesson" ? "lesson" : body.type === "course" ? "course" : body.type === "hackathon" ? "hackathon" : null;
+  const type = body.type === "lesson" ? "lesson" : body.type === "course" ? "course" : body.type === "hackathon" ? "hackathon" : body.type === "blog" ? "blog" : null;
   const targetField =
     body.targetField === "title" ||
     body.targetField === "short_description" ||
@@ -325,7 +326,8 @@ function parseBody(body: RequestBody): {
     body.bundleKind === "section" ||
     body.bundleKind === "lesson" ||
     body.bundleKind === "assignment" ||
-    body.bundleKind === "hackathon"
+    body.bundleKind === "hackathon" ||
+    body.bundleKind === "blog"
       ? body.bundleKind
       : null;
   const sourceBundle = parseTranslationBundle(body.sourceBundle);
@@ -359,6 +361,24 @@ function parseBody(body: RequestBody): {
     }
   } else if (type === "hackathon") {
     throw new Error("Thiếu hackathonId cho luồng dịch nội dung hackathon.");
+  }
+  // A blog article is translated from the editor's form, so it carries no resource id.
+  if ((type === "blog") !== (bundleKind === "blog")) {
+    throw new Error("type và bundleKind của bài blog không khớp.");
+  }
+  if (type === "blog") {
+    const hasResourceIds =
+      body.hackathonId != null ||
+      body.courseId != null ||
+      body.sectionId != null ||
+      body.lessonId != null ||
+      body.youtubeUrl != null ||
+      body.lessonTitle != null ||
+      body.intent != null ||
+      body.sourceInputs != null;
+    if (action !== "translate" || targetField !== "description" || hasResourceIds) {
+      throw new Error("Bài blog chỉ hỗ trợ luồng dịch nội dung.");
+    }
   }
   return {
     action,
@@ -429,6 +449,7 @@ function parseTranslationBundle(value: unknown): TranslationBundle | null {
     instructions: text("instructions"),
     resourcesMarkdown: text("resourcesMarkdown"),
     prizeDescriptionMarkdown: text("prizeDescriptionMarkdown"),
+    imageAlt: text("imageAlt"),
     tracks: items("tracks"),
     sectors: items("sectors"),
     techStacks: items("techStacks"),
@@ -983,6 +1004,9 @@ function bundleFieldInstruction(kind: BundleKind, locale: Locale): string {
   if (kind === "hackathon") {
     return `${common} Translate every human-readable string while preserving Markdown and every item id exactly. Return JSON with keys: title, shortDescription, markdownDescription, resourcesMarkdown, prizeDescriptionMarkdown, tracks, sectors, techStacks, timeline. tracks/sectors/techStacks items use { id, name, description }; timeline items use { id, title, descriptionMarkdown }. Do not translate or invent ids.`;
   }
+  if (kind === "blog") {
+    return `${common} Return JSON with keys: title, shortDescription, markdownDescription, imageAlt. markdownDescription is the article body: keep its Markdown structure, and copy link URLs, image URLs, code and proper names (people, organizations, products, events) unchanged. title is a headline and shortDescription a one or two sentence summary. Leave out a key that the source does not have.`;
+  }
   if (kind === "course_info") {
     return `${common} Return JSON with keys: title, shortDescription, description, learningOutcomes. learningOutcomes must be an array of short strings.`;
   }
@@ -1013,7 +1037,11 @@ function buildBundlePrompt(params: {
       ? params.locale === "vi"
         ? `Bạn đang dịch nội dung hackathon từ ${viSourceName} sang tiếng Việt.`
         : `You are translating hackathon content from ${sourceName} into ${targetName}.`
-      : params.locale === "vi"
+      : params.kind === "blog"
+        ? params.locale === "vi"
+          ? `Bạn đang dịch một bài blog từ ${viSourceName} sang tiếng Việt.`
+          : `You are translating a blog article from ${sourceName} into ${targetName}.`
+        : params.locale === "vi"
         ? `Bạn đang dịch nội dung khoá học từ ${viSourceName} sang tiếng Việt.`
         : `You are translating course content from ${sourceName} into ${targetName}.`;
   return [
@@ -1124,6 +1152,17 @@ function validateBundle(
     bundle.techStacks = readItems("techStacks", sourceBundle?.techStacks);
     bundle.timeline = readItems("timeline", sourceBundle?.timeline);
     if (!bundle.title && !bundle.shortDescription && !bundle.markdownDescription && !bundle.resourcesMarkdown && !bundle.prizeDescriptionMarkdown && !bundle.tracks.length && !bundle.sectors.length && !bundle.techStacks.length && !bundle.timeline.length) {
+      throw new Error("OpenAI trả về bản dịch rỗng.");
+    }
+    return bundle;
+  }
+  if (kind === "blog") {
+    bundle.title = readString("title");
+    bundle.shortDescription = readString("shortDescription");
+    bundle.markdownDescription = readString("markdownDescription");
+    bundle.imageAlt = readString("imageAlt");
+    // A body that came in must come back: a title-only answer would look like a finished translation.
+    if (!bundle.title || (sourceBundle?.markdownDescription && !bundle.markdownDescription)) {
       throw new Error("OpenAI trả về bản dịch rỗng.");
     }
     return bundle;
@@ -1270,7 +1309,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const normalizedYoutubeVideoId = parsed.youtubeUrl ? normalizeYoutubeVideoId(parsed.youtubeUrl) : null;
 
     let guardCourseId: string | null = null;
-    if (parsed.hackathonId) {
+    if (parsed.type === "blog") {
+      if (role !== "admin" && role !== "support_staff") {
+        throw new HttpStatusError(403, "Bạn không có quyền dịch bài blog.");
+      }
+    } else if (parsed.hackathonId) {
       await ensureCanTranslateHackathon(db, role, parsed.hackathonId);
     } else {
       guardCourseId = await resolveAndValidateCourseScope(db, parsed);

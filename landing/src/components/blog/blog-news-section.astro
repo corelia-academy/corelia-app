@@ -63,7 +63,7 @@ function estimateReadMinutes(post: (typeof posts)[number]): number {
 }
 
 function readTimeLabel(minutes: number): string {
-    return lang === "en" ? `${minutes}` : `${minutes}`;
+    return t("blog.readTime").replace("{minutes}", String(minutes));
 }
 
 const filteredNewsCards = filterBlogPostsForNewsTab(posts, activeTab)
@@ -269,7 +269,7 @@ const nextGroupPage = currentGroup === 0 ? 4 : 4 + currentGroup * 5;
                                     tab.key === activeTab ? "page" : undefined
                                 }
                                 class:list={[
-                                    "relative inline-block min-h-20 shrink-0 whitespace-nowrap px-3 pt-7 text-center text-sm transition-colors md:text-lg",
+                                    "relative inline-block min-h-20 shrink-0 whitespace-nowrap px-3 pt-7 text-center text-sm leading-7 transition-colors md:text-base md:leading-7",
                                     tab.key === activeTab
                                         ? "border-b-2 border-foreground"
                                         : "text-foreground-subtle",
@@ -336,24 +336,18 @@ const nextGroupPage = currentGroup === 0 ? 4 : 4 + currentGroup * 5;
                                         )}
                                     </div>
 
-                                    <div class="flex flex-1 flex-col gap-3 py-5 md:gap-4">
-                                        <h3
-                                            class="line-clamp-2 text-2xl font-medium leading-[1.15] tracking-[-0.03em] text-foreground md:text-[28px] md:leading-[1.2]"
-                                            style={{
-                                                fontFamily:
-                                                    "var(--font-heading)",
-                                            }}
-                                        >
+                                    <div class="flex flex-1 flex-col gap-3 pt-5 pb-1">
+                                        <h3 class="blog-card-title">
                                             {post.title}
                                         </h3>
 
                                         <div class="flex flex-wrap items-center gap-2">
-                                            <span class="w-fit border border-border-strong p-1 text-sm font-medium leading-[1.2] text-border-strong md:text-lg">
+                                            <span class="blog-chip">
                                                 {post.categoryLabel}
                                             </span>
 
-                                            <span class="w-fit border border-border-strong p-1 text-sm font-medium leading-[1.2] text-border-strong md:text-lg">
-                                                +{post.readTime} more roles
+                                            <span class="blog-chip">
+                                                {post.readTime}
                                             </span>
                                         </div>
                                     </div>

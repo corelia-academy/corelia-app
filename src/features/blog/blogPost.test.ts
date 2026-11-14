@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  applyBlogTranslation,
   blogPostFormFromRecord,
   blogPublicPath,
   blogTranslationFormFromRecord,
   buildBlogPostInput,
   emptyBlogPostForm,
+  groupBlogArticles,
   slugifyBlogTitle,
   type BlogPostForm,
 } from "@/features/blog/blogPost";
@@ -124,5 +126,35 @@ describe("forms from a saved article", () => {
       slug: "",
       body: "",
     });
+  });
+});
+
+describe("groupBlogArticles", () => {
+  const post = (locale: "vi" | "en", translation_key: string, status = "published", content_type = "blog") => ({
+    id: `${locale}-${translation_key}`,
+    locale,
+    translation_key,
+    status,
+    content_type,
+  });
+
+  it("puts the language versions of one article in one entry led by the preferred language", () => {
+    const groups = groupBlogArticles([post("en", "a"), post("vi", "a", "draft"), post("en", "b", "draft")], "vi");
+    expect(groups.map((group) => group.lead.id)).toEqual(["vi-a", "en-b"]);
+    expect(Object.keys(groups[0].versions).sort()).toEqual(["en", "vi"]);
+    expect(groups.map((group) => group.published)).toEqual([true, false]);
+  });
+
+  it("keeps a blog post and a case study with the same key apart", () => {
+    expect(groupBlogArticles([post("vi", "a"), post("vi", "a", "published", "case-study")], "en")).toHaveLength(2);
+  });
+});
+
+describe("applyBlogTranslation", () => {
+  it("replaces the copy, follows the title with the slug only when asked, and keeps fields the translation lacks", () => {
+    const current = form({ description: "Tóm tắt", imageAlt: "Ảnh" });
+    const next = applyBlogTranslation(current, { title: "UniHackFest Kickoff", markdownDescription: "Body" }, true);
+    expect(next).toMatchObject({ title: "UniHackFest Kickoff", slug: "unihackfest-kickoff", body: "Body", description: "Tóm tắt", imageAlt: "Ảnh" });
+    expect(applyBlogTranslation(current, { title: "UniHackFest Kickoff" }, false).slug).toBe(current.slug);
   });
 });

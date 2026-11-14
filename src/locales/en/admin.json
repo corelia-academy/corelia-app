@@ -733,7 +733,9 @@
       "allStatuses": "All statuses",
       "allLocales": "All languages",
       "empty": "No articles yet.",
-      "noMatches": "No articles match these filters."
+      "noMatches": "No articles match these filters.",
+      "total": "{{total}} articles",
+      "notPublished": "Not published yet"
     },
     "status": {
       "draft": "Draft",
@@ -772,7 +774,9 @@
       "image": "Image",
       "youtube": "YouTube video",
       "fitCover": "Fill the frame (crop)",
-      "fitContain": "Show the whole image"
+      "fitContain": "Show the whole image",
+      "youtubeShort": "YouTube",
+      "noneShort": "None"
     },
     "hints": {
       "slugPublished": "Changing the slug of a published article breaks links to it.",
@@ -792,7 +796,25 @@
       "previewEmpty": "Nothing to preview yet.",
       "unsaved": "Unsaved changes",
       "saved": "All changes saved",
-      "notFound": "This article no longer exists."
+      "notFound": "This article no longer exists.",
+      "titlePlaceholder": "Article title",
+      "descriptionPlaceholder": "A one or two sentence summary…",
+      "words": "{{total}} words",
+      "translateBanner": "This version has no content yet. Translate the other language version, then review and edit it.",
+      "sections": {
+        "settings": "Settings",
+        "organize": "Category and tags",
+        "advanced": "URL and translation",
+        "coverOptions": "More cover options"
+      }
+    },
+    "toolbar": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "heading": "Heading",
+      "link": "Link",
+      "list": "List",
+      "quote": "Quote"
     },
     "actions": {
       "edit": "Edit",
@@ -805,15 +827,19 @@
       "uploadCover": "Upload image",
       "insertImage": "Insert image",
       "addTranslation": "Add {{language}} version",
-      "openTranslation": "Open {{language}} version"
+      "openTranslation": "Open {{language}} version",
+      "editVersion": "Edit the {{language}} version ({{status}})",
+      "translateAi": "Translate from {{language}} with AI"
     },
     "confirm": {
-      "delete": "Delete “{{title}}”? This cannot be undone."
+      "delete": "Delete “{{title}}”? This cannot be undone.",
+      "translateOverwrite": "Replace the title, summary and content with a new translation?"
     },
     "messages": {
       "draftSaved": "Draft saved.",
       "published": "Published. It appears on the site within a minute or two.",
-      "deleted": "Article deleted."
+      "deleted": "Article deleted.",
+      "translated": "Translated from {{language}}. Review it before publishing."
     },
     "errors": {
       "titleRequired": "Enter a title.",
@@ -826,6 +852,7 @@
       "tagsCount": "Choose {{min}} to {{max}} tags before publishing.",
       "bodyRequired": "Write the content before publishing.",
       "slugTaken": "Another article in this language already uses this slug.",
+      "translateFailed": "Could not translate the article. Try again.",
       "translationTaken": "This translation key already has an article in this language.",
       "saveFailed": "Could not save the article. Try again.",
       "deleteFailed": "Could not delete the article. Try again.",

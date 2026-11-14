@@ -786,7 +786,9 @@
       "allStatuses": "모든 상태",
       "allLocales": "모든 언어",
       "empty": "아직 글이 없습니다.",
-      "noMatches": "필터와 일치하는 글이 없습니다."
+      "noMatches": "필터와 일치하는 글이 없습니다.",
+      "total": "글 {{total}}개",
+      "notPublished": "아직 게시되지 않음"
     },
     "status": {
       "draft": "초안",
@@ -825,7 +827,9 @@
       "image": "이미지",
       "youtube": "YouTube 동영상",
       "fitCover": "프레임 채우기(자르기)",
-      "fitContain": "이미지 전체 표시"
+      "fitContain": "이미지 전체 표시",
+      "youtubeShort": "YouTube",
+      "noneShort": "없음"
     },
     "hints": {
       "slugPublished": "게시된 글의 슬러그를 바꾸면 그 글로 연결된 링크가 끊어집니다.",
@@ -845,7 +849,25 @@
       "previewEmpty": "아직 미리 볼 내용이 없습니다.",
       "unsaved": "저장되지 않은 변경 사항",
       "saved": "모든 변경 사항이 저장됨",
-      "notFound": "이 글은 더 이상 존재하지 않습니다."
+      "notFound": "이 글은 더 이상 존재하지 않습니다.",
+      "titlePlaceholder": "글 제목",
+      "descriptionPlaceholder": "한두 문장 요약…",
+      "words": "단어 {{total}}개",
+      "translateBanner": "이 버전에는 아직 내용이 없습니다. 다른 언어 버전을 번역한 뒤 검토하고 수정하세요.",
+      "sections": {
+        "settings": "설정",
+        "organize": "카테고리와 태그",
+        "advanced": "URL 및 번역",
+        "coverOptions": "커버 추가 옵션"
+      }
+    },
+    "toolbar": {
+      "bold": "굵게",
+      "italic": "기울임",
+      "heading": "제목",
+      "link": "링크",
+      "list": "목록",
+      "quote": "인용"
     },
     "actions": {
       "edit": "수정",
@@ -858,15 +880,19 @@
       "uploadCover": "이미지 업로드",
       "insertImage": "이미지 삽입",
       "addTranslation": "{{language}} 버전 추가",
-      "openTranslation": "{{language}} 버전 열기"
+      "openTranslation": "{{language}} 버전 열기",
+      "editVersion": "{{language}} 버전 편집 ({{status}})",
+      "translateAi": "{{language}}에서 AI로 번역"
     },
     "confirm": {
-      "delete": "“{{title}}” 글을 삭제할까요? 되돌릴 수 없습니다."
+      "delete": "“{{title}}” 글을 삭제할까요? 되돌릴 수 없습니다.",
+      "translateOverwrite": "제목, 요약, 내용을 새 번역으로 바꿀까요?"
     },
     "messages": {
       "draftSaved": "초안을 저장했습니다.",
       "published": "게시했습니다. 1~2분 안에 사이트에 표시됩니다.",
-      "deleted": "글을 삭제했습니다."
+      "deleted": "글을 삭제했습니다.",
+      "translated": "{{language}}에서 번역했습니다. 게시 전에 검토하세요."
     },
     "errors": {
       "titleRequired": "제목을 입력하세요.",
@@ -879,6 +905,7 @@
       "tagsCount": "게시하기 전에 태그를 {{min}}~{{max}}개 선택하세요.",
       "bodyRequired": "게시하기 전에 본문을 작성하세요.",
       "slugTaken": "이 언어의 다른 글이 이미 이 슬러그를 사용하고 있습니다.",
+      "translateFailed": "글을 번역하지 못했습니다. 다시 시도하세요.",
       "translationTaken": "이 번역 키에는 이 언어의 글이 이미 있습니다.",
       "saveFailed": "글을 저장하지 못했습니다. 다시 시도하세요.",
       "deleteFailed": "글을 삭제하지 못했습니다. 다시 시도하세요.",

@@ -94,18 +94,16 @@ function readTimeLabel(minutes: number): string {
                     aria-hidden="true" />
                   )}
               </div>
-              <div class="flex flex-1 flex-col gap-3 md:gap-6 p-6 pb-15">
-                <span class="inline-flex w-fit items-center gap-2 border border-border-strong px-2 py-1 text-sm font-medium leading-[1.2] text-border-strong md:text-lg">
+              <div class="flex flex-1 flex-col gap-3 md:gap-4 p-6 pb-15">
+                <span class="blog-chip">
                   {blogCategoryLabel(lang, post.data.category)}
                   <span aria-hidden="true">•</span>
                   {readTimeLabel(minutes)}
                 </span>
-                <p
-                class="line-clamp-2 text-2xl font-medium leading-[1.15] tracking-[-0.04em] text-foreground md:text-[28px]"
-                style="font-family: var(--font-heading);">
+                <p class="blog-card-title-featured">
                   {post.data.title}
                 </p>
-                <p class="line-clamp-2 text-sm font-normal leading-[1.4] text-foreground-subtle md:text-base">
+                <p class="line-clamp-2 text-sm font-normal leading-[1.5] text-foreground-subtle md:text-base">
                   {post.data.description ?? ""}
                 </p>
               </div>

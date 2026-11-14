@@ -51,16 +51,13 @@ export default function BusinessBlogCarousel({ cards }: Props) {
                         )}
                     </div>
 
-                    <div className="flex flex-1 flex-col gap-3 py-5 md:gap-4">
-                        <h3
-                            className="line-clamp-2 text-2xl font-medium leading-[1.15] tracking-[-0.03em] text-foreground md:text-[28px] md:leading-[1.2]"
-                            style={{ fontFamily: "var(--font-heading)" }}
-                        >
+                    <div className="flex flex-1 flex-col gap-3 pt-5 pb-1">
+                        <h3 className="blog-card-title">
                             {card.title}
                         </h3>
 
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className="w-fit border border-border-strong p-1 text-sm font-medium leading-[1.2] text-border-strong md:text-lg">
+                            <span className="blog-chip">
                                 {card.category}
                             </span>
 

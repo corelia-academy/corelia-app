@@ -138,20 +138,17 @@ const secondaryCards = blogCards.slice(1);
                             </div>
 
                             <div class="flex flex-col gap-3 md:p-6 pb-4 xl:pb-12 md:gap-6">
-                                <span class="inline-flex w-fit items-center gap-2 border border-border-strong px-2 py-1 text-sm font-medium leading-[1.2] text-border-strong md:text-lg">
+                                <span class="blog-chip">
                                     {featuredCard.category}
                                     <span aria-hidden="true">•</span>
                                     {readTimeLabel(featuredCard.readTime)}
                                 </span>
 
-                                <p
-                                    class="line-clamp-2 text-2xl font-medium leading-[1.15] tracking-[-0.04em] text-foreground md:text-[28px]"
-                                    style="font-family: var(--font-heading);"
-                                >
+                                <p class="blog-card-title-featured">
                                     {featuredCard.title}
                                 </p>
 
-                                <p class="line-clamp-2 text-sm font-normal leading-[1.4] text-foreground-subtle md:text-base">
+                                <p class="line-clamp-2 text-sm font-normal leading-[1.5] text-foreground-subtle md:text-base">
                                     {featuredCard.description}
                                 </p>
                             </div>
@@ -196,18 +193,15 @@ const secondaryCards = blogCards.slice(1);
                                     </div>
 
                                     <div class="flex min-w-0 flex-col gap-2 pt-4 sm:pt-0">
-                                        <p class="w-fit border border-border-strong px-2 py-1 text-sm leading-[1.2] text-border-strong md:text-lg">
+                                        <p class="blog-chip">
                                             {card.category}
                                         </p>
 
-                                        <h3
-                                            class="line-clamp-2 text-2xl font-medium leading-[1.15] tracking-[-0.04em] text-foreground md:text-[28px]"
-                                            style="font-family: var(--font-heading);"
-                                        >
+                                        <h3 class="blog-card-title">
                                             {card.title}
                                         </h3>
 
-                                        <p class="line-clamp-2 text-sm leading-[1.4] text-foreground-subtle">
+                                        <p class="line-clamp-2 text-sm leading-[1.5] text-foreground-subtle">
                                             {card.description}
                                         </p>
                                     </div>

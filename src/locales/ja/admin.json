@@ -786,7 +786,9 @@
       "allStatuses": "すべてのステータス",
       "allLocales": "すべての言語",
       "empty": "記事はまだありません。",
-      "noMatches": "条件に一致する記事はありません。"
+      "noMatches": "条件に一致する記事はありません。",
+      "total": "{{total}}件の記事",
+      "notPublished": "未公開"
     },
     "status": {
       "draft": "下書き",
@@ -825,7 +827,9 @@
       "image": "画像",
       "youtube": "YouTube 動画",
       "fitCover": "枠いっぱいに表示（トリミング）",
-      "fitContain": "画像全体を表示"
+      "fitContain": "画像全体を表示",
+      "youtubeShort": "YouTube",
+      "noneShort": "なし"
     },
     "hints": {
       "slugPublished": "公開済みの記事のスラッグを変更すると、その記事へのリンクが切れます。",
@@ -845,7 +849,25 @@
       "previewEmpty": "プレビューする内容がまだありません。",
       "unsaved": "未保存の変更があります",
       "saved": "すべての変更を保存しました",
-      "notFound": "この記事はすでに存在しません。"
+      "notFound": "この記事はすでに存在しません。",
+      "titlePlaceholder": "記事のタイトル",
+      "descriptionPlaceholder": "1〜2文の要約…",
+      "words": "{{total}}語",
+      "translateBanner": "このバージョンにはまだ内容がありません。別の言語版から翻訳し、確認して編集してください。",
+      "sections": {
+        "settings": "設定",
+        "organize": "カテゴリーとタグ",
+        "advanced": "URLと翻訳",
+        "coverOptions": "カバーのその他の設定"
+      }
+    },
+    "toolbar": {
+      "bold": "太字",
+      "italic": "斜体",
+      "heading": "見出し",
+      "link": "リンク",
+      "list": "リスト",
+      "quote": "引用"
     },
     "actions": {
       "edit": "編集",
@@ -858,15 +880,19 @@
       "uploadCover": "画像をアップロード",
       "insertImage": "画像を挿入",
       "addTranslation": "{{language}}版を追加",
-      "openTranslation": "{{language}}版を開く"
+      "openTranslation": "{{language}}版を開く",
+      "editVersion": "{{language}}版を編集（{{status}}）",
+      "translateAi": "{{language}}からAIで翻訳"
     },
     "confirm": {
-      "delete": "「{{title}}」を削除しますか？元に戻せません。"
+      "delete": "「{{title}}」を削除しますか？元に戻せません。",
+      "translateOverwrite": "タイトル、要約、本文を新しい翻訳で置き換えますか？"
     },
     "messages": {
       "draftSaved": "下書きを保存しました。",
       "published": "公開しました。1〜2 分でサイトに表示されます。",
-      "deleted": "記事を削除しました。"
+      "deleted": "記事を削除しました。",
+      "translated": "{{language}}から翻訳しました。公開前に確認してください。"
     },
     "errors": {
       "titleRequired": "タイトルを入力してください。",
@@ -879,6 +905,7 @@
       "tagsCount": "公開する前にタグを {{min}}〜{{max}} 個選択してください。",
       "bodyRequired": "公開する前に本文を書いてください。",
       "slugTaken": "この言語の別の記事がすでにこのスラッグを使っています。",
+      "translateFailed": "記事を翻訳できませんでした。もう一度お試しください。",
       "translationTaken": "この翻訳キーには、この言語の記事がすでにあります。",
       "saveFailed": "記事を保存できませんでした。もう一度お試しください。",
       "deleteFailed": "記事を削除できませんでした。もう一度お試しください。",
