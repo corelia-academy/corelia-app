@@ -141,3 +141,33 @@ it("resets modified source back to starter_source when reset button is clicked",
   const resetButton = Array.from(host.querySelectorAll("button")).find(b => b.textContent?.includes("learning.reset"));
   expect(resetButton).toBeDefined();
 });
+
+const hintLesson = (hints?: string[]) => ({ ...props.lesson, code_exercise_config: { ...defaultCodeConfig(), ...(hints ? { hints } : {}) } });
+const hintButtons = (host: HTMLElement) => Array.from(host.querySelectorAll("button")).filter(button => button.textContent === "learning.hints");
+
+it("hands the hints to the footer until there is a result, then again after a retry", async () => {
+  localStorage.setItem(codeDraftKey("learner", "course", "lesson", 1), JSON.stringify({ mode: "fill", answers: { mutable: "wrong" }, updated_at: "2026-09-11T00:00:00Z" }));
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  let action: LessonActionState | null = null;
+  act(() => root.render(<CodeExerciseLesson {...props} lesson={hintLesson(["Try mut", "Mind ownership"])} onAction={next => { action = next; }} />));
+  expect(action!.hint).toEqual({ items: ["Try mut", "Mind ownership"] });
+  expect(action!.checked).toBe(false);
+  expect(hintButtons(host)).toHaveLength(0);
+  expect(host.textContent).not.toContain("Try mut");
+  await act(async () => host.querySelector("input")!.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", ctrlKey: true, bubbles: true })));
+  expect(action!.checked).toBe(true);
+  expect(action!.hint).toBeUndefined();
+  await act(async () => { await action!.run(); });
+  expect(action!.checked).toBe(false);
+  expect(action!.hint).toEqual({ items: ["Try mut", "Mind ownership"] });
+});
+
+it("still offers Hint when the instructor added none, with an empty list", () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  let action: LessonActionState | null = null;
+  act(() => root.render(<CodeExerciseLesson {...props} lesson={hintLesson()} onAction={next => { action = next; }} />));
+  expect(action!.hint).toEqual({ items: [] });
+  expect(hintButtons(host)).toHaveLength(0);
+});

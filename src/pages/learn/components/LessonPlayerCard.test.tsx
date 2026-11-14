@@ -13,8 +13,13 @@ vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: { id: "learner" }
 vi.mock("@/lib/xp", () => ({ getLessonXpState: vi.fn().mockResolvedValue({ lesson: false, quiz: false, course: false }) }));
 const routeNavigate = vi.hoisted(() => vi.fn());
 vi.mock("react-router", () => ({ useNavigate: () => routeNavigate }));
-vi.mock("@/features/learning/LessonRenderer", () => ({ LessonRenderer: ({ onAction, onComplete }: LessonRendererProps) => {
-  useEffect(() => { onAction({ label: "Complete", run: onComplete }); return () => onAction(null); }, [onAction, onComplete]);
+vi.mock("@/features/learning/LessonRenderer", () => ({ LessonRenderer: ({ lesson, onAction, onComplete }: LessonRendererProps) => {
+  const title = lesson.title;
+  useEffect(() => {
+    const summary = title === "Scored" ? { correct: 2, total: 5 } : title === "Failed" ? { correct: 2, total: 5, passed: false } : title === "Passed" ? { correct: 5, total: 5, passed: true } : undefined;
+    onAction({ label: "Complete", run: onComplete, ...(summary ? { summary } : {}), ...(title === "HintCode" ? { hint: { items: ["Try mut"] } } : {}), ...(title === "CheckedCode" ? { checked: true } : {}) });
+    return () => onAction(null);
+  }, [onAction, onComplete, title]);
   return <div>Lesson content</div>;
 } }));
 const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -135,4 +140,78 @@ it("uses the floating bar as a complete/incomplete toggle without a next-lesson 
   await act(async () => slot.querySelector("button")!.click());
   expect(reset).toHaveBeenCalledExactlyOnceWith(false);
   expect(navigate).not.toHaveBeenCalled();
+});
+
+it("puts the quiz score in its own slot when the footer offers one", () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  const askAi = document.createElement("div"), summary = document.createElement("div");
+  act(() => root.render(
+    <TestCard {...props} lesson={{ ...lesson, title: "Scored", lesson_format: "quiz" }} courseId="c" onMarkComplete={vi.fn()} onNavigateToLesson={vi.fn()}
+      actionSlot={document.createElement("div")} askAiSlot={askAi} summarySlot={summary} />,
+  ));
+  expect(summary.textContent).toContain("learning.quizAchieveLead");
+  expect(askAi.textContent).not.toContain("learning.quizAchieveLead");
+});
+
+it("keeps the quiz score next to Ask AI when the footer has no score slot", () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  const askAi = document.createElement("div");
+  act(() => root.render(
+    <TestCard {...props} lesson={{ ...lesson, title: "Scored", lesson_format: "quiz" }} courseId="c" onMarkComplete={vi.fn()} onNavigateToLesson={vi.fn()}
+      actionSlot={document.createElement("div")} askAiSlot={askAi} />,
+  ));
+  expect(askAi.textContent).toContain("learning.quizAchieveLead");
+});
+
+it.each([
+  ["a quiz that has no result yet", "quiz", "Scored", false],
+  ["a quiz that was not passed", "quiz", "Failed", true],
+  ["a quiz that was passed", "quiz", "Passed", true],
+  ["an article", "article", "Article", true],
+] as const)("puts Ask AI in the footer for %s: %s", (_label, format, title, expected) => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  const askAi = document.createElement("div");
+  act(() => root.render(
+    <TestCard {...props} lesson={{ ...lesson, title, lesson_format: format }} courseId="c" onMarkComplete={vi.fn()} onNavigateToLesson={vi.fn()}
+      actionSlot={document.createElement("div")} askAiSlot={askAi} />,
+  ));
+  expect(askAi.querySelector('button[aria-label="learning.askAi.trigger"]') !== null).toBe(expected);
+});
+
+function renderCode(title: string) {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  const askAi = document.createElement("div");
+  act(() => root.render(
+    <TestCard {...props} lesson={{ ...lesson, title, lesson_format: "code_exercise" }} courseId="c" onMarkComplete={vi.fn()} onNavigateToLesson={vi.fn()}
+      actionSlot={document.createElement("div")} askAiSlot={askAi} />,
+  ));
+  const hint = () => askAi.querySelector<HTMLElement>('[data-slot="tooltip-trigger"]');
+  const askAiButton = () => askAi.querySelector('button[aria-label="learning.askAi.trigger"]');
+  return { hint, askAiButton };
+}
+
+it("puts Hint in the footer of a code exercise with no result, instead of Ask AI, as a hover tooltip", () => {
+  const { hint, askAiButton } = renderCode("HintCode");
+  expect(hint()).toBeDefined();
+  expect(hint()!.textContent).toBe("learning.hints");
+  expect(hint()!.getAttribute("aria-label")).toBe("learning.hints");
+  // The project's tooltip trigger: it shows hints and has no button hover background.
+  expect(hint()!.className).not.toContain("hover:bg");
+  expect(askAiButton()).toBeNull();
+});
+
+it("swaps Hint for Ask AI once a code exercise has a result", () => {
+  const { hint, askAiButton } = renderCode("CheckedCode");
+  expect(hint()).toBeNull();
+  expect(askAiButton()).not.toBeNull();
+});
+
+it("shows neither Hint nor Ask AI when a fresh code exercise offers no hint action", () => {
+  const { hint, askAiButton } = renderCode("PlainCode");
+  expect(hint()).toBeNull();
+  expect(askAiButton()).toBeNull();
 });

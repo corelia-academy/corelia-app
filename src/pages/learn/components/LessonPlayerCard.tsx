@@ -7,7 +7,7 @@ import { Action } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { CourseResourceIcon } from "@/components/courses/CourseResourceIcon";
 import { resourceIconForUrl } from "@/features/learning/resourceGroups";
-import { ArrowUpRight, CheckCircle, CircleNotch } from "@phosphor-icons/react";
+import { ArrowUpRight, CheckCircle, CircleNotch, Question } from "@phosphor-icons/react";
 import { useAuth } from "@/stores/authStore";
 import { LessonRenderer } from "@/features/learning/LessonRenderer";
 import { LessonDataError } from "@/features/learning/LessonDataError";
@@ -24,6 +24,7 @@ import { xpAwardNotificationQueryKey } from "@/features/xp/xpNotificationKeys";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { TooltipPreview } from "@/components/ui/tooltip";
 
 type Props = {
   lesson: CourseLesson | null; lessonIndex: number | null; isDraftLesson: boolean; completed: boolean;
@@ -36,12 +37,14 @@ type Props = {
   resetEpoch?: number; draftEpoch?: number;
   actionSlot?: HTMLElement | null;
   askAiSlot?: HTMLElement | null;
+  /** Where the quiz score goes; falls back to `askAiSlot` when the footer has no separate score slot. */
+  summarySlot?: HTMLElement | null;
 };
 export function LessonPlayerCard(props: Props) {
   const { user } = useAuth();
   return <Workspace key={`${props.courseId}:${props.lesson?.id}:${props.mode}:${user?.id}:${props.contentLocale}`} {...props} />;
 }
-function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, completed, previousLesson, nextLesson, onMarkComplete, onReset, onNavigateToLesson, courseId, mode = "learner", questions, contentLocale, courseTitle, hasFinalAssignment = false, resetEpoch = 0, draftEpoch = 0, actionSlot, askAiSlot }: Props) {
+function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, completed, previousLesson, nextLesson, onMarkComplete, onReset, onNavigateToLesson, courseId, mode = "learner", questions, contentLocale, courseTitle, hasFinalAssignment = false, resetEpoch = 0, draftEpoch = 0, actionSlot, askAiSlot, summarySlot }: Props) {
   const { t } = useTranslation("courses");
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -75,6 +78,27 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
   }, [mode, onMarkComplete, lesson, queryClient, nextLesson, onNavigateToLesson, t, actionSlot]);
   if (!lesson || !courseId) return <LessonDataError />;
   const resources = validateLessonResources(lesson.resources ?? [], lesson.id, "vi", true).length ? [] : lesson.resources ?? [];
+  const format = getLessonFormat(lesson);
+  const isExercise = format === "quiz" || format === "code_exercise";
+  // An exercise shows Hint until it has a result, then swaps to Ask AI; other lessons always show Ask AI.
+  // A quiz is an assessment: Ask AI never carries its questions or answers.
+  const hasResult = format === "quiz" ? action?.summary?.passed !== undefined : action?.checked === true;
+  const askAiInFooter = isExercise ? hasResult && (format === "quiz" || canAskAboutLesson(lesson)) : canAskAboutLesson(lesson);
+  // Hint is the project's TooltipPreview (same delay, animation and touch behaviour as the component showcase):
+  // a label that shows the instructor's hints, not an action button.
+  const hintButton = action?.hint && (
+    <TooltipPreview
+      arrow="bottom-left"
+      trigger={<>{t("learning.hints")}<Question className="size-4" weight="duotone" aria-hidden /></>}
+      triggerLabel={t("learning.hints")}
+      triggerClassName="size-auto cursor-default gap-md rounded-[4px] px-xs py-[6px] font-display text-cta-medium"
+      supportingText={action.hint.items.length
+        ? <ul className="list-disc space-y-1 pl-4">{action.hint.items.map((item, i) => <li key={i}>{item}</li>)}</ul>
+        : t("learning.noHints")}
+    >
+      {t("learning.hints")}
+    </TooltipPreview>
+  );
   const run = async () => {
     if (inFlight.current) return;
     if (mode === "learner" && !user) { navigate("/login", { state: { from: { pathname: `/study/${courseId}/lesson/${lesson.id}` } } }); return; }
@@ -144,6 +168,7 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
       <div className="grid grid-cols-2 items-center gap-2 sm:flex sm:gap-3">
         <Button type="button" variant="cta" hierarchy="secondary" className="min-h-11 min-w-0 w-full whitespace-normal px-2 text-center leading-tight sm:w-auto sm:shrink-0 sm:px-6" disabled={!previousLesson || busy} onClick={() => previousLesson && onNavigateToLesson(previousLesson.id)}>{t("learning.previous")}</Button>
         <span className="hidden min-w-0 flex-1 text-center text-sm text-foreground-muted sm:block">{t("learning.lessonNumber", { number: (lessonIndex ?? 0)+1 })}</span>
+        {hintButton && <div className="col-span-2 sm:col-span-1">{hintButton}</div>}
         {mode === "learner" && user && onReset && hasFullCourseAccess && !isDraftLesson && (completed || ["quiz", "practice", "code_exercise"].includes(getLessonFormat(lesson))) && (
           <div className="order-first col-span-2 flex flex-wrap justify-end gap-2 sm:order-none sm:shrink-0 sm:flex-nowrap">
             {completed && <Button type="button" variant="cta" hierarchy="secondary" className="min-h-11 min-w-0 whitespace-normal text-center leading-tight sm:whitespace-nowrap" disabled={busy || action?.pending} onClick={() => void reset(false)}>{t("learning.markIncomplete")}</Button>}
@@ -167,8 +192,9 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
       </Button>,
       actionSlot,
     )}
-    {inFooter && askAiSlot && canAskAboutLesson(lesson) && createPortal(<AskAiMenu lesson={lesson} courseTitle={courseTitle} compact />, askAiSlot)}
-    {inFooter && askAiSlot && action?.summary && createPortal(
+    {inFooter && askAiSlot && hintButton && createPortal(hintButton, askAiSlot)}
+    {inFooter && askAiSlot && askAiInFooter && createPortal(<AskAiMenu lesson={lesson} courseTitle={courseTitle} compact />, askAiSlot)}
+    {inFooter && (summarySlot ?? askAiSlot) && action?.summary && createPortal(
       <div role="status" className="flex items-baseline gap-lg px-3">
         {action.summary.passed === undefined ? (
           <p className="flex items-baseline gap-xs whitespace-nowrap">
@@ -187,7 +213,7 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
           </>
         )}
       </div>,
-      askAiSlot,
+      (summarySlot ?? askAiSlot)!,
     )}
   </div>;
 }

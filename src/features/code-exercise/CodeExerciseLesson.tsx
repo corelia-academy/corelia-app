@@ -48,7 +48,6 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
   const [completionPending, setCompletionPending] = useState(false);
   const [saved, setSaved] = useState<boolean | null>(null);
   const [solution, setSolution] = useState(false);
-  const [hints, setHints] = useState(false);
   const segments = useMemo(() => config.mode === "fill" ? parseMarkers(config.file.starter_source) : [], [config]);
   const lines = useMemo(() => { const out = segments.reduce<FillSegment[][]>((acc, s) => {
     if (s.type === "blank") { acc[acc.length - 1].push(s); return acc; }
@@ -153,11 +152,20 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
   }, [config, fill, blankIds, answers, source, key, courseId, lesson.id, mode, completed, completionPending, onComplete, t]);
   const retry = useCallback(() => { setResult(null); setMissingId(null); setError(null); setCompletionPending(false); }, []);
   const act = retryable ? retry : check;
+  // The instructor's hints reach the footer, which shows them in a tooltip; the lesson body does not render them.
+  // The key keeps the list stable between renders, so the effect below does not re-run every time.
+  const hintKey = JSON.stringify(copy.hints ?? config.hints ?? []);
+  const hintItems = useMemo(() => JSON.parse(hintKey) as string[], [hintKey]);
+  // Hint lives in the lesson footer until the exercise has a result, then Ask AI takes its place.
+  // It is always offered, even when the instructor has not added any hint yet.
+  const hintAvailable = result === null;
   useEffect(() => { onAction({
     label: t(busy ? "learning.checking" : completionPending ? "learning.retryProgress" : retryable ? "learning.retry" : "learning.checkCode"),
     disabled: busy, pending: busy,
+    checked: result !== null,
+    ...(hintAvailable ? { hint: { items: hintItems } } : {}),
     run: act,
-  }); return () => onAction(null); }, [onAction, act, busy, completionPending, retryable, t]);
+  }); return () => onAction(null); }, [onAction, act, busy, completionPending, retryable, t, result, hintAvailable, hintItems]);
   return <div className="relative space-y-4" onKeyDown={e => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); void act(); }
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(); }
@@ -200,11 +208,9 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
         leadingIcon={<ArrowCounterClockwise weight="bold" className="size-4" aria-hidden />}>
         {t("learning.reset")}
       </Button>
-      <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setHints(v => !v)}>{t("learning.hints")}</Button>
       <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setSolution(v => !v)}>{t("learning.solution")}</Button>
       {key && saved !== null && <span role="status" className="text-xs text-foreground-muted">{t(saved ? "learning.draftSaved" : "learning.draftUnavailable")}</span>}
     </div>
-    {hints && <ul className="list-disc space-y-1 rounded-xl border border-border-subtle bg-surface-raised py-3 pl-8 pr-4 text-sm">{(copy.hints ?? config.hints ?? []).map((hint,i) => <li key={i}>{hint}</li>)}</ul>}
     {solution && <CodeBlock language={config.language} code={config.reference_solution} copyable={false} header={false} />}
   </div>;
 }
