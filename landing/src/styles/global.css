@@ -388,6 +388,22 @@ body {
   }
 }
 
+/* Blog / case-study article cards: title > meta > chip. Built on the default Tailwind
+   type scale (lg/xl/2xl, xs/sm); the 1.3 line height leaves room for Vietnamese diacritics. */
+@layer components {
+  .blog-card-title {
+    @apply line-clamp-3 text-lg font-medium leading-[1.3] tracking-[-0.02em] text-foreground md:text-xl;
+    font-family: var(--font-heading);
+  }
+  .blog-card-title-featured {
+    @apply line-clamp-3 text-xl font-medium leading-[1.25] tracking-[-0.03em] text-foreground lg:text-2xl;
+    font-family: var(--font-heading);
+  }
+  .blog-chip {
+    @apply inline-flex w-fit items-center gap-2 border border-border-strong px-2 py-1 text-xs font-medium leading-[1.3] text-border-strong md:text-sm;
+  }
+}
+
 @layer utilities {
   .font-google-sans {
     font-family: "Google Sans Flex", sans-serif;

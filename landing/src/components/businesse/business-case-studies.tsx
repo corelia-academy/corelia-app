@@ -244,14 +244,13 @@ export default function BusinessCaseStudiesCarousel({
                             <div className="space-y-6">
                                 <p
                                     ref={eyebrowRef}
-                                    className="text-sm font-medium leading-[1.2] text-foreground-muted md:text-lg"
+                                    className="text-sm font-medium leading-[1.3] text-foreground-muted md:text-base"
                                 >
                                     {activeCard.eyebrow}
                                 </p>
 
                                 <h2 ref={titleRef}
-                                    className="max-w-[520px] text-2xl font-medium leading-[1.15] tracking-[-0.03em] text-foreground md:text-[28px] md:leading-[1.2] line-clamp-2"
-                                    style={{ fontFamily: "var(--font-heading)" }}
+                                    className="blog-card-title-featured max-w-[520px]"
                                 >
                                     <a
                                         href={activeCard.href}
