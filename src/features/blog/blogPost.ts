@@ -208,3 +208,53 @@ export function buildBlogPostInput(
     },
   };
 }
+
+export type BlogArticleGroup<T> = {
+  key: string;
+  /** The version whose title represents the article: the preferred language when it exists. */
+  lead: T;
+  versions: Partial<Record<BlogLocale, T>>;
+  published: boolean;
+};
+
+/** One entry per article: its language versions share a content type and translation key. Keeps the input order. */
+export function groupBlogArticles<
+  T extends { locale: BlogLocale; content_type: string; translation_key: string; status: string },
+>(posts: T[], preferredLocale: BlogLocale): BlogArticleGroup<T>[] {
+  const groups = new Map<string, BlogArticleGroup<T>>();
+  for (const post of posts) {
+    const key = `${post.content_type}:${post.translation_key}`;
+    const group = groups.get(key) ?? { key, lead: post, versions: {}, published: false };
+    group.versions[post.locale] = post;
+    if (post.locale === preferredLocale) group.lead = post;
+    if (post.status === "published") group.published = true;
+    groups.set(key, group);
+  }
+  return [...groups.values()];
+}
+
+type BlogTranslationCopy = { title?: string; shortDescription?: string; markdownDescription?: string; imageAlt?: string };
+
+/** The copy of an article that a translation replaces. */
+export function blogTranslationSource(post: BlogPostRecord): BlogTranslationCopy {
+  const imageAlt = post.media?.type === "image" ? post.media.alt : undefined;
+  return {
+    title: post.title,
+    shortDescription: post.description ?? undefined,
+    markdownDescription: post.body || undefined,
+    imageAlt: imageAlt || undefined,
+  };
+}
+
+/** Puts translated copy into the form; fields the translation left empty keep what the form had. */
+export function applyBlogTranslation(form: BlogPostForm, copy: BlogTranslationCopy, updateSlug: boolean): BlogPostForm {
+  const title = copy.title?.trim() || form.title;
+  return {
+    ...form,
+    title,
+    slug: updateSlug ? slugifyBlogTitle(title) : form.slug,
+    description: copy.shortDescription?.trim() || form.description,
+    body: copy.markdownDescription?.trim() || form.body,
+    imageAlt: copy.imageAlt?.trim() || form.imageAlt,
+  };
+}

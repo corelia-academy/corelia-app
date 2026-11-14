@@ -786,7 +786,9 @@
       "allStatuses": "所有状态",
       "allLocales": "所有语言",
       "empty": "还没有文章。",
-      "noMatches": "没有符合筛选条件的文章。"
+      "noMatches": "没有符合筛选条件的文章。",
+      "total": "{{total}} 篇文章",
+      "notPublished": "尚未发布"
     },
     "status": {
       "draft": "草稿",
@@ -825,7 +827,9 @@
       "image": "图片",
       "youtube": "YouTube 视频",
       "fitCover": "填满画框（裁剪）",
-      "fitContain": "显示整张图片"
+      "fitContain": "显示整张图片",
+      "youtubeShort": "YouTube",
+      "noneShort": "无"
     },
     "hints": {
       "slugPublished": "修改已发布文章的 slug 会使指向它的链接失效。",
@@ -845,7 +849,25 @@
       "previewEmpty": "还没有可预览的内容。",
       "unsaved": "有未保存的更改",
       "saved": "所有更改已保存",
-      "notFound": "这篇文章已不存在。"
+      "notFound": "这篇文章已不存在。",
+      "titlePlaceholder": "文章标题",
+      "descriptionPlaceholder": "一两句话的摘要…",
+      "words": "{{total}} 字",
+      "translateBanner": "此版本还没有内容。先翻译另一语言的版本，再检查并修改。",
+      "sections": {
+        "settings": "设置",
+        "organize": "分类和标签",
+        "advanced": "网址和翻译",
+        "coverOptions": "更多封面选项"
+      }
+    },
+    "toolbar": {
+      "bold": "粗体",
+      "italic": "斜体",
+      "heading": "标题",
+      "link": "链接",
+      "list": "列表",
+      "quote": "引用"
     },
     "actions": {
       "edit": "编辑",
@@ -858,15 +880,19 @@
       "uploadCover": "上传图片",
       "insertImage": "插入图片",
       "addTranslation": "添加{{language}}版本",
-      "openTranslation": "打开{{language}}版本"
+      "openTranslation": "打开{{language}}版本",
+      "editVersion": "编辑{{language}}版本（{{status}}）",
+      "translateAi": "用 AI 从{{language}}翻译"
     },
     "confirm": {
-      "delete": "删除“{{title}}”？此操作无法撤销。"
+      "delete": "删除“{{title}}”？此操作无法撤销。",
+      "translateOverwrite": "用新的翻译替换标题、摘要和内容？"
     },
     "messages": {
       "draftSaved": "草稿已保存。",
       "published": "已发布。文章会在一两分钟内出现在网站上。",
-      "deleted": "文章已删除。"
+      "deleted": "文章已删除。",
+      "translated": "已从{{language}}翻译。发布前请检查。"
     },
     "errors": {
       "titleRequired": "请输入标题。",
@@ -879,6 +905,7 @@
       "tagsCount": "发布前请选择 {{min}} 到 {{max}} 个标签。",
       "bodyRequired": "发布前请撰写正文。",
       "slugTaken": "该语言的另一篇文章已使用此 slug。",
+      "translateFailed": "无法翻译文章，请重试。",
       "translationTaken": "此翻译键在该语言下已有文章。",
       "saveFailed": "无法保存文章，请重试。",
       "deleteFailed": "无法删除文章，请重试。",

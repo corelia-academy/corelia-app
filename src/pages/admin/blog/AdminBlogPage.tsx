@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { blogCategoryLabel, type BlogCategory, type BlogLocale } from "@corelia/ui/blog";
-import { ExternalLink, Pencil, Plus } from "lucide-react";
+import { ExternalLink, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
@@ -10,7 +10,7 @@ import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { blogPublicPath } from "@/features/blog/blogPost";
+import { blogPublicPath, groupBlogArticles } from "@/features/blog/blogPost";
 import { adminBlogPostsQueryOptions } from "@/features/blog/blogQueries";
 import { landingUrl } from "@/lib/appUrl";
 import { useAuth } from "@/stores/authStore";
@@ -18,19 +18,7 @@ import type { BlogPostSummary, BlogStatus } from "@/types/blog";
 
 const SELECT_CLASS = "h-9 rounded-md border border-border-subtle bg-surface-base px-3 text-sm outline-none focus:border-primary";
 
-type TranslationGroup = { key: string; posts: BlogPostSummary[] };
-
-/** Translations of one article side by side, in the order of the newest version. */
-function groupByTranslation(posts: BlogPostSummary[]): TranslationGroup[] {
-  const groups = new Map<string, TranslationGroup>();
-  for (const post of posts) {
-    const key = `${post.content_type}:${post.translation_key}`;
-    const group = groups.get(key) ?? { key, posts: [] };
-    group.posts.push(post);
-    groups.set(key, group);
-  }
-  return [...groups.values()];
-}
+const LOCALES = ["vi", "en"] as const;
 
 export default function AdminBlogPage() {
   const { t, i18n } = useTranslation("admin");
@@ -51,8 +39,13 @@ export default function AdminBlogPage() {
       (!status || post.status === status) &&
       (!locale || post.locale === locale) &&
       (!needle || post.title.toLowerCase().includes(needle) || post.slug.includes(needle));
-    return groupByTranslation(query.data ?? []).filter((group) => group.posts.some(matches));
-  }, [query.data, search, status, locale]);
+    return groupBlogArticles(query.data ?? [], labelLocale).filter((group) =>
+      LOCALES.some((code) => {
+        const post = group.versions[code];
+        return post ? matches(post) : false;
+      }),
+    );
+  }, [query.data, search, status, locale, labelLocale]);
 
   return (
     <div className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
@@ -99,64 +92,85 @@ export default function AdminBlogPage() {
           </CardContent>
         </Card>
       ) : (
-        <ul className="mt-6 divide-y divide-border-subtle rounded-xl border border-border-subtle bg-surface-base">
-          {groups.map((group) => {
-            const first = group.posts[0];
-            const missing = (["vi", "en"] as const).find((code) => !group.posts.some((post) => post.locale === code));
-            return (
-              <li key={group.key} className="p-4">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-foreground-muted">
-                  <span>{dateFormat.format(new Date(first.published_on))}</span>
-                  <span>{t(`blog.contentTypes.${first.content_type}`)}</span>
-                  <span>{blogCategoryLabel(labelLocale, first.category as BlogCategory)}</span>
-                </div>
-                <ul className="mt-2 space-y-2">
-                  {group.posts.map((post) => (
-                    <li key={post.id} className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                      <span className="w-8 shrink-0 rounded bg-surface-raised px-1.5 py-0.5 text-center text-xs font-medium uppercase">{post.locale}</span>
-                      <NavLink to={`/admin/blog/${post.id}/edit`} className="min-w-0 flex-1 truncate text-sm font-medium hover:text-primary">
-                        {post.title}
-                      </NavLink>
-                      <span
-                        className={
-                          post.status === "published"
-                            ? "rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-700 dark:text-emerald-300"
-                            : "rounded-full bg-surface-raised px-2 py-0.5 text-xs text-foreground-muted"
-                        }
-                      >
-                        {t(`blog.status.${post.status}`)}
-                      </span>
-                      <div className="flex gap-2">
-                        <Button size="small" variant="cta" hierarchy="secondary" render={<NavLink to={`/admin/blog/${post.id}/edit`} />} nativeButton={false}>
-                          <Pencil className="size-4" aria-hidden />
-                          {t("blog.actions.edit")}
-                        </Button>
-                        {post.status === "published" ? (
-                          <Button
-                            size="small"
-                            variant="cta"
-                            hierarchy="tertiary"
-                            render={<a href={landingUrl(blogPublicPath(post))} target="_blank" rel="noreferrer" />}
-                            nativeButton={false}
+        <>
+          <p className="mt-6 text-xs text-foreground-muted" aria-live="polite">
+            {t("blog.list.total", { total: groups.length })}
+          </p>
+          <ul className="mt-2 divide-y divide-border-subtle rounded-xl border border-border-subtle bg-surface-base">
+            {groups.map((group) => {
+              const { lead } = group;
+              const live = lead.status === "published" ? lead : LOCALES.map((code) => group.versions[code]).find((post) => post?.status === "published");
+              return (
+                <li key={group.key} className="flex flex-wrap items-center gap-x-4 gap-y-3 p-4">
+                  <div className="min-w-0 flex-1 basis-64">
+                    <NavLink to={`/admin/blog/${lead.id}/edit`} className="block truncate text-sm font-medium hover:text-primary">
+                      {lead.title}
+                    </NavLink>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-foreground-muted">
+                      <span>{group.published ? dateFormat.format(new Date(lead.published_on)) : t("blog.list.notPublished")}</span>
+                      <span>{t(`blog.contentTypes.${lead.content_type}`)}</span>
+                      <span>{blogCategoryLabel(labelLocale, lead.category as BlogCategory)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {LOCALES.map((code) => {
+                      const post = group.versions[code];
+                      const language = t(`blog.locales.${code}`);
+                      if (!post) {
+                        const label = t("blog.actions.addTranslation", { language });
+                        return (
+                          <NavLink
+                            key={code}
+                            to={`/admin/blog/new?from=${lead.id}`}
+                            title={label}
+                            aria-label={label}
+                            className="inline-flex h-8 w-32 items-center justify-center gap-1 rounded-md border border-dashed border-border-subtle text-xs text-primary hover:border-primary"
                           >
-                            <ExternalLink className="size-4" aria-hidden />
-                            {t("blog.actions.view")}
-                          </Button>
-                        ) : null}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-                {missing ? (
-                  <NavLink to={`/admin/blog/new?from=${first.id}`} className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline">
-                    <Plus className="size-3" aria-hidden />
-                    {t("blog.actions.addTranslation", { language: t(`blog.locales.${missing}`) })}
-                  </NavLink>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
+                            <Plus className="size-3" aria-hidden />
+                            <span className="font-medium uppercase">{code}</span>
+                          </NavLink>
+                        );
+                      }
+                      const label = t("blog.actions.editVersion", { language, status: t(`blog.status.${post.status}`) });
+                      return (
+                        <NavLink
+                          key={code}
+                          to={`/admin/blog/${post.id}/edit`}
+                          title={label}
+                          aria-label={label}
+                          className="inline-flex h-8 w-32 items-center gap-2 rounded-md border border-border-subtle px-2 text-xs hover:border-primary"
+                        >
+                          <span className="font-medium uppercase">{code}</span>
+                          <span
+                            aria-hidden
+                            className={post.status === "published" ? "size-1.5 shrink-0 rounded-full bg-emerald-500" : "size-1.5 shrink-0 rounded-full bg-foreground-muted/50"}
+                          />
+                          <span className={post.status === "published" ? "truncate" : "truncate text-foreground-muted"}>{t(`blog.status.${post.status}`)}</span>
+                        </NavLink>
+                      );
+                    })}
+                    {live ? (
+                      <Button
+                        size="small"
+                        variant="cta"
+                        hierarchy="tertiary"
+                        iconOnly
+                        aria-label={t("blog.actions.view")}
+                        title={t("blog.actions.view")}
+                        render={<a href={landingUrl(blogPublicPath(live))} target="_blank" rel="noreferrer" />}
+                        nativeButton={false}
+                      >
+                        <ExternalLink className="size-4" aria-hidden />
+                      </Button>
+                    ) : (
+                      <span className="size-8" aria-hidden />
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
     </div>
   );
