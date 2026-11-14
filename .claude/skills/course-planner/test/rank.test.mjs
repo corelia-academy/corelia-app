@@ -217,7 +217,7 @@ test("rank: AC4 - rank.mjs --table in đúng 5 cột, mọi tiêu chí đạt �
   assert.ok(lines[2].includes("\\|"), "Ký tự | trong nội dung ô phải được escape thành \\|");
 });
 
-test("rank: AC2 - rank.mjs với hàm kiểm công cụ giả: công cụ thiếu hiện trong Ghi chú; rank không đổi", () => {
+test("rank: W5 - đề xuất thiếu công cụ thành Rank — và các dòng khác dồn hạng; thiếu yt-dlp sinh đúng một cảnh báo", () => {
   const shortlistData = {
     date: "2026-11-14",
     round: 1,
@@ -261,35 +261,73 @@ test("rank: AC2 - rank.mjs với hàm kiểm công cụ giả: công cụ thiế
           differentiated: { met: true, basis: "Khác biệt", refs: ["ref3"] },
           showable_product: { met: true, basis: "Nộp bài", refs: ["ref4"] }
         }
+      },
+      {
+        slug: "course-3",
+        title: "Khóa 3",
+        direction: { axis: "role", entry: "Solana Developer" },
+        level: "beginner",
+        kind: "new",
+        promise: "Viết Solana",
+        starting_point: { knowledge: "Cơ bản", requires: [] },
+        final_product: "Solana Program",
+        feasibility: "feasible",
+        tools: ["anchor"],
+        why_now: { kind: "direct", urls: ["https://d1.com"] },
+        criteria: {
+          continues_catalog: { met: false, basis: "Người mới", refs: [] },
+          fills_direction: { met: true, basis: "Chưa có", refs: ["ref1"] },
+          timely: { met: true, basis: "2026", refs: ["ref2"] },
+          differentiated: { met: true, basis: "Khác biệt", refs: ["ref3"] },
+          showable_product: { met: true, basis: "Nộp bài", refs: ["ref4"] }
+        }
       }
     ]
   };
 
-  // Mock tool checker: chỉ có node là có sẵn, forge và slither bị thiếu
-  const mockToolChecker = (tool) => tool === "node";
+  // Mock tool checker 1: Đủ tất cả công cụ (kể cả công cụ nền deno, yt-dlp, docker)
+  const fullToolChecker = () => true;
+  const resFull = rankShortlist(shortlistData, mockCatalog, { toolChecker: fullToolChecker });
+  // Cả 3 khóa đều eligible, rank 1, 2, 3
+  assert.strictEqual(resFull.rows.find((r) => r.slug === "course-1").rank, 1);
+  assert.strictEqual(resFull.rows.find((r) => r.slug === "course-2").rank, 2);
+  assert.strictEqual(resFull.rows.find((r) => r.slug === "course-3").rank, 3);
+  assert.strictEqual(resFull.envWarnings.length, 0);
 
-  // Chạy xếp hạng không có checker
-  const resWithoutChecker = rankShortlist(shortlistData, mockCatalog, { toolChecker: () => true });
-  // Chạy xếp hạng có mock checker
-  const resWithChecker = rankShortlist(shortlistData, mockCatalog, { toolChecker: mockToolChecker });
+  const tableFull = formatShortlistTable(resFull);
+  assert.doesNotMatch(tableFull, /⚠️ Cảnh báo:/);
 
-  // Khẳng định rank không đổi
-  assert.strictEqual(resWithChecker.rows[0].slug, resWithoutChecker.rows[0].slug);
-  assert.strictEqual(resWithChecker.rows[0].rank, 1);
-  assert.strictEqual(resWithChecker.rows[1].slug, resWithoutChecker.rows[1].slug);
-  assert.strictEqual(resWithChecker.rows[1].rank, 2);
+  // Mock tool checker 2: Khóa 1 thiếu forge/slither; công cụ nền thiếu đúng yt-dlp (có deno và docker)
+  const mockToolChecker = (tool) => {
+    if (tool === "forge" || tool === "slither") return false;
+    if (tool === "yt-dlp") return false;
+    return true; // node, anchor, deno, docker: ok
+  };
 
-  // Khóa 1 thiếu forge và slither
-  assert.deepStrictEqual(resWithChecker.rows[0].missingTools, ["forge", "slither"]);
-  // Khóa 2 không thiếu công cụ
-  assert.deepStrictEqual(resWithChecker.rows[1].missingTools, []);
+  const resMissing = rankShortlist(shortlistData, mockCatalog, { toolChecker: mockToolChecker });
 
-  // Format bảng: Ghi chú của Khóa 1 phải chứa "Thiếu công cụ: forge, slither"
-  const table = formatShortlistTable(resWithChecker);
-  const lines = table.split("\n");
-  const row1 = lines[2];
-  const row2 = lines[3];
+  // Khóa 1 thiếu công cụ -> Rank null (hiển thị —), eligible: false
+  const r1 = resMissing.rows.find((r) => r.slug === "course-1");
+  assert.strictEqual(r1.eligible, false);
+  assert.strictEqual(r1.rank, null);
+  assert.deepStrictEqual(r1.missingTools, ["forge", "slither"]);
 
-  assert.ok(row1.includes("Thiếu công cụ: forge, slither"), `Ghi chú khóa 1 phải nêu công cụ thiếu, thực tế: ${row1}`);
-  assert.ok(!row2.includes("Thiếu công cụ"), `Khóa 2 không thiếu công cụ, thực tế: ${row2}`);
+  // Các khóa còn lại dồn hạng: Khóa 2 thành Rank 1, Khóa 3 thành Rank 2
+  const r2 = resMissing.rows.find((r) => r.slug === "course-2");
+  const r3 = resMissing.rows.find((r) => r.slug === "course-3");
+  assert.strictEqual(r2.eligible, true);
+  assert.strictEqual(r2.rank, 1);
+  assert.strictEqual(r3.eligible, true);
+  assert.strictEqual(r3.rank, 2);
+
+  // Công cụ nền thiếu yt-dlp: sinh đúng 1 cảnh báo
+  assert.strictEqual(resMissing.envWarnings.length, 1);
+  assert.ok(resMissing.envWarnings[0].includes("yt-dlp") && resMissing.envWarnings[0].includes("bài video"));
+
+  // Format bảng
+  const tableMissing = formatShortlistTable(resMissing);
+  assert.ok(tableMissing.includes("| — |"));
+  assert.ok(tableMissing.includes("Thiếu công cụ: forge, slither"));
+  assert.ok(tableMissing.includes("⚠️ Cảnh báo: Thiếu công cụ nền yt-dlp: khóa sẽ không có bài video."));
+  assert.doesNotMatch(tableMissing, /luồng sẽ dừng trước bước nhập/);
 });

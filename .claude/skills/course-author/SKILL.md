@@ -100,20 +100,20 @@ Khi KHÔNG có handoff: hỏi khi thiếu tên khóa hoặc đối tượng, thi
 
 ## Model
 
-Coordinator chạy bằng model của session: Sonnet 5.5, effort medium. Session đang dùng model khác thì báo user trước khi bắt đầu.
+Coordinator chạy bằng model của session, không dừng, không báo trước; ghi tên model coordinator vào `run-log.jsonl` và `run-report.md`.
 
-Khi gọi child, đặt `model` theo bảng:
+Bảng model child có hai cột: Claude và ChatGPT. Quy ước: `haiku` → `luna`, `sonnet` → `terra`, `opus` → `astra`. Coordinator dùng cột ứng với nền tảng đang chạy. Nền tảng không cho chọn model của child: chạy bằng model mặc định và ghi điều đó vào báo cáo.
 
-| Child | Model |
-|---|---|
-| Bước 1: metadata, brief | `haiku` |
-| Bước 2: research | `sonnet` |
-| Bước 3: curriculum | `opus` |
-| Bước 4: review curriculum | `opus` |
-| Bước 5: viết lesson | `sonnet` |
-| Bước 5: chạy kiểm chứng (`verification/<id>.md`) | `haiku` |
-| Bước 6: review lesson | `sonnet` |
-| Bước 7: review cấp khóa | `sonnet` |
+| Child | Model (Claude) | Model (ChatGPT) |
+|---|---|---|
+| Bước 1: metadata, brief | `haiku` | `luna` |
+| Bước 2: research | `sonnet` | `terra` |
+| Bước 3: curriculum | `opus` | `astra` |
+| Bước 4: review curriculum | `opus` | `astra` |
+| Bước 5: viết lesson | `sonnet` | `terra` |
+| Bước 5: chạy kiểm chứng (`verification/<id>.md`) | `haiku` | `luna` |
+| Bước 6: review lesson | `sonnet` | `terra` |
+| Bước 7: review cấp khóa | `sonnet` | `terra` |
 
 Ở bước 5, child viết lesson soạn danh sách bước cần chạy. Một child `haiku` riêng chạy các bước đó và ghi `verification/<id>.md`. Child viết lesson đọc kết quả rồi sửa bài nếu output thật khác `expected`.
 

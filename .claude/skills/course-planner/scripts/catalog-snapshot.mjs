@@ -37,7 +37,7 @@ export function calculateContentState(modules) {
   return { lessons_total, lessons_published, content_state };
 }
 
-export function takeCatalogSnapshot(repoRoot = ".") {
+export function takeCatalogSnapshot(repoRoot = ".", options = {}) {
   const root = path.resolve(repoRoot);
   const courseRunsDir = path.join(root, ".course-runs");
   const coursePlanDir = path.join(root, ".course-plan");
@@ -57,14 +57,50 @@ export function takeCatalogSnapshot(repoRoot = ".") {
 
   // Đọc file export tùy chọn từ DB nếu có
   let dbCourses = [];
+  let exportMetadata = null;
   if (fs.existsSync(exportFile)) {
     try {
       const raw = fs.readFileSync(exportFile, "utf8");
       const parsed = JSON.parse(raw);
       dbCourses = Array.isArray(parsed) ? parsed : (parsed.courses ?? []);
+      if (!Array.isArray(parsed) && parsed.exported_at) {
+        exportMetadata = { exported_at: parsed.exported_at, source: parsed.source || "db_export" };
+      } else {
+        const stats = fs.statSync(exportFile);
+        exportMetadata = { exported_at: stats.mtime.toISOString(), source: "db_export" };
+      }
     } catch (err) {
       console.warn(`[catalog-snapshot] Cảnh báo đọc ${exportFile}: ${err.message}`);
     }
+  }
+
+  // W-13: Đọc file trạng thái export nếu có hoặc từ options
+  const statusFile = path.join(coursePlanDir, ".catalog-export-status.json");
+  let exportStatus = options.exportStatus || null;
+  if (!exportStatus && fs.existsSync(statusFile)) {
+    try {
+      const parsedStatus = JSON.parse(fs.readFileSync(statusFile, "utf8"));
+      exportStatus = parsedStatus.status || null;
+    } catch {}
+  }
+
+  if (exportMetadata && exportStatus === "stale") {
+    exportMetadata.export_status = "stale";
+  } else if (!exportMetadata && exportStatus === "stale") {
+    exportMetadata = {
+      exported_at: null,
+      source: "none",
+      export_status: "missing",
+    };
+  }
+
+  let staleWarning = null;
+  if (exportMetadata?.export_status === "stale") {
+    staleWarning = `catalog lấy từ export cũ (thời điểm ${exportMetadata.exported_at})`;
+    console.warn(`[catalog-snapshot] Cảnh báo: ${staleWarning}`);
+  } else if (exportMetadata?.export_status === "missing") {
+    staleWarning = "chưa có export catalog từ DB local, catalog chỉ gồm các khóa trong .course-runs/";
+    console.warn(`[catalog-snapshot] Cảnh báo: ${staleWarning}`);
   }
 
   const coursesMap = new Map();
@@ -267,6 +303,8 @@ export function takeCatalogSnapshot(repoRoot = ".") {
 
   const catalog = {
     generated_at: new Date().toISOString(),
+    export_metadata: exportMetadata,
+    warnings: staleWarning ? [staleWarning] : [],
     courses: coursesList
   };
 

@@ -102,7 +102,8 @@ export function rankShortlist(shortlistData, catalogData, { toolChecker = defaul
     }
 
     const isFeasible = prop.feasibility !== "not_feasible";
-    const eligible = allRequiresMet && isFeasible;
+    const hasAllTools = missingTools.length === 0;
+    const eligible = allRequiresMet && isFeasible && hasAllTools;
 
     // Đếm số tiêu chí met: true
     let metCount = 0;
@@ -175,11 +176,38 @@ export function rankShortlist(shortlistData, catalogData, { toolChecker = defaul
     };
   });
 
+  // Kiểm tra công cụ nền (deno, yt-dlp, docker) một lần
+  const envWarnings = [];
+  if (typeof toolChecker === "function") {
+    const hasYtDlp = toolChecker("yt-dlp");
+    const hasDeno = toolChecker("deno");
+    const hasDocker = toolChecker("docker");
+
+    if (!hasYtDlp) {
+      envWarnings.push("Thiếu công cụ nền yt-dlp: khóa sẽ không có bài video.");
+    }
+    if (!hasDeno || !hasDocker) {
+      const missingEnv = [];
+      if (!hasDeno) missingEnv.push("deno");
+      if (!hasDocker) missingEnv.push("docker");
+      envWarnings.push(`Thiếu công cụ nền ${missingEnv.join(", ")}: luồng sẽ dừng trước bước nhập.`);
+    }
+  }
+
+  // W-13 / W-15: Cảnh báo catalog lấy từ export cũ hoặc chưa có export DB local
+  if (catalogData?.export_metadata?.export_status === "stale") {
+    const exportedAt = catalogData.export_metadata.exported_at || "không rõ";
+    envWarnings.push(`catalog lấy từ export cũ (thời điểm ${exportedAt})`);
+  } else if (catalogData?.export_metadata?.export_status === "missing") {
+    envWarnings.push("chưa có export catalog từ DB local, catalog chỉ gồm các khóa trong .course-runs/");
+  }
+
   return {
     date: shortlistData?.date || null,
     round: shortlistData?.round || null,
     total: rows.length,
     eligible_count: rows.filter((r) => r.eligible).length,
+    envWarnings,
     rows,
   };
 }
@@ -251,7 +279,15 @@ export function formatShortlistTable(rankedResult) {
     return `| ${escapeTableCell(rankStr)} | ${escapeTableCell(courseDesc)} | ${escapeTableCell(directionStr)} | ${escapeTableCell(basisStr)} | ${escapeTableCell(notesStr)} |`;
   });
 
-  return [headerLine, separatorLine, ...rowsLines].join("\n");
+  const tableLines = [headerLine, separatorLine, ...rowsLines];
+  if (Array.isArray(rankedResult.envWarnings) && rankedResult.envWarnings.length > 0) {
+    tableLines.push("");
+    for (const w of rankedResult.envWarnings) {
+      tableLines.push(`⚠️ Cảnh báo: ${w}`);
+    }
+  }
+
+  return tableLines.join("\n");
 }
 
 // CLI runner

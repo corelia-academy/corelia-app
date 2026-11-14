@@ -260,3 +260,56 @@ test("W-04: review-lint siết chặt not_run có lý do tách bạch và kiểm
 
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
+
+
+test("W-14: lesson-lint báo lỗi tham chiếu bài ngoài dạng chuẩn", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "lesson-lint-w14-"));
+  const lessonsDir = path.join(tmpDir, "lessons");
+  fs.mkdirSync(lessonsDir, { recursive: true });
+
+  fs.writeFileSync(
+    path.join(tmpDir, "curriculum.json"),
+    JSON.stringify({
+      modules: [
+        {
+          module_id: "M1",
+          title: "Chuyên đề nâng cao",
+          lessons: [
+            { lesson_id: "L1", title: "Khái niệm mở đầu", type: "article" },
+          ],
+        },
+      ],
+    })
+  );
+
+  const makeLesson = (md) => ({
+    lesson_id: "L1",
+    title: "Khái niệm mở đầu",
+    short_description: "Mô tả bài học mở đầu",
+    article: { description_markdown: md },
+  });
+
+  // Case 1: "Part B, Bài 3 và Bài 4" -> "Bài 4" bị báo
+  fs.writeFileSync(path.join(lessonsDir, "L1.json"), JSON.stringify(makeLesson("Nội dung: Part B, Bài 3 và Bài 4.")));
+  const res1 = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} ${tmpDir}`);
+  assert.equal(res1.status, 1);
+  assert.match(res1.stdout, /L1: nhãn-bài:.*"Bài 4" tham chiếu bài ngoài dạng chuẩn/);
+
+  // Case 2: "Bài 4" đứng một mình -> bị báo
+  fs.writeFileSync(path.join(lessonsDir, "L1.json"), JSON.stringify(makeLesson("Như đã học ở Bài 4.")));
+  const res2 = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} ${tmpDir}`);
+  assert.equal(res2.status, 1);
+  assert.match(res2.stdout, /L1: nhãn-bài:.*"Bài 4" tham chiếu bài ngoài dạng chuẩn/);
+
+  // Case 3: "Part B (Bài 3, Bài 4)" -> không bị báo lỗi nhãn-bài
+  fs.writeFileSync(path.join(lessonsDir, "L1.json"), JSON.stringify(makeLesson("Ôn lại tại Part B (Bài 3, Bài 4).")));
+  const res3 = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} ${tmpDir}`);
+  assert.doesNotMatch(res3.stdout, /nhãn-bài/);
+
+  // Case 4: "Part B, Bài 3" -> không bị báo lỗi nhãn-bài
+  fs.writeFileSync(path.join(lessonsDir, "L1.json"), JSON.stringify(makeLesson("Xem thêm tại Part B, Bài 3.")));
+  const res4 = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} ${tmpDir}`);
+  assert.doesNotMatch(res4.stdout, /nhãn-bài/);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});

@@ -5,6 +5,11 @@
 import * as path from "jsr:@std/path@1";
 import { getStuckLessons } from "./course-status-lib.mjs";
 import {
+  resolveCascadingStuckLessons,
+  buildRelabeler,
+  relabelObject,
+} from "./labels-lib.mjs";
+import {
   checkDiagram,
   layoutIssues,
   wordingIssues,
@@ -161,12 +166,54 @@ const questionRows: string[] = [];
 const images: { path: string; bytes: Uint8Array }[] = [];
 let order = 0;
 
+// Đọc trước toàn bộ records bài học để phân tích lan truyền tham chiếu
+const rawLessonsMap = new Map<string, any>();
 for (const module of curriculum.modules ?? []) {
   for (const cl of module.lessons ?? []) {
     const rec = await read(`lessons/${cl.lesson_id}.json`);
     if (rec.lesson_id && rec.lesson_id !== cl.lesson_id) {
       throw new Error(`Lesson ID mismatch: ${cl.lesson_id} vs ${rec.lesson_id}`);
     }
+    rawLessonsMap.set(cl.lesson_id, rec);
+  }
+}
+
+// Lan truyền bài kẹt: bất kỳ bài nào tham chiếu tới bài kẹt cũng thành bài kẹt
+const { stuckSet: cascadingStuckSet } = resolveCascadingStuckLessons(
+  curriculum,
+  stuckLessonSet,
+  rawLessonsMap
+);
+for (const id of cascadingStuckSet) {
+  stuckLessonSet.add(id);
+}
+
+// Khởi tạo hàm relabelText dựa trên các bài thực sự được publish
+const relabelText = buildRelabeler(curriculum, stuckLessonSet);
+
+// Xác định các learning outcomes bị mất bài kiểm chứng
+const unverifiedOutcomes: Array<{ outcome_id: string; text: string; check_lesson_ids: string[] }> = [];
+for (const outcome of curriculum.outcomes ?? []) {
+  if (
+    typeof outcome === "object" &&
+    outcome !== null &&
+    Array.isArray(outcome.check_lesson_ids) &&
+    outcome.check_lesson_ids.length > 0
+  ) {
+    const allStuck = outcome.check_lesson_ids.every((id: string) => stuckLessonSet.has(id));
+    if (allStuck) {
+      unverifiedOutcomes.push({
+        outcome_id: outcome.outcome_id ?? "",
+        text: outcome.text ?? "",
+        check_lesson_ids: outcome.check_lesson_ids,
+      });
+    }
+  }
+}
+
+for (const module of curriculum.modules ?? []) {
+  for (const cl of module.lessons ?? []) {
+    const rec = rawLessonsMap.get(cl.lesson_id)!;
 
     // 1. Kiểm tra tài nguyên bổ trợ (resources + suggested_videos)
     const resources = [...(rec.resources ?? [])];
@@ -285,22 +332,23 @@ for (const module of curriculum.modules ?? []) {
 
     if (cl.purpose === "final_check") data.is_final_check = true;
 
+    const isLessonPublished = !stuckLessonSet.has(cl.lesson_id);
+    const finalData = isLessonPublished ? relabelObject(data, relabelText) : data;
+
     // 5. Validate bài học qua schema cổng Studio
-    const problems = validateLesson(data);
+    const problems = validateLesson(finalData);
     if (problems.length) {
       throw new Error(`${cl.lesson_id}: validateLesson: ${JSON.stringify(problems)}`);
     }
 
-    const isLessonPublished = !stuckLessonSet.has(cl.lesson_id);
-
     lessonRows.push(
-      `(${quote(courseId)},${quote(cl.lesson_id)},${quote(module.module_id)},${order++},${json(data)},${isLessonPublished})`
+      `(${quote(courseId)},${quote(cl.lesson_id)},${quote(module.module_id)},${order++},${json(finalData)},${isLessonPublished})`
     );
 
     // 6. Validate và chuẩn bị câu hỏi trắc nghiệm
     for (const [qIndex, q] of (rec.quiz?.questions ?? []).entries()) {
       const questionId = `${courseId}-${cl.lesson_id}-q${qIndex + 1}`.toLowerCase();
-      const question = {
+      let question = {
         id: questionId,
         type: "mcq" as const,
         question: q.prompt,
@@ -309,6 +357,9 @@ for (const module of curriculum.modules ?? []) {
         explanation: q.explanation,
         locale: "vi",
       };
+      if (isLessonPublished) {
+        question = relabelObject(question, relabelText);
+      }
       const qIssues = validateQuestion(question);
       if (qIssues.length) {
         throw new Error(`${cl.lesson_id} q${qIndex + 1}: validateQuestion: ${qIssues.join(", ")}`);
@@ -350,8 +401,13 @@ if (hasAnyStuck) {
 }
 
 const sections = (curriculum.modules ?? []).map(
-  (m: any, i: number) =>
-    `(${quote(courseId)},${quote(m.module_id)},${i},${json({ title: m.title, description: m.description })})`
+  (m: any, i: number) => {
+    const secData = {
+      title: relabelText(m.title),
+      description: relabelText(m.description),
+    };
+    return `(${quote(courseId)},${quote(m.module_id)},${i},${json(secData)})`;
+  }
 );
 
 const sqlParts = [
@@ -376,6 +432,7 @@ const summary = {
   published: isCoursePublished,
   is_updating: Boolean(hasAnyStuck),
   stuck_lessons: Array.from(stuckLessonSet),
+  unverified_outcomes: unverifiedOutcomes.map((u) => u.outcome_id),
   sections: sections.length,
   lessons: order,
   lessons_published: order - stuckCount,

@@ -64,6 +64,7 @@ File được ghi tại `.course-plan/paths/<path-slug>.json`:
     {
       "claim": "Báo cáo an ninh Web3 2026 yêu cầu kỹ năng đọc hiểu flow tương tác contract trước khi gọi lệnh",
       "kind": "direct",
+      "quote": "Security engineers must inspect contract interaction flows and call traces before invoking state-changing functions",
       "urls": ["https://example.com/reports/web3-security-2026"],
       "observed_on": "2026-11-13"
     },

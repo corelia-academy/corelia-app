@@ -71,7 +71,7 @@ function createFixture(targetDir, { l2Verdict = "pass", l2Cycles = 1 } = {}) {
     JSON.stringify({
       lesson_id: "L1",
       title: "Bài 1 Đạt",
-      short_description: "Mô tả bài 1",
+      short_description: "Mô tả bài học đầu tiên",
       article: { description_markdown: "Nội dung bài học số 1 không chứa code." },
     })
   );
@@ -87,7 +87,7 @@ function createFixture(targetDir, { l2Verdict = "pass", l2Cycles = 1 } = {}) {
     JSON.stringify({
       lesson_id: "L2",
       title: "Bài 2 Đánh Giá",
-      short_description: "Mô tả bài 2",
+      short_description: "Mô tả bài học cần đánh giá",
       article: { description_markdown: "Nội dung bài học số 2 cần kiểm duyệt." },
     })
   );
@@ -406,6 +406,8 @@ test("run-report: AC7 - mẫu run-report.md có đủ mục A6 và không chứa
     const { reportPath, content } = generateRunReport(tmpDir, {
       rank: 1,
       gateResult: "ĐẠT (Qua cả 6 Gate)",
+      coordinatorModel: "claude-3-7-sonnet",
+      defaultChildModelNotice: true,
       importResult: {
         course_id: "test-uuid-1234",
         published: true,
@@ -417,10 +419,12 @@ test("run-report: AC7 - mẫu run-report.md có đủ mục A6 và không chứa
 
     assert.ok(fs.existsSync(reportPath), "Phải ghi file run-report.md");
 
-    // Kiểm tra đầy đủ các mục A6:
+    // Kiểm tra đầy đủ các mục A6 & W1:
     assert.ok(content.includes("Khóa đã chọn & Rank") && content.includes("Rank 1"));
     assert.ok(content.includes("path-report-test"));
     assert.ok(content.includes("ĐẠT (Qua cả 6 Gate)"));
+    assert.ok(content.includes("Model Coordinator") && content.includes("claude-3-7-sonnet"));
+    assert.ok(content.includes("Ghi chú Model Child") && content.includes("toàn bộ child chạy bằng model mặc định"));
     assert.ok(content.includes("M1: Module 1"));
     assert.ok(content.includes("L1-1"));
     assert.ok(content.includes("L1-2"));
@@ -440,6 +444,292 @@ test("run-report: AC7 - mẫu run-report.md có đủ mục A6 và không chứa
     const fakeKey =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.abcdefghijklmnopqrstuvwxyz1234567890";
     assert.throws(() => sanitizeReport(`Báo cáo có key: ${fakeKey}`), /Báo cáo vi phạm bảo mật/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+function createMultiModuleFixture(
+  targetDir,
+  {
+    stuckLessonIds = [],
+    l24Markdown = "Nội dung bài học tổng kết chuyên đề",
+    l21Markdown = "Nội dung thực hành Part B",
+  } = {}
+) {
+  fs.mkdirSync(path.join(targetDir, "lessons"), { recursive: true });
+  fs.mkdirSync(path.join(targetDir, "reviews"), { recursive: true });
+  fs.mkdirSync(path.join(targetDir, "verification"), { recursive: true });
+
+  fs.writeFileSync(
+    path.join(targetDir, "brief.json"),
+    JSON.stringify({
+      slug: "w2-fixture-course",
+      title: "Khóa Kiểm Thử W2",
+      topic: "Đồng bộ nhãn Part và Bài",
+      audience: "Kỹ sư",
+      level: "intermediate",
+    })
+  );
+
+  fs.writeFileSync(
+    path.join(targetDir, "curriculum.json"),
+    JSON.stringify({
+      outcomes: [
+        { outcome_id: "O1", text: "Nắm vững Part B bài 2", check_lesson_ids: ["L2-2"] },
+        { outcome_id: "O2", text: "Nắm vững Part B bài 1", check_lesson_ids: ["L2-1"] },
+      ],
+      modules: [
+        {
+          module_id: "M1",
+          title: "Part A: Nhập môn",
+          description: "Mô tả Part A",
+          lessons: [
+            { lesson_id: "L1-1", title: "Khái niệm mở đầu", type: "article" },
+            { lesson_id: "L1-2", title: "Cơ sở thực thi", type: "article" },
+          ],
+        },
+        {
+          module_id: "M2",
+          title: "Part B: Nâng cao",
+          description: "Mô tả Part B",
+          lessons: [
+            { lesson_id: "L2-1", title: "Thực hành nền tảng", type: "article" },
+            { lesson_id: "L2-2", title: "Kỹ thuật nâng cao", type: "article" },
+            { lesson_id: "L2-3", title: "Tối ưu hóa hệ thống", type: "article" },
+            { lesson_id: "L2-4", title: "Tổng kết chuyên đề", type: "article" },
+          ],
+        },
+      ],
+    })
+  );
+
+  fs.writeFileSync(
+    path.join(targetDir, "final_assignment.json"),
+    JSON.stringify({
+      title: "Bài tập cuối khóa",
+      description: "Mô tả bài tập",
+      instructions: "Hướng dẫn nộp bài",
+      fields: ["github_url"],
+    })
+  );
+
+  const lessons = [
+    { id: "L1-1", title: "Khái niệm mở đầu", md: "Nội dung khái niệm mở đầu không có code." },
+    { id: "L1-2", title: "Cơ sở thực thi", md: "Nội dung cơ sở thực thi không có code." },
+    { id: "L2-1", title: "Thực hành nền tảng", md: l21Markdown },
+    { id: "L2-2", title: "Kỹ thuật nâng cao", md: "Nội dung kỹ thuật nâng cao không có code." },
+    { id: "L2-3", title: "Tối ưu hóa hệ thống", md: "Nội dung tối ưu hóa không có code." },
+    { id: "L2-4", title: "Tổng kết chuyên đề", md: l24Markdown },
+  ];
+
+  for (const les of lessons) {
+    fs.writeFileSync(
+      path.join(targetDir, "lessons", `${les.id}.json`),
+      JSON.stringify({
+        lesson_id: les.id,
+        title: les.title,
+        short_description: `Mô tả bài học về ${les.title}`,
+        article: { description_markdown: les.md },
+      })
+    );
+    fs.writeFileSync(path.join(targetDir, "verification", `${les.id}.md`), `# Verification ${les.id}\nĐạt.`);
+
+    const isStuck = stuckLessonIds.includes(les.id);
+    if (isStuck) {
+      fs.writeFileSync(
+        path.join(targetDir, "reviews", `${les.id}.json`),
+        JSON.stringify({
+          verdict: "needs_fix",
+          checks: STANDARD_CHECKS,
+          issues: [
+            {
+              category: "factual_accuracy",
+              severity: "blocking",
+              summary: "Lỗi nghiêm trọng",
+              location: "Đoạn 1",
+              problem: "Sai kiến thức kỹ thuật",
+              fix: "Sửa lại kiến thức",
+            },
+          ],
+        })
+      );
+      const logs = [
+        JSON.stringify({ step: 6, lesson_id: les.id, event: "end" }),
+        JSON.stringify({ step: 6, lesson_id: les.id, event: "end" }),
+        JSON.stringify({ step: 6, lesson_id: les.id, event: "end" }),
+      ];
+      fs.appendFileSync(path.join(targetDir, "run-log.jsonl"), logs.join("\n") + "\n");
+    } else {
+      fs.writeFileSync(
+        path.join(targetDir, "reviews", `${les.id}.json`),
+        JSON.stringify({ verdict: "pass", checks: STANDARD_CHECKS, issues: [] })
+      );
+    }
+  }
+}
+
+test("import-local: W2 - Bài 2 Part B kẹt -> bài khác có 'Part B, Bài 3' đổi thành 'Part B, Bài 2'", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "w2-single-"));
+  try {
+    createMultiModuleFixture(tmpDir, {
+      stuckLessonIds: ["L2-2"],
+      l24Markdown: "Xem thêm tại Part B, Bài 3 để hiểu rõ chi tiết.",
+    });
+
+    const out = execFileSync(
+      "deno",
+      ["run", "-A", "--no-config", IMPORT_SCRIPT, tmpDir, "--dry-run"],
+      { encoding: "utf8" }
+    );
+
+    // Bài L2-2 bị kẹt: published = false
+    assert.match(out, /'L2-2','M2',\d+,'\{.*?\}'::jsonb,false\)/);
+    // Bài L2-4 được publish và tham chiếu đã đổi thành "Part B, Bài 2"
+    assert.ok(out.includes("Xem thêm tại Part B, Bài 2 để hiểu rõ chi tiết."));
+    assert.ok(!out.includes("Part B, Bài 3"));
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("import-local: W2 - Dạng gộp 'Part B (Bài 1, Bài 3)' đổi thành 'Part B (Bài 1, Bài 2)'", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "w2-group-"));
+  try {
+    createMultiModuleFixture(tmpDir, {
+      stuckLessonIds: ["L2-2"],
+      l24Markdown: "Ôn lại kiến thức tại Part B (Bài 1, Bài 3) trước khi làm bài tập.",
+    });
+
+    const out = execFileSync(
+      "deno",
+      ["run", "-A", "--no-config", IMPORT_SCRIPT, tmpDir, "--dry-run"],
+      { encoding: "utf8" }
+    );
+
+    assert.ok(out.includes("Part B (Bài 1, Bài 2)"));
+    assert.ok(!out.includes("Part B (Bài 1, Bài 3)"));
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("import-local: W2 - Bài có 'Part B, Bài 2' (trỏ bài kẹt) -> bài đó cũng thành kẹt (published = false)", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "w2-cascade-"));
+  try {
+    createMultiModuleFixture(tmpDir, {
+      stuckLessonIds: ["L2-2"],
+      l24Markdown: "Như đã chứng minh ở Part B, Bài 2, kết quả là hoàn toàn chính xác.",
+    });
+
+    const out = execFileSync(
+      "deno",
+      ["run", "-A", "--no-config", IMPORT_SCRIPT, tmpDir, "--dry-run"],
+      { encoding: "utf8" }
+    );
+
+    // L2-2 kẹt do review
+    assert.match(out, /'L2-2','M2',\d+,'\{.*?\}'::jsonb,false\)/);
+    // L2-4 kẹt do lan truyền (tham chiếu tới L2-2)
+    assert.match(out, /'L2-4','M2',\d+,'\{.*?\}'::jsonb,false\)/);
+    // L2-1 và L2-3 không tham chiếu bài kẹt -> published = true
+    assert.match(out, /'L2-1','M2',\d+,'\{.*?\}'::jsonb,true\)/);
+    assert.match(out, /'L2-3','M2',\d+,'\{.*?\}'::jsonb,true\)/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("import-local: W2 - Toàn bộ Part A kẹt -> nhãn 'Part B' trong bài publish đổi thành 'Part A'", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "w2-part-shift-"));
+  try {
+    createMultiModuleFixture(tmpDir, {
+      stuckLessonIds: ["L1-1", "L1-2"],
+      l21Markdown: "Chào mừng các bạn đến với Part B của khóa học.",
+    });
+
+    const out = execFileSync(
+      "deno",
+      ["run", "-A", "--no-config", IMPORT_SCRIPT, tmpDir, "--dry-run"],
+      { encoding: "utf8" }
+    );
+
+    // Part A đều kẹt (published = false)
+    assert.match(out, /'L1-1','M1',\d+,'\{.*?\}'::jsonb,false\)/);
+    assert.match(out, /'L1-2','M1',\d+,'\{.*?\}'::jsonb,false\)/);
+
+    // L2-1 được publish và Part B được đổi thành Part A
+    assert.match(out, /'L2-1','M2',\d+,'\{.*?\}'::jsonb,true\)/);
+    assert.ok(out.includes("Chào mừng các bạn đến với Part A của khóa học."));
+
+    // Tiêu đề module M2 trong course_sections cũng đổi thành "Part A: Nâng cao"
+    assert.ok(out.includes("Part A: Nâng cao"));
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("import-local: W2 - Không bài kẹt -> SQL giống hệt trước, giữ nguyên nhãn gốc", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "w2-all-pass-"));
+  try {
+    createMultiModuleFixture(tmpDir, {
+      stuckLessonIds: [],
+      l24Markdown: "Tham khảo Part B (Bài 1, Bài 3) và Part B, Bài 3 trong Part B.",
+    });
+
+    const out = execFileSync(
+      "deno",
+      ["run", "-A", "--no-config", IMPORT_SCRIPT, tmpDir, "--dry-run"],
+      { encoding: "utf8" }
+    );
+
+    // Mọi bài published = true
+    assert.match(out, /'L1-1','M1',\d+,'\{.*?\}'::jsonb,true\)/);
+    assert.match(out, /'L1-2','M1',\d+,'\{.*?\}'::jsonb,true\)/);
+    assert.match(out, /'L2-1','M2',\d+,'\{.*?\}'::jsonb,true\)/);
+    assert.match(out, /'L2-2','M2',\d+,'\{.*?\}'::jsonb,true\)/);
+    assert.match(out, /'L2-3','M2',\d+,'\{.*?\}'::jsonb,true\)/);
+    assert.match(out, /'L2-4','M2',\d+,'\{.*?\}'::jsonb,true\)/);
+
+    // Không có cờ is_updating
+    assert.doesNotMatch(out, /"is_updating":\s*true/);
+
+    // SQL giữ nguyên vẹn nội dung
+    assert.ok(out.includes("Tham khảo Part B (Bài 1, Bài 3) và Part B, Bài 3 trong Part B."));
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("import-local & run-report: W2 - Outcome có check_lesson_ids toàn bài kẹt ghi nhận vào unverified_outcomes và report", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "w2-unverified-outcome-"));
+  try {
+    createMultiModuleFixture(tmpDir, {
+      stuckLessonIds: ["L2-2"],
+    });
+
+    const out = execFileSync(
+      "deno",
+      ["run", "-A", "--no-config", IMPORT_SCRIPT, tmpDir, "--dry-run"],
+      { encoding: "utf8" }
+    );
+
+    // Summary JSON có unverified_outcomes chứa O1
+    const summaryMatch = out.match(/\{[\s\S]*?"dry_run":\s*true[\s\S]*?\n\}/);
+    assert.ok(summaryMatch, "Phải xuất JSON summary");
+    const summary = JSON.parse(summaryMatch[0]);
+    assert.ok(Array.isArray(summary.unverified_outcomes));
+    assert.equal(summary.unverified_outcomes.length, 1);
+    assert.equal(summary.unverified_outcomes[0], "O1");
+
+    // Sinh báo cáo run-report.md
+    const { reportPath, content } = generateRunReport(tmpDir, {
+      importResult: summary,
+    });
+    assert.ok(fs.existsSync(reportPath));
+    assert.ok(content.includes("Mục tiêu học tập mất bài kiểm chứng (Unverified Outcomes)"));
+    assert.ok(content.includes("O1"));
+    assert.ok(content.includes("Nắm vững Part B bài 2"));
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }

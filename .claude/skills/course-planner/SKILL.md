@@ -31,12 +31,18 @@ Tất cả dữ liệu được lưu trong thư mục `.course-plan/` ở gốc 
 
 Coordinator thực hiện tuần tự các bước sau. Một lần chạy chỉ có một điểm Human duy nhất: chọn một dòng trong bảng xếp hạng ở Bước 2. Sau đó coordinator tự động thực hiện liên tục các bước tiếp theo mà không dừng giữa chừng khi có handoff.
 
-### Bước 1: Snapshot Catalog
-Chạy script chụp snapshot:
+### Bước 1: Làm mới và Snapshot Catalog
+1. Làm mới dữ liệu catalog từ DB local (chỉ đọc):
+```bash
+node .claude/skills/course-planner/scripts/export-catalog.mjs
+```
+Script chạy `export-catalog.sql` qua container `supabase_db_corelia-app` và ghi vào `.course-plan/catalog-export.json`. Nếu container không chạy hoặc lệnh lỗi, script giữ nguyên file export cũ và phát cảnh báo.
+
+2. Chạy script chụp snapshot:
 ```bash
 node .claude/skills/course-planner/scripts/catalog-snapshot.mjs
 ```
-Script quét toàn bộ thư mục `.course-runs/*/` và file export tùy chọn `.course-plan/catalog-export.json` để cập nhật `.course-plan/catalog.json`.
+Script quét toàn bộ thư mục `.course-runs/*/` và `.course-plan/catalog-export.json` để cập nhật `.course-plan/catalog.json`.
 
 ### Bước 2: Lập Shortlist và Xếp hạng Đề xuất
 Kiểm tra xem đã có file shortlist nào trong `.course-plan/shortlists/` có `chosen_slug` mà khóa đó chưa vào sản xuất hay chưa.
@@ -122,10 +128,12 @@ Chủ đề do user đưa vào TUYỆT ĐỐI không được bỏ qua 5 Gate.
 
 ## Bảng Model cho Subagents
 
-Coordinator tuân thủ quy ước đặt Model như sau:
+Coordinator chạy bằng model của session, không dừng, không báo trước; ghi tên model coordinator vào `run-log.jsonl` và `run-report.md`.
 
-| Vai trò | Model | Ghi chú |
-|---|---|---|
-| Coordinator (`course-planner`) | Model của session | Điều phối, chạy script, tổng hợp |
-| Role 1: Dựng path (`roles/01-path.md`) | `sonnet` | Yêu cầu web research và đọc trang thật |
-| Role 2: Đánh giá candidate (`roles/02-candidate.md`) | `sonnet` | Đối chiếu platform và thẩm định outcome |
+Bảng model child có hai cột: Claude và ChatGPT. Quy ước: `haiku` → `luna`, `sonnet` → `terra`, `opus` → `astra`. Coordinator dùng cột ứng với nền tảng đang chạy. Nền tảng không cho chọn model của child: chạy bằng model mặc định và ghi điều đó vào báo cáo.
+
+| Vai trò | Model (Claude) | Model (ChatGPT) | Ghi chú |
+|---|---|---|---|
+| Coordinator (`course-planner`) | Model của session | Model của session | Điều phối, chạy script, tổng hợp |
+| Role 1: Dựng path (`roles/01-path.md`) | `sonnet` | `terra` | Yêu cầu web research và đọc trang thật |
+| Role 2: Đánh giá candidate (`roles/02-candidate.md`) | `sonnet` | `terra` | Đối chiếu platform và thẩm định outcome |

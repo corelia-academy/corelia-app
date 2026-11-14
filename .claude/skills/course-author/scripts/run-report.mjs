@@ -35,6 +35,8 @@ export function generateRunReport(courseDir, options = {}) {
   const pathSlug = handoff.path || "chưa_gắn_path";
   const rank = options.rank != null ? options.rank : 1;
   const gateResult = options.gateResult || "ĐẠT (Qua cả 6 Gate)";
+  const coordinatorModel = options.coordinatorModel || handoff.coordinator_model || "Mặc định của session";
+  const defaultChildModelNotice = Boolean(options.defaultChildModelNotice || handoff.default_child_model_notice);
 
   // 1. Danh sách module và bài
   const modulesList = [];
@@ -105,9 +107,14 @@ export function generateRunReport(courseDir, options = {}) {
     `- **Khóa đã chọn & Rank:** Rank ${rank}`,
     `- **Lộ trình (Path):** \`${pathSlug}\``,
     `- **Kết quả Gate:** ${gateResult}`,
-    "",
-    "## 2. Danh sách Module & Bài học",
+    `- **Model Coordinator:** \`${coordinatorModel}\``,
   ];
+
+  if (defaultChildModelNotice) {
+    lines.push("- **Ghi chú Model Child:** Nền tảng không hỗ trợ chỉ định model child; toàn bộ child chạy bằng model mặc định.");
+  }
+
+  lines.push("", "## 2. Danh sách Module & Bài học");
 
   if (modulesList.length === 0) {
     lines.push("_Chưa có danh sách module._");
@@ -166,6 +173,56 @@ export function generateRunReport(courseDir, options = {}) {
     lines.push("  ```");
   } else {
     lines.push("- Không thực hiện import.");
+  }
+  lines.push("");
+
+  // 4. Mục tiêu học tập bị mất bài kiểm chứng do bài kẹt
+  const allStuckIds = new Set([
+    ...stuckLessons.map((s) => s.lesson_id),
+    ...(options.stuckLessons || []),
+    ...(importResult?.stuck_lessons || []),
+  ]);
+
+  const passedOutcomeIds = new Set(
+    Array.isArray(options.unverifiedOutcomes)
+      ? options.unverifiedOutcomes.map((u) => (typeof u === "string" ? u : u.outcome_id))
+      : Array.isArray(importResult?.unverified_outcomes)
+      ? importResult.unverified_outcomes.map((u) => (typeof u === "string" ? u : u.outcome_id))
+      : []
+  );
+
+  const unverifiedOutcomes = [];
+  if (Array.isArray(curriculum.outcomes)) {
+    for (const out of curriculum.outcomes) {
+      if (typeof out === "object" && out !== null) {
+        const outId = out.outcome_id || "";
+        const isStuckByCheck =
+          Array.isArray(out.check_lesson_ids) &&
+          out.check_lesson_ids.length > 0 &&
+          out.check_lesson_ids.every((id) => allStuckIds.has(id));
+        const isStuckByOption = passedOutcomeIds.has(outId);
+
+        if (isStuckByCheck || isStuckByOption) {
+          unverifiedOutcomes.push({
+            outcome_id: outId,
+            text: out.text || "",
+            check_lesson_ids: out.check_lesson_ids || [],
+          });
+        }
+      }
+    }
+  }
+
+  lines.push("## 7. Mục tiêu học tập mất bài kiểm chứng (Unverified Outcomes)");
+  if (unverifiedOutcomes.length === 0) {
+    lines.push("- Không có mục tiêu học tập nào bị mất bài kiểm chứng.");
+  } else {
+    for (const u of unverifiedOutcomes) {
+      const idStr = u.outcome_id ? `**${u.outcome_id}** ` : "";
+      const textStr = u.text ? `(${u.text}): ` : ": ";
+      const lessonsStr = (u.check_lesson_ids || []).join(", ");
+      lines.push(`- ${idStr}${textStr}Toàn bộ bài kiểm chứng bị kẹt không publish (${lessonsStr}).`);
+    }
   }
   lines.push("");
 

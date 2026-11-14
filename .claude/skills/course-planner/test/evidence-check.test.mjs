@@ -98,3 +98,123 @@ test("evidence-check: P-09 - file JSON hỏng báo lỗi và thoát mã khác 0"
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test("evidence-check: W3 - kiểm tra quote trong trang, khoảng trắng, dấu nháy, direct thiếu quote, trang rỗng JS, inferred", async () => {
+  const pageWithQuote = `
+    <html>
+      <head><title>Test Page</title></head>
+      <body>
+        <h1>Web3 Security Guidelines</h1>
+        <p>Ethereum Developer Roadmap requires “sequential progress” through core smart contract concepts before audit practice.</p>
+      </body>
+    </html>
+  `;
+
+  const emptyJsPage = `
+    <html>
+      <head><script src="app.js"></script><style>body { color: red; }</style></head>
+      <body>
+        <noscript>You need to enable JavaScript to run this app.</noscript>
+      </body>
+    </html>
+  `;
+
+  const mockFetch = async (url) => {
+    if (url === "https://example.com/has-quote") {
+      return { status: 200, ok: true, text: async () => pageWithQuote };
+    }
+    if (url === "https://example.com/no-quote") {
+      return { status: 200, ok: true, text: async () => "<html><body>Different content completely unrelated to the quote</body></html>" };
+    }
+    if (url === "https://example.com/empty-js") {
+      return { status: 200, ok: true, text: async () => emptyJsPage };
+    }
+    if (url === "https://example.com/inferred-url") {
+      return { status: 200, ok: true, text: async () => "<html><body>Any text content for inferred evidence</body></html>" };
+    }
+    return { status: 404, ok: false, text: async () => "Not found" };
+  };
+
+  // 1. Quote có trong trang -> đạt
+  const item1 = [
+    {
+      url: "https://example.com/has-quote",
+      file: "sl.json",
+      field: "shortlist[0].why_now.urls[0]",
+      kind: "direct",
+      quote: "Ethereum Developer Roadmap requires “sequential progress” through core smart contract concepts",
+    },
+  ];
+  const res1 = await checkUrls(item1, { fetchFn: mockFetch });
+  assert.strictEqual(res1.ok, true, "Quote có trong trang phải đạt");
+
+  // 2. Quote khác nhau chỉ ở khoảng trắng và kiểu dấu nháy (dấu nháy cong vs dấu nháy thẳng, nhiều dấu cách) -> đạt
+  const item2 = [
+    {
+      url: "https://example.com/has-quote",
+      file: "sl.json",
+      field: "shortlist[0].why_now.urls[0]",
+      kind: "direct",
+      quote: 'Ethereum  Developer   Roadmap requires "sequential progress"  through core smart contract',
+    },
+  ];
+  const res2 = await checkUrls(item2, { fetchFn: mockFetch });
+  assert.strictEqual(res2.ok, true, "Quote khác khoảng trắng và dấu nháy vẫn phải đạt");
+
+  // 3. Quote không có trong trang -> lỗi, nêu file, trường và URL
+  const item3 = [
+    {
+      url: "https://example.com/no-quote",
+      file: "sl.json",
+      field: "shortlist[0].why_now.urls[0]",
+      kind: "direct",
+      quote: "Ethereum Developer Roadmap requires sequential progress",
+    },
+  ];
+  const res3 = await checkUrls(item3, { fetchFn: mockFetch });
+  assert.strictEqual(res3.ok, false);
+  assert.strictEqual(res3.errors.length, 1);
+  assert.match(res3.errors[0].error, /Quote không có trong nội dung trang/);
+  assert.strictEqual(res3.errors[0].file, "sl.json");
+  assert.strictEqual(res3.errors[0].field, "shortlist[0].why_now.urls[0]");
+
+  // 4. direct thiếu quote -> lỗi
+  const item4 = [
+    {
+      url: "https://example.com/has-quote",
+      file: "sl.json",
+      field: "shortlist[0].why_now.urls[0]",
+      kind: "direct",
+      quote: "",
+    },
+  ];
+  const res4 = await checkUrls(item4, { fetchFn: mockFetch });
+  assert.strictEqual(res4.ok, false);
+  assert.match(res4.errors[0].error, /thiếu quote bắt buộc/);
+
+  // 5. Trang rỗng sau khi bỏ thẻ HTML (cần JS) -> báo lỗi riêng
+  const item5 = [
+    {
+      url: "https://example.com/empty-js",
+      file: "sl.json",
+      field: "shortlist[0].why_now.urls[0]",
+      kind: "direct",
+      quote: "Some quote",
+    },
+  ];
+  const res5 = await checkUrls(item5, { fetchFn: mockFetch });
+  assert.strictEqual(res5.ok, false);
+  assert.match(res5.errors[0].error, /yêu cầu JavaScript/);
+
+  // 6. kind: "inferred" không có quote -> đạt
+  const item6 = [
+    {
+      url: "https://example.com/inferred-url",
+      file: "sl.json",
+      field: "shortlist[0].why_now.urls[0]",
+      kind: "inferred",
+    },
+  ];
+  const res6 = await checkUrls(item6, { fetchFn: mockFetch });
+  assert.strictEqual(res6.ok, true, "inferred không có quote phải đạt");
+});

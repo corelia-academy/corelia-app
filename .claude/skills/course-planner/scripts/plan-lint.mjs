@@ -244,6 +244,11 @@ export function lintShortlistData(shortlistData, { catalogData = null, proposalD
       if (whyNow.kind !== "direct" && whyNow.kind !== "inferred") {
         add(slug, "why_now-kind", `kind "${whyNow.kind}" không hợp lệ (phải là direct|inferred)`);
       }
+      if (whyNow.kind === "direct") {
+        if (!whyNow.quote || typeof whyNow.quote !== "string" || whyNow.quote.trim().length < 20 || whyNow.quote.trim().length > 300) {
+          add(slug, "why_now-quote", 'why_now có kind: "direct" bắt buộc có quote từ 20 đến 300 ký tự');
+        }
+      }
     }
 
     // Kiểm tra criteria
@@ -267,9 +272,13 @@ export function lintShortlistData(shortlistData, { catalogData = null, proposalD
         }
       }
 
-      // timely.met: true đòi hỏi why_now.kind === "direct"
-      if (criteria.timely?.met === true && whyNow?.kind !== "direct") {
-        add(slug, "timely-direct", 'tiêu chí "timely" có met: true đòi hỏi why_now.kind phải là "direct"');
+      // timely.met: true đòi hỏi why_now.kind === "direct" và có quote
+      if (criteria.timely?.met === true) {
+        if (whyNow?.kind !== "direct") {
+          add(slug, "timely-direct", 'tiêu chí "timely" có met: true đòi hỏi why_now.kind phải là "direct"');
+        } else if (!whyNow?.quote || typeof whyNow.quote !== "string" || whyNow.quote.trim().length < 20 || whyNow.quote.trim().length > 300) {
+          add(slug, "timely-quote", 'tiêu chí "timely" có met: true đòi hỏi why_now có quote từ 20 đến 300 ký tự');
+        }
       }
     }
 

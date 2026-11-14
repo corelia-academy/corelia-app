@@ -61,6 +61,7 @@ Ghi kết quả vào file `.course-plan/shortlists/<YYYY-MM-DD>-<n>.json`:
           "https://example.com/evidence-article"
         ],
         "kind": "direct|inferred",
+        "quote": "Đoạn trích nguyên văn từ 20-300 ký tự lấy trực tiếp từ trang URL (bắt buộc khi kind: direct)",
         "observed_on": "YYYY-MM-DD"
       },
       "corelia_hook": "Sản phẩm cuối khóa nộp tham gia Hackathon hàng quý hoặc nhận Chứng chỉ chuyên môn Corelia.",

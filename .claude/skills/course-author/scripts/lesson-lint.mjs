@@ -123,6 +123,31 @@ for (const id of ids) {
     const ta = [...t.matchAll(/(?<![\p{L}\p{N}])([Tt]a)(?![\p{L}\p{N}])/gu)].find((m) => !/ch[uú]ng\s$/i.test(t.slice(Math.max(0, m.index - 6), m.index)));
     const pron = t.match(/(?<![\p{L}\p{N}])(?:Mình|(?:mình|ta) (?:sẽ|thử|cùng|đã)|tôi|chúng tôi|các em)(?![\p{L}\p{N}])/u) ?? (ta ? [ta[1]] : null);
     if (pron) add(id, "xưng-hô", `${where}: "${(pron[1] ?? pron[0]).trim()}" (dùng bạn/chúng ta/hãy)`);
+
+    // W-14: Mọi "Bài N" trong chữ người học thấy phải thuộc một trong hai dạng chuẩn:
+    // Dạng 1: "Part X, Bài N"
+    // Dạng 2: "Part X (Bài N, Bài M...)"
+    const groupRanges = [];
+    const groupRegex = /Part\s+[A-Z]\s*\([^)]+\)/gi;
+    let gMatch;
+    while ((gMatch = groupRegex.exec(t)) !== null) {
+      groupRanges.push([gMatch.index, gMatch.index + gMatch[0].length]);
+    }
+
+    const lessonRegex = /\bBài\s+\d+\b/gi;
+    let lMatch;
+    while ((lMatch = lessonRegex.exec(t)) !== null) {
+      const mIndex = lMatch.index;
+      const mLen = lMatch[0].length;
+      const prefix = t.slice(0, mIndex);
+      const isSingleFormat = /Part\s+[A-Z]\s*,\s*$/i.test(prefix);
+      const isGroupFormat = groupRanges.some(([start, end]) => mIndex >= start && mIndex + mLen <= end);
+
+      if (!isSingleFormat && !isGroupFormat) {
+        add(id, "nhãn-bài", `${where}: "${lMatch[0]}" tham chiếu bài ngoài dạng chuẩn (cần dùng "Part X, Bài N" hoặc "Part X (Bài N, Bài M...)")`);
+      }
+    }
+
     if (validLabels) for (const m of t.matchAll(/Part [A-H], Bài \d+/g)) if (!validLabels.has(m[0])) add(id, "nhãn-bài", `${where}: "${m[0]}" không có trong labels.json`);
   }
 

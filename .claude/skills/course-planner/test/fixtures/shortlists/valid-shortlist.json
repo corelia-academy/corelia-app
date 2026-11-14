@@ -37,6 +37,7 @@
           "https://rekt.news"
         ],
         "kind": "direct",
+        "quote": "Leaderboard of the biggest hacks in DeFi with detailed post-mortems and loss metrics",
         "observed_on": "2026-11-13"
       },
       "corelia_hook": "Chứng chỉ bảo mật Smart Contract trên Corelia",
@@ -115,6 +116,7 @@
           "https://solana.com"
         ],
         "kind": "direct",
+        "quote": "Solana is a blockchain built for mass adoption with fast finality and high throughput",
         "observed_on": "2026-11-13"
       },
       "corelia_hook": "Dự án Solana Hackathon Corelia",
@@ -191,6 +193,7 @@
           "https://l2beat.com"
         ],
         "kind": "direct",
+        "quote": "L2BEAT provides comprehensive analytics and risk assessment of layer two protocols",
         "observed_on": "2026-11-13"
       },
       "corelia_hook": "Chứng chỉ Arbitrum Builder",
@@ -267,6 +270,7 @@
           "https://wagmi.sh"
         ],
         "kind": "direct",
+        "quote": "Type Safe, Extensible, and Modular React Hooks for Ethereum and EVM-compatible networks",
         "observed_on": "2026-11-13"
       },
       "corelia_hook": "Bài tập dự án Web3 Frontend trên Corelia",

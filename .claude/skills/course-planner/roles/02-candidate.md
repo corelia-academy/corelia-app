@@ -90,6 +90,7 @@ File được ghi tại `.course-plan/evaluations/<slug>.json`:
     {
       "claim": "Reentrancy vẫn nằm trong top 3 nguyên nhân thất thoát tài sản trên Ethereum theo các báo cáo bảo mật gần nhất",
       "kind": "direct",
+      "quote": "Reentrancy vulnerabilities remain among the top three causes of protocol asset loss across EVM networks",
       "urls": ["https://example.com/reports/evm-vulnerabilities"],
       "observed_on": "2026-11-13"
     }
