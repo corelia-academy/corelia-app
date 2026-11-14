@@ -37,8 +37,8 @@ import { useAuth } from "@/stores/authStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
-// TODO(figma-learn): thêm lại ArrowLeft khi bỏ comment nút quay lại
 import { ArrowCounterClockwise, DotsSixVertical, SidebarSimple } from "@phosphor-icons/react";
+import { BackLink } from "@/components/navigation/BackLink";
 import { appPath } from "@/lib/appUrl";
 import { prefetchRouteChunk } from "@/lib/routePrefetch";
 import { useTheme } from "next-themes";
@@ -758,17 +758,9 @@ function LearnWorkspace() {
     <AppHeaderBar>
         {/* Left: nút quay lại khóa học (icon) + logo, theo Figma */}
         <div className="flex items-center gap-2md">
-          {/* TODO(figma-learn): tạm ẩn nút quay lại khóa học trước logo, chờ thiết kế
-          <Button
-            variant="cta" hierarchy="tertiary" iconOnly
-            size="small"
-            nativeButton={false}
-            render={<Link to={`/courses/${courseId}`} />}
-            aria-label={translate("detail.learn.backToCourse")}
-          >
-            <ArrowLeft weight="duotone" aria-hidden />
-          </Button>
-          */}
+          <BackLink to={`/courses/${courseId}`} className="min-w-8 justify-center">
+            <span className="sr-only">{translate("detail.learn.backToCourse")}</span>
+          </BackLink>
           <Link
             to="/"
             className="flex h-10 items-center gap-2 text-sm font-medium"
