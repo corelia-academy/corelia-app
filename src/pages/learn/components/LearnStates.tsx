@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@phosphor-icons/react";
 import { LessonPlayerSkeletonBody } from "@/components/loading/RouteSkeleton";
 import { skeletonRevealClass } from "@/components/loading/skeletonReveal";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ export function LearnMissingCourseIdState({
           to="/courses"
           className="mt-4 inline-flex items-center gap-2 text-sm text-foreground-muted transition-colors duration-150 hover:text-foreground"
         >
-          <ArrowLeft className="w-4 h-4" aria-hidden />{" "}
+          <ArrowLeft weight="duotone" className="size-4" aria-hidden />{" "}
           {translate("detail.learn.backToCourses")}
         </Link>
       </div>

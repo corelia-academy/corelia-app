@@ -1,4 +1,4 @@
-import { MoreHorizontal } from "lucide-react";
+import { DotsThree } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,7 @@ export function LearnFooterMenu({
       <DropdownMenuTrigger
         render={
           <Button type="button" variant="cta" hierarchy="tertiary" iconOnly size="small" aria-label={t("learning.moreActions")}>
-            <MoreHorizontal className="size-4" aria-hidden />
+            <DotsThree weight="bold" className="size-5" aria-hidden />
           </Button>
         }
       />

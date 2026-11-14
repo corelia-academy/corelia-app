@@ -159,10 +159,19 @@ it("offers Mark as undone and Next once a text lesson is done", async () => {
   expect(navigate).toHaveBeenCalledExactlyOnceWith("next");
 });
 
-it("offers only Next once a quiz is done", () => {
-  const { buttons, render } = footerCard({ lesson: { ...lesson, title: "Quiz", lesson_format: "quiz" } });
+it("offers Redo and Next once a quiz is done, and asks before starting over", async () => {
+  const { buttons, reset, render } = footerCard({ lesson: { ...lesson, title: "Quiz", lesson_format: "quiz" } });
   render({ completed: true });
-  expect(buttons().map(button => button.textContent)).toEqual(["learning.nextShort"]);
+  expect(buttons().map(button => button.textContent)).toEqual(["learning.redoShort", "learning.nextShort"]);
+  await act(async () => buttons()[0].click());
+  expect(document.body.textContent).toContain("learning.redoConfirm");
+  expect(reset).not.toHaveBeenCalled();
+});
+
+it("offers Redo and Next once a code exercise is done", () => {
+  const { buttons, render } = footerCard({ lesson: { ...lesson, title: "Code", lesson_format: "code_exercise" } });
+  render({ completed: true });
+  expect(buttons().map(button => button.textContent)).toEqual(["learning.redoShort", "learning.nextShort"]);
 });
 
 it("puts the quiz score in its own slot when the footer offers one", () => {

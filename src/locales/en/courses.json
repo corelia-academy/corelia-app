@@ -562,6 +562,7 @@
     "markIncomplete": "Mark as incomplete",
     "markCompleteShort": "Complete",
     "markIncompleteShort": "Mark as undone",
+    "redoShort": "Redo",
     "redoFromStart": "Start over",
     "redoConfirm": "Start this exercise over? Your current answers and local draft will be cleared. Previous submissions will stay in your history.",
     "resources": "Resources",

@@ -740,21 +740,19 @@ function LearnWorkspace() {
       />}
 
       {isFinalAssignment && shouldShowFinalAssignment ? (
-        <div className="px-4 pb-8 sm:px-6">
-          <FinalAssignmentPanel
-            courseId={courseId}
-            course={course}
-            profileId={profile?.id ?? ""}
-            initialArtifacts={practiceArtifacts}
-            submission={submission.submission}
-            submissionState={submission.state}
-            onRetryLoad={() => void submission.refresh()}
-            translate={translate}
-            onSubmit={async (input) => {
-              await submission.submit(input);
-            }}
-          />
-        </div>
+        <FinalAssignmentPanel
+          courseId={courseId}
+          course={course}
+          profileId={profile?.id ?? ""}
+          initialArtifacts={practiceArtifacts}
+          submission={submission.submission}
+          submissionState={submission.state}
+          onRetryLoad={() => void submission.refresh()}
+          translate={translate}
+          onSubmit={async (input) => {
+            await submission.submit(input);
+          }}
+        />
       ) : null}
       {isFinalAssignment && !shouldShowFinalAssignment && (
         <div className="space-y-4 p-6">
