@@ -6,7 +6,8 @@ import { fileURLToPath } from "node:url";
 
 export function decideNext({
   repoRoot = ".",
-  nowDate = null
+  nowDate = null,
+  onlySlug = null,
 } = {}) {
   const root = path.resolve(repoRoot);
   const pathsDir = path.join(root, ".course-plan", "paths");
@@ -137,10 +138,12 @@ export function decideNext({
   // Gán minPriority và primaryPath cho mỗi candidate
   for (const cand of candidateMap.values()) {
     cand.paths.sort((a, b) => {
-      if (a.priority !== b.priority) return a.priority - b.priority;
+      const pa = typeof a.priority === "number" ? a.priority : (a.origin ? 1 : 9999);
+      const pb = typeof b.priority === "number" ? b.priority : (b.origin ? 1 : 9999);
+      if (pa !== pb) return pa - pb;
       return a.slug.localeCompare(b.slug);
     });
-    cand.minPriority = cand.paths[0].priority;
+    cand.minPriority = typeof cand.paths[0].priority === "number" ? cand.paths[0].priority : (cand.paths[0].origin ? 1 : 9999);
     cand.primaryPath = cand.paths[0];
     cand.suggested_order = cand.primaryPath.suggested_order;
   }
@@ -155,7 +158,7 @@ export function decideNext({
   // 4. Kiểm tra điều kiện "Sẵn sàng" TRƯỚC (V-02)
   // Khóa chưa đủ điều kiện tiên quyết (requires chưa produced / in_catalog) vào blocked ngay,
   // không bắt buộc phải có evaluation và không bị xếp vào needs_research.
-  const candidateList = Array.from(candidateMap.values());
+  const candidateList = Array.from(candidateMap.values()).filter((c) => !onlySlug || c.slug === onlySlug);
 
   for (const cand of candidateList) {
     const unmetRequires = [];
@@ -337,7 +340,7 @@ export function decideNext({
     }
 
     // Gate 6: path của ứng viên có origin trỏ tới một shortlist tồn tại,
-    // trong đó chosen_slug bằng origin.pitch_slug và user_quote khác rỗng.
+    // trong đó chosen_slug bằng origin.pitch_slug.
     const pathOrigin = cand.primaryPath?.origin;
     if (!pathOrigin || typeof pathOrigin !== "object") {
       needs_research.push({
@@ -436,16 +439,6 @@ export function decideNext({
         title: cand.title,
         path_slug: cand.primaryPath.slug,
         reason: `shortlist "${shortlistRef}" không chứa đề xuất có slug "${pitchSlug}"`
-      });
-      continue;
-    }
-
-    if (!slData.user_quote || typeof slData.user_quote !== "string" || !slData.user_quote.trim()) {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: "Shortlist thiếu user_quote của Human"
       });
       continue;
     }
@@ -689,16 +682,22 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
   const args = process.argv.slice(2);
   let shouldWrite = false;
   let root = ".";
+  let onlySlug = null;
 
-  for (const arg of args) {
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
     if (arg === "--write") {
       shouldWrite = true;
+    } else if (arg === "--only" && args[i + 1]) {
+      onlySlug = args[++i];
+    } else if (arg.startsWith("--only=")) {
+      onlySlug = arg.slice("--only=".length);
     } else if (!arg.startsWith("--")) {
       root = arg;
     }
   }
 
-  const decision = decideNext({ repoRoot: root });
+  const decision = decideNext({ repoRoot: root, onlySlug });
 
   if (shouldWrite) {
     const { fileName, filePath } = saveDecision(decision, root);

@@ -379,8 +379,72 @@ export function lintPlans(repoRoot = ".") {
       problems.push(`${file}: status "${p.status}" không hợp lệ (phải là draft|approved)`);
     }
 
-    if (typeof p.priority !== "number" || !Number.isInteger(p.priority) || p.priority < 1) {
-      problems.push(`${file}: priority phải là số nguyên >= 1`);
+    // P-08 & AC3: Kiểm tra origin trước để xác định tính hợp lệ của origin
+    let hasValidOrigin = false;
+    if (p.origin) {
+      if (typeof p.origin !== "object") {
+        problems.push(`${file}: origin phải là object`);
+      } else {
+        const pitchSlug = p.origin.pitch_slug;
+        const shortlistRef = p.origin.shortlist;
+        const pathCourseSlugs = new Set((p.courses || []).map((c) => c?.slug).filter(Boolean));
+
+        let originErr = false;
+        if (!pitchSlug || typeof pitchSlug !== "string") {
+          problems.push(`${file}: origin.pitch_slug không được để trống`);
+          originErr = true;
+        } else if (!pathCourseSlugs.has(pitchSlug)) {
+          problems.push(`${file}: origin.pitch_slug "${pitchSlug}" không thuộc danh sách courses[] của path`);
+          originErr = true;
+        }
+
+        if (!shortlistRef || typeof shortlistRef !== "string") {
+          problems.push(`${file}: origin.shortlist không được để trống`);
+          originErr = true;
+        } else {
+          let slPath = path.isAbsolute(shortlistRef)
+            ? shortlistRef
+            : path.join(root, shortlistRef);
+          if (!fs.existsSync(slPath)) {
+            const inShortlistsDir = path.join(root, ".course-plan", "shortlists", path.basename(shortlistRef));
+            if (fs.existsSync(inShortlistsDir)) {
+              slPath = inShortlistsDir;
+            }
+          }
+
+          if (!fs.existsSync(slPath)) {
+            problems.push(`${file}: file shortlist "${shortlistRef}" không tồn tại`);
+            originErr = true;
+          } else {
+            try {
+              const slData = JSON.parse(fs.readFileSync(slPath, "utf8"));
+              const slProposals = Array.isArray(slData.shortlist) ? slData.shortlist : [];
+              const hasPitch = slProposals.some((prop) => prop?.slug === pitchSlug);
+              if (!hasPitch) {
+                problems.push(`${file}: shortlist "${shortlistRef}" không chứa đề xuất có slug "${pitchSlug}"`);
+                originErr = true;
+              }
+            } catch (err) {
+              problems.push(`${file}: file shortlist "${shortlistRef}" hỏng: ${err.message}`);
+              originErr = true;
+            }
+          }
+        }
+        if (!originErr) {
+          hasValidOrigin = true;
+        }
+      }
+    }
+
+    // AC3: Path có origin hợp lệ thì không bắt buộc priority; path không origin hoặc origin lỗi bắt buộc priority >= 1
+    if (p.priority != null) {
+      if (typeof p.priority !== "number" || !Number.isInteger(p.priority) || p.priority < 1) {
+        problems.push(`${file}: priority phải là số nguyên >= 1`);
+      }
+    } else {
+      if (!hasValidOrigin) {
+        problems.push(`${file}: priority phải là số nguyên >= 1`);
+      }
     }
 
     if (!Array.isArray(p.scope)) {
@@ -438,51 +502,7 @@ export function lintPlans(repoRoot = ".") {
       }
     }
 
-    // P-08: Kiểm tra origin nếu path có origin
-    if (p.origin) {
-      if (typeof p.origin !== "object") {
-        problems.push(`${file}: origin phải là object`);
-      } else {
-        const pitchSlug = p.origin.pitch_slug;
-        const shortlistRef = p.origin.shortlist;
-        const pathCourseSlugs = new Set((p.courses || []).map((c) => c?.slug).filter(Boolean));
 
-        if (!pitchSlug || typeof pitchSlug !== "string") {
-          problems.push(`${file}: origin.pitch_slug không được để trống`);
-        } else if (!pathCourseSlugs.has(pitchSlug)) {
-          problems.push(`${file}: origin.pitch_slug "${pitchSlug}" không thuộc danh sách courses[] của path`);
-        }
-
-        if (!shortlistRef || typeof shortlistRef !== "string") {
-          problems.push(`${file}: origin.shortlist không được để trống`);
-        } else {
-          let slPath = path.isAbsolute(shortlistRef)
-            ? shortlistRef
-            : path.join(root, shortlistRef);
-          if (!fs.existsSync(slPath)) {
-            const inShortlistsDir = path.join(root, ".course-plan", "shortlists", path.basename(shortlistRef));
-            if (fs.existsSync(inShortlistsDir)) {
-              slPath = inShortlistsDir;
-            }
-          }
-
-          if (!fs.existsSync(slPath)) {
-            problems.push(`${file}: file shortlist "${shortlistRef}" không tồn tại`);
-          } else {
-            try {
-              const slData = JSON.parse(fs.readFileSync(slPath, "utf8"));
-              const slProposals = Array.isArray(slData.shortlist) ? slData.shortlist : [];
-              const hasPitch = slProposals.some((prop) => prop?.slug === pitchSlug);
-              if (!hasPitch) {
-                problems.push(`${file}: shortlist "${shortlistRef}" không chứa đề xuất có slug "${pitchSlug}"`);
-              }
-            } catch (err) {
-              problems.push(`${file}: file shortlist "${shortlistRef}" hỏng: ${err.message}`);
-            }
-          }
-        }
-      }
-    }
 
     paths.push({ file, data: p });
   }

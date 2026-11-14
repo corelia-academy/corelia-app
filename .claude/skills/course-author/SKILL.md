@@ -84,7 +84,7 @@ Sau mỗi bài viết xong, coordinator chạy `node .claude/skills/course-autho
 
 ## Chuẩn bị trước khi viết lesson
 
-Ngay sau bước 1, trước bước 2, coordinator kiểm công cụ để chạy kiểm chứng cho `brief.code_language` và `brief.tools` (ví dụ `cargo --version` cho Rust, hoặc runtime có sẵn trong container mà máy đã có). Thiếu công cụ thì hỏi user đúng một lần, kèm các lựa chọn: dùng image/container chính thức (phải nêu tên image và dung lượng vì là tải file), user tự cài, hoặc ghi `not_run` cho mọi bước cần công cụ đó. Không pull, tải hay cài khi chưa có câu trả lời. Có công cụ thì ghi phiên bản đang dùng để các child chạy cùng một môi trường.
+Ngay sau bước 1, trước bước 2, coordinator kiểm công cụ để chạy kiểm chứng cho `brief.code_language` và `brief.tools` (ví dụ `cargo --version` cho Rust, hoặc runtime có sẵn trong container mà máy đã có). Khi có `handoff.json`, nếu thiếu công cụ: TUYỆT ĐỐI không hỏi user, không pull, tải hay cài; ghi nhận `not_run` cho mọi bước kiểm chứng cần công cụ đó và đưa vào báo cáo cuối. Khi không có handoff: thiếu công cụ thì hỏi user đúng một lần, kèm các lựa chọn: dùng image/container chính thức (phải nêu tên image và dung lượng vì là tải file), user tự cài, hoặc ghi `not_run` cho mọi bước cần công cụ đó. Có công cụ thì ghi phiên bản đang dùng để các child chạy cùng một môi trường.
 
 ## Khi nào hỏi user
 
@@ -94,7 +94,9 @@ Chỉ hỏi khi contract không quyết định được. Các trường hợp d
 - Bài `fill` cần hơn 5 chỗ điền, hoặc logic không chấm được bằng so khớp chuỗi: theo mục "Chọn dạng `code_exercise`" trong `platform.md`.
 - Outcome "tự viết trọn vẹn" chỉ kiểm được từng phần: theo mục phủ outcome trong `roles/03-curriculum.md`.
 
-Hỏi khi: không có handoff và thiếu tên khóa hoặc đối tượng, thiếu công cụ kiểm chứng (mục trước), hoặc lần chạy lại bị từ chối với đúng lý do cũ (mục Kiểm output và chạy lại). Có handoff thì lấy các trường từ handoff, không hỏi lại.
+Khi có handoff: TUYỆT ĐỐI không hỏi user giữa chừng; các trường hợp thiếu công cụ được ghi `not_run`, lần chạy lại bị từ chối với đúng lý do cũ thì đánh dấu bài đó bị kẹt, tiếp tục các phần khác và đưa vào báo cáo cuối. (Lưu ý: Review không được coi `not_run` ở phần cốt lõi là `pass`; bài bị kẹt vì thế sẽ được nhập với `published = false`).
+
+Khi KHÔNG có handoff: hỏi khi thiếu tên khóa hoặc đối tượng, thiếu công cụ kiểm chứng (mục trước), hoặc lần chạy lại bị từ chối với đúng lý do cũ (mục Kiểm output và chạy lại). Có handoff thì lấy các trường từ handoff, không hỏi lại.
 
 ## Model
 
@@ -133,7 +135,7 @@ Lesson có sơ đồ: coordinator chạy thêm `deno run -A --no-config scripts/
 
 - **Đạt:** sang bước sau.
 - **Không đạt, hoặc review trả `needs_fix`:** gọi lại child của bước đó, đưa kèm lý do không đạt (hoặc các issue blocking của review) và output cũ. Child sửa đúng các điểm được nêu, giữ nguyên phần đã đạt.
-- **Dừng và báo user** khi lần chạy lại bị từ chối với đúng lý do của lần trước. Khi đó lỗi nằm ở hợp đồng (file role, platform hoặc đầu vào) chứ không nằm ở output; báo lý do, bước và file liên quan để user sửa hợp đồng.
+- **Xử lý khi lần chạy lại bị từ chối với đúng lý do cũ:** Khi có handoff, coordinator không dừng hỏi user mà đánh dấu bài học/phần đó bị kẹt, tiếp tục các bài khác của khóa và đưa vào báo cáo cuối. Khi KHÔNG có handoff, dừng và báo user vì lỗi nằm ở hợp đồng (file role, platform hoặc đầu vào); báo lý do, bước và file liên quan để user sửa hợp đồng.
 
 ## Chạy tiếp và trần số vòng viết-review
 
@@ -159,12 +161,26 @@ Kết quả thật khác với kết quả mong đợi trong bài thì lesson kh
 
 ## Hoàn thành
 
-Trước khi báo xong: chạy `node .claude/skills/course-author/scripts/lesson-lint.mjs .course-runs/<slug>` và `node .claude/skills/course-author/scripts/review-lint.mjs .course-runs/<slug>` trên toàn khóa, và `deno run -A --no-config scripts/studio/diagram-lint.ts lessons/<lesson_id>.json` cho mọi bài có sơ đồ. Còn dòng lỗi thì khóa chưa xong.
+Trước khi báo xong: chạy `node .claude/skills/course-author/scripts/lesson-lint.mjs .course-runs/<slug>` và `node .claude/skills/course-author/scripts/review-lint.mjs .course-runs/<slug>` trên toàn khóa, và `deno run -A --no-config scripts/studio/diagram-lint.ts lessons/<lesson_id>.json` cho mọi bài có sơ đồ.
 
-Khóa xong khi mọi file ở trên đạt, mọi kiểm tra máy móc không còn dòng lỗi và mọi review là `pass`. Báo user:
+Điều kiện hoàn thành:
+- **Khi KHÔNG có handoff:** Khóa xong khi mọi file ở trên đạt, mọi kiểm tra máy móc không còn dòng lỗi và mọi review là `pass`. Còn dòng lỗi thì khóa chưa xong. Không tự import mà chờ lệnh từ user.
+- **Khi CÓ handoff:** Khóa đủ điều kiện nhập khi mọi dòng lỗi của `lesson-lint`, `review-lint`, `diagram-lint` chỉ thuộc các bài bị kẹt (các bài quá trần 3 vòng viết–review chưa đạt) và mọi bài khác đều ở trạng thái `đạt` (review `pass`). Nếu còn dòng lỗi ở bài không kẹt thì chưa nhập.
+
+Báo user:
 
 - Danh sách module, lesson và loại bài
 - Các bước thực hành `not_run` và lý do
 - Các `open_questions` còn lại trong research
 
-Không tự import. Khi user yêu cầu import vào stack local: chạy `SERVICE_KEY=<local_service_role> deno run -A --no-config .claude/skills/course-author/scripts/import-local.ts .course-runs/<slug>` (hỗ trợ cờ `--dry-run` để chỉ kiểm tra dữ liệu và in SQL mà không kết nối DB hay storage; script mặc định dừng nếu khóa đã tồn tại trong DB local). Skill không có script cho staging; việc đưa lên môi trường từ xa tuân thủ quy trình release của repo.
+Khi có handoff và khóa đủ điều kiện nhập ở trên, coordinator tự động thực hiện nhập vào Supabase local stack:
+- Lấy `SERVICE_KEY` tự động từ lệnh `supabase status` của stack local (chỉ nhắm `127.0.0.1:54321`, không đọc từ file `.env`, tuyệt đối không in key ra log hay báo cáo).
+- Nếu stack local không chạy hoặc không lấy được key: không tự ý khởi động stack; DỪNG, báo cáo ghi rõ lệnh nhập thủ công để Human chạy.
+- Chạy script import: `deno run -A --no-config .claude/skills/course-author/scripts/import-local.ts .course-runs/<slug>`.
+  - Script tự động xác định các bài bị kẹt bằng logic chung với `course-status.mjs` (mọi bài không ở trạng thái `đạt`); các bài đó được nhập với `published = false`.
+  - Nếu có ít nhất một bài bị kẹt, khóa được gán `data.is_updating = true`.
+  - Nếu mọi bài đều bị kẹt, khóa được lưu với `courses.published = false`.
+  - Không có bài nào bị kẹt: khóa và toàn bộ bài học được publish bình thường.
+  - Script mặc định dừng nếu khóa đã tồn tại trong DB local.
+- Đối với khóa có `kind: complete_existing`: không nhập DB, báo cáo nêu rõ lý do (pipeline chỉ tạo khóa mới; import dừng khi khóa tồn tại).
+- Cuối cùng, coordinator xuất file báo cáo tổng kết `.course-runs/<slug>/run-report.md` và in cùng nội dung ra màn hình. Khi KHÔNG có handoff, không tự import mà chờ lệnh từ user.

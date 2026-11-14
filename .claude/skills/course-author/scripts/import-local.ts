@@ -3,6 +3,7 @@
 // Chỉ nhắm stack local (http://127.0.0.1:54321 và container supabase_db_corelia-app).
 // Chạy: SERVICE_KEY=<local_service_role> deno run -A --no-config import-local.ts <thư-mục-khóa> [--dry-run]
 import * as path from "jsr:@std/path@1";
+import { getStuckLessons } from "./course-status-lib.mjs";
 import {
   checkDiagram,
   layoutIssues,
@@ -26,9 +27,65 @@ const rawArgs = Deno.args.filter((a) => !a.startsWith("--"));
 const isDryRun = Deno.args.includes("--dry-run");
 const targetDir = rawArgs[0] ? path.resolve(rawArgs[0]) : Deno.cwd();
 
-if (!isDryRun) {
-  const serviceKey = Deno.env.get("SERVICE_KEY");
-  if (!serviceKey) throw new Error("Thiếu biến môi trường SERVICE_KEY (cần service_role key của local Supabase)");
+// Tự động xác định danh sách bài bị kẹt bằng logic chung với course-status.mjs (mọi bài không ở trạng thái "đạt")
+let autoStuckLessons: string[];
+try {
+  autoStuckLessons = getStuckLessons(targetDir);
+} catch (err: any) {
+  console.error(`Không thể xác định trạng thái bài học từ ${targetDir}: ${err.message}`);
+  Deno.exit(1);
+}
+const stuckLessonSet = new Set<string>(autoStuckLessons);
+
+// Cờ CLI --stuck-lessons=<id1,id2> nếu có thì cộng thêm vào danh sách, không thay thế
+const stuckArg = Deno.args.find((a) => a.startsWith("--stuck-lessons="))?.slice("--stuck-lessons=".length);
+if (stuckArg) {
+  const cliStuckLessons = stuckArg.split(",").map((s) => s.trim()).filter(Boolean);
+  for (const id of cliStuckLessons) {
+    stuckLessonSet.add(id);
+  }
+}
+
+let serviceKey = Deno.env.get("SERVICE_KEY");
+
+if (!isDryRun && !serviceKey) {
+  // Thử tự động lấy SERVICE_KEY từ supabase status của stack local
+  try {
+    const cmd = new Deno.Command("supabase", {
+      args: ["status", "-o", "json"],
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const output = await cmd.output();
+    if (output.success) {
+      const parsed = JSON.parse(new TextDecoder().decode(output.stdout));
+      serviceKey = parsed.SERVICE_ROLE_KEY || parsed.service_role_key || parsed.service_key;
+    }
+  } catch {}
+
+  if (!serviceKey) {
+    try {
+      const cmd = new Deno.Command("supabase", {
+        args: ["status"],
+        stdout: "piped",
+        stderr: "piped",
+      });
+      const output = await cmd.output();
+      if (output.success) {
+        const text = new TextDecoder().decode(output.stdout);
+        const match = text.match(/service_role\s*key:\s*([^\s\r\n]+)/i);
+        if (match) {
+          serviceKey = match[1];
+        }
+      }
+    } catch {}
+  }
+
+  if (!serviceKey) {
+    throw new Error(
+      `Không lấy được SERVICE_KEY từ local Supabase stack. Vui lòng đảm bảo stack đang chạy hoặc tự chạy lệnh: SERVICE_KEY=<key> deno run -A --no-config .claude/skills/course-author/scripts/import-local.ts "${targetDir}"`
+    );
+  }
 }
 
 const read = async (relPath: string) => {
@@ -234,8 +291,10 @@ for (const module of curriculum.modules ?? []) {
       throw new Error(`${cl.lesson_id}: validateLesson: ${JSON.stringify(problems)}`);
     }
 
+    const isLessonPublished = !stuckLessonSet.has(cl.lesson_id);
+
     lessonRows.push(
-      `(${quote(courseId)},${quote(cl.lesson_id)},${quote(module.module_id)},${order++},${json(data)},true)`
+      `(${quote(courseId)},${quote(cl.lesson_id)},${quote(module.module_id)},${order++},${json(data)},${isLessonPublished})`
     );
 
     // 6. Validate và chuẩn bị câu hỏi trắc nghiệm
@@ -261,7 +320,14 @@ for (const module of curriculum.modules ?? []) {
   }
 }
 
-const courseData = {
+const allLessonIds = (curriculum.modules ?? []).flatMap((m: any) => (m.lessons ?? []).map((l: any) => l.lesson_id)).filter(Boolean);
+const stuckCount = allLessonIds.filter((id: string) => stuckLessonSet.has(id)).length;
+const totalLessons = allLessonIds.length;
+const hasAnyStuck = stuckCount > 0;
+const isAllStuck = totalLessons > 0 && stuckCount === totalLessons;
+const isCoursePublished = !isAllStuck;
+
+const courseData: Record<string, unknown> = {
   title: brief.title,
   slug: brief.slug,
   description: `${brief.topic}. ${brief.audience}.`,
@@ -279,6 +345,10 @@ const courseData = {
   final_assignment_fields: finalAssignment.fields,
 };
 
+if (hasAnyStuck) {
+  courseData.is_updating = true;
+}
+
 const sections = (curriculum.modules ?? []).map(
   (m: any, i: number) =>
     `(${quote(courseId)},${quote(m.module_id)},${i},${json({ title: m.title, description: m.description })})`
@@ -286,7 +356,7 @@ const sections = (curriculum.modules ?? []).map(
 
 const sqlParts = [
   "BEGIN;",
-  `INSERT INTO public.courses (id,instructor_id,published,slug,data) VALUES (${quote(courseId)},${quote(instructorId)},true,${quote(brief.slug)},${json(courseData)});`,
+  `INSERT INTO public.courses (id,instructor_id,published,slug,data) VALUES (${quote(courseId)},${quote(instructorId)},${isCoursePublished},${quote(brief.slug)},${json(courseData)});`,
   `INSERT INTO public.course_sections (course_id,id,sort_order,data) VALUES\n${sections.join(",\n")};`,
   `INSERT INTO public.course_lessons (course_id,id,section_id,sort_order,data,published) VALUES\n${lessonRows.join(",\n")};`,
 ];
@@ -303,8 +373,13 @@ const fullSql = sqlParts.join("\n");
 const summary = {
   course_id: courseId,
   slug: brief.slug,
+  published: isCoursePublished,
+  is_updating: Boolean(hasAnyStuck),
+  stuck_lessons: Array.from(stuckLessonSet),
   sections: sections.length,
   lessons: order,
+  lessons_published: order - stuckCount,
+  lessons_stuck: stuckCount,
   questions: questionRows.length,
   images: images.length,
 };
@@ -316,7 +391,7 @@ if (isDryRun) {
 }
 
 // 7. Chạy thật trên local stack
-const key = Deno.env.get("SERVICE_KEY")!;
+const key = serviceKey!;
 for (const image of images) {
   const response = await fetch(`http://127.0.0.1:54321/storage/v1/object/app/${image.path}`, {
     method: "POST",

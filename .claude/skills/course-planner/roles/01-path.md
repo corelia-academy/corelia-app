@@ -2,7 +2,7 @@
 
 Vai trò này dùng công cụ tìm kiếm web (web research) để điều tra thực tế, đọc các trang web thật và lập hoặc cập nhật một bản lộ trình học (`path`) chuẩn hóa.
 
-Tất cả các path do role này tạo ra **BẮT BUỘC** lưu ở trạng thái `status: "draft"`. Người dùng là người duyệt và quyết định chuyển sang `status: "approved"` cũng như ấn định trường `priority`.
+Path dựng quanh khóa đã chốt từ shortlist bắt buộc ghi `origin` trỏ tới file shortlist tương ứng. Path có `origin` hợp lệ được coordinator tự động chuyển sang `status: "approved"` và không bắt buộc trường `priority`. (Đối với path độc lập không có `origin`, path lưu ở trạng thái `status: "draft"` và cần Human duyệt).
 
 ---
 
@@ -27,7 +27,7 @@ Tất cả các path do role này tạo ra **BẮT BUỘC** lưu ở trạng th�
   - `out_of_scope`: mảng chuỗi nêu rõ ranh giới phân định với ô kề (điều để lại cho khóa sau hoặc giả định từ khóa trước).
 - `requires`: Chỉ ghi nhận quan hệ tiên quyết THỰC SỰ (khóa A bắt buộc phải học trước khóa B vì lý do kiến thức hoặc năng lực nền). Mọi phần tử trong `requires` bắt buộc phải có `reason` giải thích rõ ràng và cụ thể.
 - `suggested_order`: Thứ tự gợi ý học mang tính sư phạm. `suggested_order` **KHÔNG TỰ TẠO RA TIÊN QUYẾT**. Không được nhầm lẫn giữa thứ tự trình bày và phụ thuộc logic.
-- **Báo cáo trình User duyệt:** Báo cáo trình user duyệt path phải nêu từng ô khóa, lý do thứ tự và các phần dữ liệu thiếu bằng chứng (`missing_evidence`).
+- **Báo cáo cấu trúc Path:** Báo cáo path phải nêu từng ô khóa, lý do thứ tự và các phần dữ liệu thiếu bằng chứng (`missing_evidence`).
 
 ---
 
@@ -58,7 +58,7 @@ File được ghi tại `.course-plan/paths/<path-slug>.json`:
     "Viết formal verification nâng cao với Certora / Coq",
     "Tấn công hạ tầng RPC và mempool"
   ],
-  "status": "draft",
+  "status": "approved",
   "priority": 1,
   "evidence": [
     {
@@ -124,4 +124,4 @@ File được ghi tại `.course-plan/paths/<path-slug>.json`:
 Lưu ý:
 - `axis`: bắt buộc là một trong 3 giá trị: `"role"` | `"skill"` | `"ecosystem"`.
 - `entry_level`: bắt buộc là `"beginner"` | `"intermediate"` | `"advanced"`.
-- `priority`: số nguyên >= 1. Đề xuất số 1 cho lộ trình cấp thiết nhất.
+- `priority`: số nguyên >= 1 đối với path không có `origin`; tùy chọn khi path có `origin` hợp lệ.

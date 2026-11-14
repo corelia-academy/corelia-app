@@ -7,24 +7,30 @@ import os from "node:os";
 import { takeCatalogSnapshot } from "../scripts/catalog-snapshot.mjs";
 
 test("catalog-snapshot: AC11 - quét trên fixture cô lập nhận đúng 2 khóa hiện có và state produced", () => {
-  const repoRoot = path.resolve(".claude/skills/course-planner/test/fixtures/repo");
-  const catalog = takeCatalogSnapshot(repoRoot);
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "cat-snap-fixture-"));
+  try {
+    const fixtureRepo = path.resolve(".claude/skills/course-planner/test/fixtures/repo");
+    fs.cpSync(fixtureRepo, tmpDir, { recursive: true });
+    const catalog = takeCatalogSnapshot(tmpDir);
 
-  assert.ok(catalog);
-  assert.ok(Array.isArray(catalog.courses));
-  assert.strictEqual(catalog.courses.length, 2);
+    assert.ok(catalog);
+    assert.ok(Array.isArray(catalog.courses));
+    assert.strictEqual(catalog.courses.length, 2);
 
-  const rust = catalog.courses.find((c) => c.slug === "rust-error-handling");
-  assert.ok(rust, "Phải tìm thấy rust-error-handling");
-  assert.strictEqual(rust.state, "produced");
-  assert.strictEqual(rust.level, "intermediate");
-  assert.ok(rust.modules.length > 0);
+    const rust = catalog.courses.find((c) => c.slug === "rust-error-handling");
+    assert.ok(rust, "Phải tìm thấy rust-error-handling");
+    assert.strictEqual(rust.state, "produced");
+    assert.strictEqual(rust.level, "intermediate");
+    assert.ok(rust.modules.length > 0);
 
-  const sc = catalog.courses.find((c) => c.slug === "smart-contract-reading-before-interacting");
-  assert.ok(sc, "Phải tìm thấy smart-contract-reading-before-interacting");
-  assert.strictEqual(sc.state, "produced");
-  assert.strictEqual(sc.level, "beginner");
-  assert.ok(sc.modules.length > 0);
+    const sc = catalog.courses.find((c) => c.slug === "smart-contract-reading-before-interacting");
+    assert.ok(sc, "Phải tìm thấy smart-contract-reading-before-interacting");
+    assert.strictEqual(sc.state, "produced");
+    assert.strictEqual(sc.level, "beginner");
+    assert.ok(sc.modules.length > 0);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 });
 
 test("catalog-snapshot: phân loại đúng in_production, produced và in_catalog trên fixture cô lập", () => {

@@ -25,7 +25,6 @@ Ghi kết quả vào file `.course-plan/shortlists/<YYYY-MM-DD>-<n>.json`:
   "date": "YYYY-MM-DD",
   "round": 1,
   "chosen_slug": null,
-  "user_quote": null,
   "rejected": [],
   "shortlist": [
     {
@@ -37,6 +36,7 @@ Ghi kết quả vào file `.course-plan/shortlists/<YYYY-MM-DD>-<n>.json`:
       },
       "level": "beginner|intermediate|advanced",
       "kind": "new|complete_existing",
+      "tools": ["forge", "node"],
       "promise": "Xây dựng và triển khai một hợp đồng token chuẩn ERC-20 hoàn chỉnh lên testnet.",
       "starting_point": {
         "knowledge": "Kiến thức nền tảng cần có",
@@ -122,4 +122,5 @@ Khi `met: true`, bắt buộc `basis` khác rỗng và `refs` chứa ít nhất 
 - Phải thuộc ít nhất 3 `direction.entry` khác nhau.
 - Nếu `kind: "new"`, `slug` không được trùng với bất kỳ khóa nào trong catalog.
 - Nếu `kind: "complete_existing"`, `slug` phải trùng với một khóa trong catalog có `content_state` là `empty` hoặc `partial`.
-- Các trường `chosen_slug`, `user_quote` để nguyên `null`.
+- Trường `chosen_slug` để nguyên `null`.
+- Mỗi đề xuất khai báo `tools: string[]` là danh sách các công cụ cần có trên máy để kiểm chứng ví dụ theo stack dự kiến.

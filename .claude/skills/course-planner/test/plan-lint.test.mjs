@@ -406,3 +406,75 @@ test("plan-lint: P-08 - kiểm tra origin của path (pitch_slug không thuộc 
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test("plan-lint: AC3 - chấp nhận path có origin hợp lệ mà thiếu priority; từ chối khi không origin mà thiếu priority", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "lint-ac3-priority-"));
+  try {
+    const pathsDir = path.join(tmpDir, ".course-plan", "paths");
+    fs.mkdirSync(pathsDir, { recursive: true });
+
+    const slFile = path.join(tmpDir, "my-shortlist.json");
+    fs.writeFileSync(slFile, JSON.stringify({
+      shortlist: [{ slug: "pitch-ok", title: "Khóa pitch" }]
+    }, null, 2));
+
+    const baseCourse = {
+      slug: "pitch-ok",
+      title: "Khóa Pitch",
+      task: "Task",
+      level: "intermediate",
+      scope: ["S"],
+      out_of_scope: ["O"],
+      suggested_order: 1,
+      is_foundation: false,
+      requires: []
+    };
+
+    // 1. Path có origin hợp lệ NHƯNG thiếu priority -> PHẢI ĐẠT
+    const pWithValidOriginNoPriority = {
+      slug: "p-valid-origin-no-priority",
+      title: "Path có origin không priority",
+      axis: "role",
+      goal: "Goal",
+      audience: "Audience",
+      entry_level: "intermediate",
+      scope: ["S"],
+      out_of_scope: ["O"],
+      status: "approved",
+      // thiếu priority
+      origin: { shortlist: slFile, pitch_slug: "pitch-ok" },
+      evidence: [{ claim: "C", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-14" }],
+      missing_evidence: [],
+      courses: [baseCourse]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p-valid-origin-no-priority.json"), JSON.stringify(pWithValidOriginNoPriority, null, 2));
+
+    let res = lintPlans(tmpDir);
+    assert.strictEqual(res.ok, true, "Path có origin hợp lệ mà thiếu priority phải pass: " + res.problems.join("; "));
+
+    // 2. Path KHÔNG có origin mà thiếu priority -> PHẢI TỪ CHỐI
+    fs.unlinkSync(path.join(pathsDir, "p-valid-origin-no-priority.json"));
+    const pNoOriginNoPriority = {
+      slug: "p-no-origin-no-priority",
+      title: "Path không origin không priority",
+      axis: "role",
+      goal: "Goal",
+      audience: "Audience",
+      entry_level: "intermediate",
+      scope: ["S"],
+      out_of_scope: ["O"],
+      status: "approved",
+      // không có origin và không có priority
+      evidence: [{ claim: "C", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-14" }],
+      missing_evidence: [],
+      courses: [baseCourse]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p-no-origin-no-priority.json"), JSON.stringify(pNoOriginNoPriority, null, 2));
+
+    res = lintPlans(tmpDir);
+    assert.strictEqual(res.ok, false, "Path không origin mà thiếu priority phải bị từ chối");
+    assert.ok(res.problems.some((p) => p.includes("priority phải là số nguyên >= 1")), "Phải báo lỗi thiếu priority");
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});

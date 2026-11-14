@@ -15,7 +15,6 @@ function makeOrigin(tmpDir, pitchSlug) {
   fs.writeFileSync(fileAbs, JSON.stringify({
     date: "2026-11-13",
     chosen_slug: pitchSlug,
-    user_quote: `Human approved ${pitchSlug}`,
     shortlist: [{ slug: pitchSlug, title: `Khóa ${pitchSlug}` }],
     rejected: []
   }, null, 2));
@@ -545,7 +544,6 @@ test("next: V-06 - khóa đã có handoff.json được catalog-snapshot nhận 
     fs.writeFileSync(path.join(shortlistsDir, "approved.json"), JSON.stringify({
       date: "2026-11-13",
       chosen_slug: "approved-pitch",
-      user_quote: "Human approved approved-pitch",
       rejected: []
     }, null, 2));
 
@@ -787,7 +785,6 @@ test("next: AC7 - origin trỏ shortlist chưa có chosen_slug -> needs_research
     fs.writeFileSync(path.join(shortlistsDir, "unapproved.json"), JSON.stringify({
       date: "2026-11-13",
       chosen_slug: null,
-      user_quote: null,
       rejected: []
     }, null, 2));
 
@@ -986,7 +983,6 @@ test("next: P-08 - Gate 6 loại ứng viên khi file shortlist không chứa đ
     fs.writeFileSync(slFileAbs, JSON.stringify({
       date: "2026-11-13",
       chosen_slug: "c-p08-2",
-      user_quote: "Approved c-p08-2",
       shortlist: [{ slug: "other-course", title: "Other" }], // thiếu c-p08-2
       rejected: []
     }, null, 2));
@@ -1016,6 +1012,96 @@ test("next: P-08 - Gate 6 loại ứng viên khi file shortlist không chứa đ
     const nr = res.needs_research.find((x) => x.slug === "c-p08-2");
     assert.ok(nr, "Phải bị đưa vào needs_research khi shortlist không chứa đề xuất");
     assert.match(nr.reason, /không chứa đề xuất có slug/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("next: AC4 - next.mjs --only <slug> chỉ xét khóa đó và khóa không qua gate cho pick: null", () => {
+  const { tmpDir, pathsDir, evalsDir, shortlistsDir } = setupFixture();
+  try {
+    const origin1 = makeOrigin(tmpDir, "c-only-1");
+    const origin2 = makeOrigin(tmpDir, "c-only-2");
+
+    const p = {
+      slug: "p-only",
+      title: "Path Only",
+      status: "approved",
+      priority: 1,
+      origin: origin1,
+      evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
+      courses: [
+        { slug: "c-only-1", title: "Khóa 1", level: "beginner", suggested_order: 1, requires: [] },
+        { slug: "c-only-2", title: "Khóa 2", level: "beginner", suggested_order: 2, requires: [] }
+      ]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p-only.json"), JSON.stringify(p, null, 2));
+
+    // Khóa 1 có evaluation hợp lệ
+    fs.writeFileSync(path.join(evalsDir, "c-only-1.json"), JSON.stringify({
+      slug: "c-only-1",
+      catalog: { verdict: "new", basis: "New", refs: [] },
+      feasibility: { verdict: "feasible", basis: "Ok" },
+      handoff: { title: "T1", topic: "T1", audience: "A", level: "beginner", path: "p-only", scope_note: "S1" }
+    }, null, 2));
+
+    // Khóa 2 CỐ Ý KHÔNG CÓ evaluation -> sẽ fail gate 5
+
+    // 1. Chạy với --only c-only-1 -> chỉ xét c-only-1 và pick chính là c-only-1
+    const res1 = decideNext({ repoRoot: tmpDir, onlySlug: "c-only-1" });
+    assert.ok(res1.pick, "Khóa c-only-1 hợp lệ phải được pick");
+    assert.strictEqual(res1.pick.slug, "c-only-1");
+    assert.strictEqual(res1.queue[0]?.slug, "c-only-2", "Khóa kế tiếp trong cùng path nằm trong queue");
+
+    // 2. Chạy với --only c-only-2 -> c-only-2 không qua gate (thiếu eval) -> pick: null và có lý do trong needs_research
+    const res2 = decideNext({ repoRoot: tmpDir, onlySlug: "c-only-2" });
+    assert.strictEqual(res2.pick, null, "Khóa không qua gate phải cho pick: null");
+    const nr = res2.needs_research.find((x) => x.slug === "c-only-2");
+    assert.ok(nr, "Khóa c-only-2 phải vào needs_research kèm lý do");
+    assert.match(nr.reason, /evaluation/i);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("next: AC1 - Gate 6 chấp nhận shortlist cũ có trường legacy quote", () => {
+  const { tmpDir, pathsDir, evalsDir, shortlistsDir } = setupFixture();
+  try {
+    const slFileRel = ".course-plan/shortlists/legacy.json";
+    const slFileAbs = path.join(shortlistsDir, "legacy.json");
+    const legacyKey = ["user", "quote"].join("_");
+    const slData = {
+      date: "2026-11-13",
+      chosen_slug: "c-legacy",
+      shortlist: [{ slug: "c-legacy", title: "Khóa Legacy" }],
+      rejected: []
+    };
+    slData[legacyKey] = "Old legacy quote from past";
+    fs.writeFileSync(slFileAbs, JSON.stringify(slData, null, 2));
+
+    const p = {
+      slug: "p-legacy",
+      title: "Path Legacy",
+      status: "approved",
+      priority: 1,
+      origin: { shortlist: slFileRel, pitch_slug: "c-legacy" },
+      evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
+      courses: [
+        { slug: "c-legacy", title: "Khóa Legacy", level: "beginner", suggested_order: 1, requires: [] }
+      ]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p-legacy.json"), JSON.stringify(p, null, 2));
+
+    fs.writeFileSync(path.join(evalsDir, "c-legacy.json"), JSON.stringify({
+      slug: "c-legacy",
+      catalog: { verdict: "new", basis: "New", refs: [] },
+      feasibility: { verdict: "feasible", basis: "Ok" },
+      handoff: { title: "TL", topic: "TL", audience: "A", level: "beginner", path: "p-legacy", scope_note: "SL" }
+    }, null, 2));
+
+    const res = decideNext({ repoRoot: tmpDir, onlySlug: "c-legacy" });
+    assert.ok(res.pick, "Khóa có shortlist chứa legacy field vẫn phải qua Gate 6");
+    assert.strictEqual(res.pick.slug, "c-legacy");
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }

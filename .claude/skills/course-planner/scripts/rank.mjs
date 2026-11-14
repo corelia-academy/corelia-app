@@ -2,6 +2,7 @@
 // Xếp hạng các đề xuất khóa học từ shortlist theo tiêu chí khách quan và in bảng Markdown.
 import fs from "node:fs";
 import path from "node:path";
+import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
   SHORTLIST_MIN_PROPOSALS,
@@ -27,7 +28,19 @@ export function escapeTableCell(text) {
     .trim();
 }
 
-export function rankShortlist(shortlistData, catalogData) {
+export function defaultToolChecker(tool) {
+  if (!tool || typeof tool !== "string") return false;
+  const trimmed = tool.trim();
+  if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed)) return false;
+  try {
+    execSync(`${trimmed} --version`, { stdio: "ignore", timeout: 2000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function rankShortlist(shortlistData, catalogData, { toolChecker = defaultToolChecker } = {}) {
   const catalogCourses = Array.isArray(catalogData)
     ? catalogData
     : (catalogData?.courses ?? []);
@@ -38,6 +51,18 @@ export function rankShortlist(shortlistData, catalogData) {
     : [];
 
   const processed = rawProposals.map((prop) => {
+    const tools = Array.isArray(prop?.tools)
+      ? prop.tools.filter((t) => typeof t === "string" && t.trim())
+      : [];
+    const missingTools = [];
+    if (typeof toolChecker === "function" && tools.length > 0) {
+      for (const t of tools) {
+        if (!toolChecker(t.trim())) {
+          missingTools.push(t.trim());
+        }
+      }
+    }
+
     const requires = Array.isArray(prop?.starting_point?.requires)
       ? prop.starting_point.requires
       : [];
@@ -102,6 +127,8 @@ export function rankShortlist(shortlistData, catalogData) {
 
     return {
       ...prop,
+      tools,
+      missingTools,
       criteria,
       eligible,
       unmetRequires,
@@ -205,6 +232,10 @@ export function formatShortlistTable(rankedResult) {
 
     for (const w of row.warnings) {
       notes.push(`⚠️ ${w}`);
+    }
+
+    if (Array.isArray(row.missingTools) && row.missingTools.length > 0) {
+      notes.push(`Thiếu công cụ: ${row.missingTools.join(", ")}`);
     }
 
     if (Array.isArray(row.risks) && row.risks.length > 0) {

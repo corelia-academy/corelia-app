@@ -216,3 +216,80 @@ test("rank: AC4 - rank.mjs --table in đúng 5 cột, mọi tiêu chí đạt �
   // Ký tự | được escape thành \|
   assert.ok(lines[2].includes("\\|"), "Ký tự | trong nội dung ô phải được escape thành \\|");
 });
+
+test("rank: AC2 - rank.mjs với hàm kiểm công cụ giả: công cụ thiếu hiện trong Ghi chú; rank không đổi", () => {
+  const shortlistData = {
+    date: "2026-11-14",
+    round: 1,
+    shortlist: [
+      {
+        slug: "course-1",
+        title: "Khóa 1",
+        direction: { axis: "role", entry: "Smart Contract Developer" },
+        level: "intermediate",
+        kind: "new",
+        promise: "Vá lỗi smart contract",
+        starting_point: { knowledge: "Cơ bản", requires: [] },
+        final_product: "Báo cáo audit",
+        feasibility: "feasible",
+        tools: ["forge", "slither"],
+        why_now: { kind: "direct", urls: ["https://d1.com", "https://d2.com"] },
+        criteria: {
+          continues_catalog: { met: false, basis: "Người mới", refs: [] },
+          fills_direction: { met: true, basis: "Chưa có", refs: ["ref1"] },
+          timely: { met: true, basis: "2026", refs: ["ref2"] },
+          differentiated: { met: true, basis: "Khác biệt", refs: ["ref3"] },
+          showable_product: { met: true, basis: "Nộp bài", refs: ["ref4"] }
+        }
+      },
+      {
+        slug: "course-2",
+        title: "Khóa 2",
+        direction: { axis: "skill", entry: "React" },
+        level: "intermediate",
+        kind: "new",
+        promise: "Xây dựng DApp Web3",
+        starting_point: { knowledge: "Cơ bản", requires: [] },
+        final_product: "DApp",
+        feasibility: "feasible",
+        tools: ["node"],
+        why_now: { kind: "direct", urls: ["https://d1.com"] },
+        criteria: {
+          continues_catalog: { met: false, basis: "Người mới", refs: [] },
+          fills_direction: { met: true, basis: "Chưa có", refs: ["ref1"] },
+          timely: { met: true, basis: "2026", refs: ["ref2"] },
+          differentiated: { met: true, basis: "Khác biệt", refs: ["ref3"] },
+          showable_product: { met: true, basis: "Nộp bài", refs: ["ref4"] }
+        }
+      }
+    ]
+  };
+
+  // Mock tool checker: chỉ có node là có sẵn, forge và slither bị thiếu
+  const mockToolChecker = (tool) => tool === "node";
+
+  // Chạy xếp hạng không có checker
+  const resWithoutChecker = rankShortlist(shortlistData, mockCatalog, { toolChecker: () => true });
+  // Chạy xếp hạng có mock checker
+  const resWithChecker = rankShortlist(shortlistData, mockCatalog, { toolChecker: mockToolChecker });
+
+  // Khẳng định rank không đổi
+  assert.strictEqual(resWithChecker.rows[0].slug, resWithoutChecker.rows[0].slug);
+  assert.strictEqual(resWithChecker.rows[0].rank, 1);
+  assert.strictEqual(resWithChecker.rows[1].slug, resWithoutChecker.rows[1].slug);
+  assert.strictEqual(resWithChecker.rows[1].rank, 2);
+
+  // Khóa 1 thiếu forge và slither
+  assert.deepStrictEqual(resWithChecker.rows[0].missingTools, ["forge", "slither"]);
+  // Khóa 2 không thiếu công cụ
+  assert.deepStrictEqual(resWithChecker.rows[1].missingTools, []);
+
+  // Format bảng: Ghi chú của Khóa 1 phải chứa "Thiếu công cụ: forge, slither"
+  const table = formatShortlistTable(resWithChecker);
+  const lines = table.split("\n");
+  const row1 = lines[2];
+  const row2 = lines[3];
+
+  assert.ok(row1.includes("Thiếu công cụ: forge, slither"), `Ghi chú khóa 1 phải nêu công cụ thiếu, thực tế: ${row1}`);
+  assert.ok(!row2.includes("Thiếu công cụ"), `Khóa 2 không thiếu công cụ, thực tế: ${row2}`);
+});
