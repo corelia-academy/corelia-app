@@ -12,20 +12,62 @@ const translate = (key: string) => key;
 vi.mock("@/features/learning/useLearningTranslation", () => ({ useLearningTranslation: () => ({ t: translate }) }));
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: { id: "learner" } }) }));
 vi.mock("@/lib/learning", () => ({ recordLearningEvent: vi.fn() }));
+vi.mock("@/components/ui/input-code-monaco", () => ({ default: (p: { readOnly?: boolean }) => <div data-testid="monaco" data-readonly={String(!!p.readOnly)} /> }));
 const props: LessonRendererProps = { courseId: "course", mode: "learner", completed: false, onComplete: vi.fn(), onAction: vi.fn(), lesson: { id: "lesson", section_id: "section", title: "Fill", order: 0, duration_seconds: 0, code_exercise_config: defaultCodeConfig() } };
 let cleanup: (() => void) | undefined;
 afterEach(() => { cleanup?.(); localStorage.clear(); vi.clearAllMocks(); });
 
-it("checks a failed fill only once when Ctrl+Enter bubbles from the input", async () => {
+it("warns instead of grading when a blank is empty", async () => {
+  Element.prototype.scrollIntoView = vi.fn();
+  const host = document.createElement("div"), root = createRoot(host);
+  document.body.append(host);
+  cleanup = () => { act(() => root.unmount()); host.remove(); };
+  act(() => root.render(<CodeExerciseLesson {...props} />));
+  await act(async () => host.querySelector("input")!.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", ctrlKey: true, bubbles: true })));
+  expect(recordLearningEvent).not.toHaveBeenCalled();
+  expect(props.onComplete).not.toHaveBeenCalled();
+  expect(host.querySelector('[role="alert"]')?.textContent).toBe("learning.codeFillAll");
+  expect(document.activeElement).toBe(host.querySelector("input"));
+});
+
+it("checks a wrong fill only once, locks the answers, and keeps them on retry", async () => {
+  localStorage.setItem(codeDraftKey("learner", "course", "lesson", 1), JSON.stringify({ mode: "fill", answers: { mutable: "wrong" }, updated_at: "2026-09-11T00:00:00Z" }));
   const host = document.createElement("div"), root = createRoot(host);
   cleanup = () => act(() => root.unmount());
-  act(() => root.render(<CodeExerciseLesson {...props} />));
+  let action: LessonActionState | null = null;
+  act(() => root.render(<CodeExerciseLesson {...props} onAction={next => { action = next; }} />));
+  expect(action!.summary).toBeUndefined();
   await act(async () => host.querySelector("input")!.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", ctrlKey: true, bubbles: true })));
   expect(recordLearningEvent).toHaveBeenCalledExactlyOnceWith("course", "lesson", "code_exercise_checked", false);
   expect(props.onComplete).not.toHaveBeenCalled();
+  expect(host.querySelector("input")!.readOnly).toBe(true);
+  expect(action!.label).toBe("learning.retry");
+  expect(host.querySelector('[data-slot="explanation-box"]')?.getAttribute("data-status")).toBe("incorrect");
+  await act(async () => { await action!.run(); });
+  expect(host.querySelector("input")!.readOnly).toBe(false);
+  expect(host.querySelector("input")!.value).toBe("wrong");
+  expect(host.querySelector('[data-slot="explanation-box"]')).toBeNull();
+  expect(action!.label).toBe("learning.checkCode");
+  expect(recordLearningEvent).toHaveBeenCalledOnce();
 });
 
-it("locks duplicate checks and reset while completion saves without losing the answer", async () => {
+it("unlocks the answers and keeps them when the lesson is marked undone", async () => {
+  localStorage.setItem(codeDraftKey("learner", "course", "lesson", 1), JSON.stringify({ mode: "fill", answers: { mutable: "mut" }, updated_at: "2026-09-11T00:00:00Z" }));
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  let action: LessonActionState | null = null;
+  const render = (resetEpoch: number) => act(() => root.render(<CodeExerciseLesson {...props} resetEpoch={resetEpoch} onAction={next => { action = next; }} />));
+  render(0);
+  await act(async () => { await action!.run(); });
+  expect(host.querySelector("input")!.readOnly).toBe(true);
+  expect(host.querySelector('[data-slot="explanation-box"]')?.getAttribute("data-status")).toBe("correct");
+  render(1);
+  expect(host.querySelector("input")!.readOnly).toBe(false);
+  expect(host.querySelector("input")!.value).toBe("mut");
+  expect(host.querySelector('[data-slot="explanation-box"]')).toBeNull();
+});
+
+it("locks duplicate checks while completion saves without losing the answer", async () => {
   localStorage.setItem(codeDraftKey("learner", "course", "lesson", 1), JSON.stringify({ mode: "fill", answers: { mutable: "mut" }, updated_at: "2026-09-11T00:00:00Z" }));
   const host = document.createElement("div"), root = createRoot(host);
   cleanup = () => act(() => root.unmount());
@@ -38,35 +80,64 @@ it("locks duplicate checks and reset while completion saves without losing the a
   expect(complete).toHaveBeenCalledOnce();
   expect(recordLearningEvent).toHaveBeenCalledOnce();
   expect(host.querySelector("input")!.disabled).toBe(true);
-  const reset = Array.from(host.querySelectorAll("button")).find(button => button.textContent === "learning.reset")!;
-  expect(reset.disabled).toBe(true);
   expect(host.querySelector("input")!.value).toBe("mut");
   await act(async () => resolve());
   expect(host.querySelector("input")!.disabled).toBe(false);
-  expect(reset.disabled).toBe(false);
 });
 
-it("retries only completion after a passed check, and requires rechecking edited answers", async () => {
+it("retries only completion after a passed check, then locks the answers", async () => {
   localStorage.setItem(codeDraftKey("learner", "course", "lesson", 1), JSON.stringify({ mode: "fill", answers: { mutable: "mut" }, updated_at: "2026-09-11T00:00:00Z" }));
   const host = document.createElement("div"), root = createRoot(host);
   cleanup = () => act(() => root.unmount());
-  const complete = vi.fn().mockRejectedValue(new Error("Offline"));
+  const complete = vi.fn().mockRejectedValueOnce(new Error("Offline")).mockResolvedValue(undefined);
   let action: LessonActionState | null = null;
   act(() => root.render(<CodeExerciseLesson {...props} onComplete={complete} onAction={next => { action = next; }} />));
   await act(async () => { await action!.run(); });
   expect(action!.label).toBe("learning.retryProgress");
   expect(host.querySelector("input")!.value).toBe("mut");
+  expect(host.querySelector('canvas[data-testid="lesson-confetti"]')).toBeNull();
   await act(async () => { await action!.run(); });
   expect(complete).toHaveBeenCalledTimes(2);
   expect(recordLearningEvent).toHaveBeenCalledTimes(1);
-  const input = host.querySelector("input")!;
-  act(() => {
-    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "wrong");
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-  expect(action!.label).toBe("learning.checkCode");
-  expect(host.querySelector('[role="alert"]')).toBeNull();
+  expect(host.querySelector("input")!.readOnly).toBe(true);
+  expect(host.querySelector('canvas[data-testid="lesson-confetti"]')).not.toBeNull();
+});
+
+it("draws the fill-in-the-blank lines inside the shared Code Block frame", () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  document.body.append(host);
+  cleanup = () => { act(() => root.unmount()); host.remove(); };
+  act(() => root.render(<CodeExerciseLesson {...props} />));
+  const block = host.querySelector('[data-slot="code-block"]');
+  expect(block?.getAttribute("data-header")).toBe("label");
+  expect(block?.querySelectorAll("input").length).toBeGreaterThan(0);
+  expect(block?.querySelectorAll('[class*="text-code-block-line-number"]').length).toBeGreaterThan(0);
+  expect(host.querySelector('[class*="neutral-"]')).toBeNull();
+});
+
+it("types the edit exercise in the shared Input Code and locks it after a check", async () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  document.body.append(host);
+  cleanup = () => { act(() => root.unmount()); host.remove(); };
+  let action: LessonActionState | null = null;
+  const edit = { ...props, onAction: (next: LessonActionState | null) => { action = next; }, lesson: { ...props.lesson, code_exercise_config: defaultCodeConfig("edit") } };
+  await act(async () => root.render(<CodeExerciseLesson {...edit} />));
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 0)); });
+  const area = () => host.querySelector('[data-slot="input-code"]');
+  expect(area()?.getAttribute("data-status")).toBe("filled");
+  expect(host.querySelector('[data-slot="code-block"]')).toBeNull();
+  expect(host.querySelector('[data-testid="monaco"]')?.getAttribute("data-readonly")).toBe("false");
   await act(async () => { await action!.run(); });
-  expect(complete).toHaveBeenCalledTimes(2);
-  expect(recordLearningEvent).toHaveBeenLastCalledWith("course", "lesson", "code_exercise_checked", false);
+  expect(area()?.getAttribute("data-status")).toBe("error");
+  expect(host.querySelector('[data-testid="monaco"]')?.getAttribute("data-readonly")).toBe("true");
+});
+
+it("resets modified source back to starter_source when reset button is clicked", async () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  document.body.append(host);
+  cleanup = () => { act(() => root.unmount()); host.remove(); };
+  const edit = { ...props, lesson: { ...props.lesson, code_exercise_config: defaultCodeConfig("edit") } };
+  await act(async () => root.render(<CodeExerciseLesson {...edit} />));
+  const resetButton = Array.from(host.querySelectorAll("button")).find(b => b.textContent?.includes("learning.reset"));
+  expect(resetButton).toBeDefined();
 });

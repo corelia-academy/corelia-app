@@ -10,6 +10,7 @@ export type FocusCard = {
   meta: string;
   action: string;
   thumbnailUrl?: string;
+  courseType?: "ai_generated";
   lastAccessedAt?: string;
 };
 

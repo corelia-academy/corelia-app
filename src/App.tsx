@@ -34,6 +34,7 @@ import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
 import { ScrollToTop } from "@/components/navigation/ScrollToTop";
+import { ScrollToTarget } from "@/components/navigation/ScrollToTarget";
 import {
   PageTitleProvider,
   RoutePageTitleSync,
@@ -50,6 +51,7 @@ const FeedPage = lazyRoute(routeChunks.feed);
 const Courses = lazyRoute(routeChunks.courses);
 const LearningPrinciplesPage = lazy(() => import("@/pages/learning-principles/LearningPrinciplesPage"));
 const Auth = lazyRoute(routeChunks.login);
+const OAuthConsent = lazy(() => import("@/pages/oauth/OAuthConsent"));
 const OCIDRedirect = lazy(() => import("@/pages/OCIDRedirect"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const MainLayout = lazyRoute(routeChunks.mainLayout);
@@ -138,6 +140,8 @@ const AdminHackathons = lazy(() => import("@/pages/admin/hackathons/AdminHackath
 const AdminHackathonEditor = lazy(() => import("@/pages/admin/hackathons/AdminHackathonEditorPage"));
 const AdminProjectsPage = lazy(() => import("@/pages/admin/AdminProjectsPage"));
 const AdminJobsPage = lazy(() => import("@/pages/admin/jobs/AdminJobsPage"));
+const AdminBlogPage = lazy(() => import("@/pages/admin/blog/AdminBlogPage"));
+const AdminBlogEditorPage = lazy(() => import("@/pages/admin/blog/AdminBlogEditorPage"));
 const AdminComponentsPage = lazy(() => import("@/pages/admin/AdminComponentsPage"));
 const AdminEmailCenterPage = lazy(() => import("@/pages/admin/email/AdminEmailCenterPage"));
 const AdminCertificateAnalytics = lazy(() => import("@/pages/admin/AdminCertificateAnalytics"));
@@ -263,6 +267,7 @@ function ApplicationRoutes() {
           <RoutePageTitleSync />
           <CredentialRealtimeSync />
           <ScrollToTop />
+          <ScrollToTarget />
           <RecoveryGuard />
           <PendingCredentialsWelcomeModal />
           <Routes>
@@ -272,6 +277,16 @@ function ApplicationRoutes() {
                 <Suspense fallback={<LocationPlaceholder />}>
                   <Auth />
                 </Suspense>
+              }
+            />
+            <Route
+              path="/oauth/consent"
+              element={
+                <RequireRole roles={ROLE_GROUPS.adminOnly}>
+                  <Suspense fallback={<PageFallback />}>
+                    <OAuthConsent />
+                  </Suspense>
+                </RequireRole>
               }
             />
             <Route
@@ -409,6 +424,9 @@ function ApplicationRoutes() {
               "stepper",
               "informative-icon",
               "toast-bar",
+              "explanation-box",
+              "code-block",
+              "input-code",
             ].map((component) => (
               <Route
                 key={component}
@@ -666,6 +684,9 @@ function ApplicationRoutes() {
                     </Suspense>
                   }
                 />
+                <Route path="blog" element={<Suspense fallback={<TableFallback />}><AdminBlogPage /></Suspense>} />
+                <Route path="blog/new" element={<Suspense fallback={<FormFallback />}><AdminBlogEditorPage /></Suspense>} />
+                <Route path="blog/:id/edit" element={<Suspense fallback={<FormFallback />}><AdminBlogEditorPage /></Suspense>} />
                 <Route path="hackathons" element={<Suspense fallback={<TableFallback />}><AdminHackathons /></Suspense>} />
                 <Route path="hackathons/new" element={<Suspense fallback={<FormFallback />}><AdminHackathonEditor /></Suspense>} />
                 <Route path="hackathons/:id/edit" element={<Suspense fallback={<FormFallback />}><AdminHackathonEditor /></Suspense>} />

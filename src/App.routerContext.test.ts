@@ -35,4 +35,15 @@ describe("App router context", () => {
     expect(informativeIconRouteIndex).toBeGreaterThanOrEqual(0);
     expect(dynamicComponentRouteIndex).toBeGreaterThan(informativeIconRouteIndex);
   });
+
+  it.each(["code-block", "input-code"])("registers the %s showcase route in the component route list", (slug) => {
+    const slugIndex = appSource.indexOf(`"${slug}",`);
+    const dynamicComponentRouteIndex = appSource.indexOf(
+      "path={`/components/${component}`}",
+      slugIndex,
+    );
+
+    expect(slugIndex).toBeGreaterThanOrEqual(0);
+    expect(dynamicComponentRouteIndex).toBeGreaterThan(slugIndex);
+  });
 });

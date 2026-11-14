@@ -31,6 +31,9 @@ import AdminTooltipComponentPage from "./components/AdminTooltipComponentPage";
 import AdminToggleComponentPage from "./components/AdminToggleComponentPage";
 import AdminStepperComponentPage from "./components/AdminStepperComponentPage";
 import AdminToastBarComponentPage from "./components/AdminToastBarComponentPage";
+import AdminExplanationBoxComponentPage from "./components/AdminExplanationBoxComponentPage";
+import AdminCodeBlockComponentPage from "./components/AdminCodeBlockComponentPage";
+import AdminInputCodeComponentPage from "./components/AdminInputCodeComponentPage";
 import AdminComponentsSidebar from "./components/AdminComponentsSidebar";
 
 const components = [
@@ -138,6 +141,21 @@ const components = [
     slug: "toast-bar",
     title: "Toast Bar",
     criterion: "All eight visual models across top and bottom positioning with InformativeIcon feedback states.",
+  },
+  {
+    slug: "explanation-box",
+    title: "Explanation Box",
+    criterion: "Correct and incorrect feedback boxes with a status icon and an optional explanation body.",
+  },
+  {
+    slug: "code-block",
+    title: "Code Block",
+    criterion: "Read-only code with no header, one language label or language tabs, line numbers, copy, and the Solidity Remix action.",
+  },
+  {
+    slug: "input-code",
+    title: "Input Code",
+    criterion: "The coding area where a learner types, in default, filled, focused, disabled, and error states.",
   },
 ] as const;
 
@@ -599,6 +617,15 @@ export default function AdminComponentsPage() {
               </ComponentSection>
               <ComponentSection {...components[20]}>
                 <AdminToastBarComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[21]}>
+                <AdminExplanationBoxComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[22]}>
+                <AdminCodeBlockComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[23]}>
+                <AdminInputCodeComponentPage embedded />
               </ComponentSection>
             </>
           )}

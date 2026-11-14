@@ -9,7 +9,7 @@ project_id = "corelia-app"
 # Keep gateway JWT check off and enforce op-level auth in handler/router.
 verify_jwt = false
 import_map = "./functions/corelia-api/deno.json"
-static_files = ["./functions/corelia-api/og/assets/*"]
+static_files = ["./functions/corelia-api/og/assets/*", "./functions/corelia-api/studio/assets/*"]
 
 [functions.cron-learning-reminders]
 # Scheduler authenticates with the shared LEARNING_REMINDER_CRON_SECRET header.
@@ -29,6 +29,11 @@ verify_jwt = false
 
 [functions.generate-questions]
 verify_jwt = false
+
+[functions.studio-mcp]
+verify_jwt = false
+# Shares corelia-api's studio modules (diagram and cover rendering), which read these assets at run time.
+static_files = ["./functions/corelia-api/og/assets/*", "./functions/corelia-api/studio/assets/*"]
 
 [api]
 enabled = true
@@ -434,11 +439,11 @@ enabled = false
 # OAuth server configuration
 [auth.oauth_server]
 # Enable OAuth server functionality
-enabled = false
+enabled = true
 # Path for OAuth consent flow UI
-authorization_url_path = "/oauth/consent"
+authorization_url_path = "/learn/oauth/consent"
 # Allow dynamic client registration
-allow_dynamic_registration = false
+allow_dynamic_registration = true
 
 [edge_runtime]
 enabled = false

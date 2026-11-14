@@ -29,7 +29,22 @@ describe("semantic theme color tokens", () => {
   it("defines Informative Icon colors separately in light and dark mode", () => {
     const lightMode = readCssRule(":root")
     const darkMode = readCssRule(".dark")
-    const informativeIconColors = [
+    const lightInformativeIconColors = [
+      ["informative-icon-error-surface", "error-400"],
+      ["informative-icon-error-content", "error-100"],
+      ["informative-icon-error-outline", "error-300"],
+      ["informative-icon-warning-surface", "warning-400"],
+      ["informative-icon-warning-content", "warning-100"],
+      ["informative-icon-warning-outline", "warning-200"],
+      ["informative-icon-success-surface", "success-400"],
+      ["informative-icon-success-content", "success-100"],
+      ["informative-icon-success-outline", "success-300"],
+      ["informative-icon-blue-surface", "accent-sky-300"],
+      ["informative-icon-blue-content", "accent-sky-100"],
+      ["informative-icon-blue-outline", "accent-sky-200"],
+    ] as const
+
+    const darkInformativeIconColors = [
       ["informative-icon-error-surface", "error-400"],
       ["informative-icon-error-content", "error-200"],
       ["informative-icon-error-outline", "error-600"],
@@ -44,11 +59,12 @@ describe("semantic theme color tokens", () => {
       ["informative-icon-blue-outline", "accent-sky-600"],
     ] as const
 
-    for (const [name, paletteToken] of informativeIconColors) {
-      const value = `var(--${paletteToken})`
+    for (const [name, paletteToken] of lightInformativeIconColors) {
+      expectSingleDeclaration(lightMode, name, `var(--${paletteToken})`)
+    }
 
-      expectSingleDeclaration(lightMode, name, value)
-      expectSingleDeclaration(darkMode, name, value)
+    for (const [name, paletteToken] of darkInformativeIconColors) {
+      expectSingleDeclaration(darkMode, name, `var(--${paletteToken})`)
     }
   })
 
@@ -70,7 +86,24 @@ describe("semantic theme color tokens", () => {
       ["mint-revoked-badge-text", "var(--neutral-400)", "var(--neutral-400)"],
       ["mint-revoked-badge-border", "var(--neutral-500)", "var(--neutral-500)"],
       ["stroke-divider", "var(--neutral-500)", "var(--neutral-600)"],
-      ["selection-mark", "var(--blue-100)", "var(--blue-100)"],
+      ["selection-mark", "var(--neutral-50)", "var(--neutral-50)"],
+      ["confetti-yellow", "var(--accent-yellow-400)", "var(--accent-yellow-400)"],
+      ["confetti-green", "var(--success-400)", "var(--success-400)"],
+      ["confetti-sky", "var(--accent-sky-400)", "var(--accent-sky-400)"],
+      ["confetti-teal", "var(--accent-teal-400)", "var(--accent-teal-400)"],
+      ["confetti-coral", "var(--error-400)", "var(--error-400)"],
+      ["confetti-purple", "var(--accent-purple-400)", "var(--accent-purple-400)"],
+      ["code-block-text", "var(--neutral-800)", "var(--neutral-200)"],
+      ["code-block-line-number", "var(--neutral-500)", "var(--neutral-500)"],
+      // Dark syntax colors are the existing lesson code palette; no primitive color matches them.
+      ["code-syntax-function", "var(--blue-700)", "#1ebfff"],
+      ["code-syntax-string", "var(--success-600)", "#2fe921"],
+      ["code-syntax-keyword", "var(--error-500)", "#ff8787"],
+      ["code-syntax-builtin", "var(--warning-600)", "#ffa159"],
+      ["input-code-surface", "var(--neutral-100)", "var(--neutral-900)"],
+      ["input-code-line-highlight", "var(--neutral-200)", "var(--neutral-800)"],
+      ["input-code-error-line", "color-mix(in srgb, var(--error-500) 20%, transparent)", "color-mix(in srgb, var(--error-400) 20%, transparent)"],
+      ["input-code-focus-ring", "var(--blue-700)", "var(--blue-400)"],
     ] as const
 
     for (const [name, lightValue, darkValue] of roles) {
@@ -122,6 +155,13 @@ describe("semantic theme color tokens", () => {
       "badge-white-foreground",
       "badge-white-filled",
       "badge-white-filled-foreground",
+      "confetti-yellow",
+      "confetti-green",
+      "confetti-sky",
+      "confetti-teal",
+      "confetti-coral",
+      "confetti-purple",
+      "input-code-surface",
     ]
 
     for (const name of utilityRoles) {

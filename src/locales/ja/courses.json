@@ -57,6 +57,10 @@
     "corelia": "Corelia のコース",
     "external_partner": "パートナー講師のコース"
   },
+  "aiGenerated": {
+    "label": "AI生成",
+    "description": "AIが作成し、自動チェックを行ったコンテンツです。"
+  },
   "catalog": {
     "title": "コース",
     "pageTitle": "コースライブラリ",
@@ -485,8 +489,11 @@
     "retry": "再試行",
     "source": "ソースコード",
     "unavailable": "レッスンは利用できません。",
+    "lessonDataErrorTitle": "レッスンのデータが見つかりません。",
+    "lessonDataErrorDescription": "接続を確認するか、管理者に報告してください。",
     "askAi": {
       "trigger": "AI に質問",
+      "triggerShort": "AI",
       "chatgpt": "ChatGPT に質問",
       "claude": "Claude に質問",
       "gemini": "Gemini に質問（プロンプトをコピー）",
@@ -527,6 +534,8 @@
     "completed": "修了",
     "markComplete": "完了にする",
     "markIncomplete": "未完了にする",
+    "markCompleteShort": "完了",
+    "markIncompleteShort": "未完了",
     "redoFromStart": "最初からやり直す",
     "redoConfirm": "この演習を最初からやり直しますか？現在の回答とローカルの下書きは消去されます。過去の提出は履歴に残ります。",
     "resources": "リソース",
@@ -534,6 +543,7 @@
     "previous": "前へ",
     "next": "次のレッスン",
     "finish": "コースを完了",
+    "partLetter": "Part {{letter}}",
     "lessonNumber": "レッスン {{number}}",
     "saving": "保存中…",
     "login": "ログイン",
@@ -594,6 +604,19 @@
     "finalRetrySameSubmission": "提出済みの内容とファイルは変更されません。ファイルを再アップロードせずに結果を取得するには、再試行してください。",
     "duplicate": "複製",
     "quizRetrySameAnswers": "結果が利用できない間も、提出した回答は保持されます。この提出の結果を取得するには、再試行してください。",
+    "questionNumber": "問題 {{number}}",
+    "quizType": {
+      "mcq": "選択式"
+    },
+    "quizCorrect": "正解",
+    "quizThinkAgain": "もう一度考えてみましょう",
+    "quizAnswerCorrect": "正解",
+    "quizAnswerWrong": "選んだ答えは正しくありません",
+    "quizPleaseAnswer": "質問に答えてください",
+    "codeFillAll": "すべての空欄を埋めてください",
+    "quizScoreCorrect": "正解",
+    "quizAchieveLead": "合格まで",
+    "quizAchieveTail": "問の正解が必要です",
     "duplicateDraft": "下書きとして複製",
     "duplicateUnsaved": "このコピーは保存されていません。保存するとカリキュラムに追加されます。",
     "copyTitle": "{{title}}（コピー）",

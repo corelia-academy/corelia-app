@@ -10,6 +10,14 @@ import Footer from "@/components/common/footer.astro";
 // import BlogBadges from "@/components/blog/BlogBadges.astro";
 // import BlogMedia from "@/components/blog/BlogMedia.astro";
 import { useTranslations } from "@/i18n/translations";
+import { getBlogPosts } from "@/lib/blog";
+import { loadBlogPage } from "@/lib/blogRoute";
+
+export const prerender = false;
+
+// The sections below read these lists; load them first so a failed read is a 503, not a broken page.
+const articles = await loadBlogPage(Astro, () => Promise.all([getBlogPosts("en")]));
+if (articles instanceof Response) return articles;
 // import { getCollection } from "astro:content";
 // import {
 //   blogIndexUrl,
@@ -109,9 +117,6 @@ const t = useTranslations("en");
                   ? memberBySlug.get(post.data.author)
                   : null;
                 const authorName = author?.data.name ?? post.data.author;
-                const authorHref = post.data.author
-                  ? `/member/${post.data.author}`
-                  : null;
                 const href = blogPostUrl("en", post.slug);
 
                 return (
@@ -135,16 +140,10 @@ const t = useTranslations("en");
                         <p class="text-xs text-black">
                           {fmtDate.format(post.data.date)}
                         </p>
-                        {authorHref ? (
+                        {authorName ? (
                           <p class="text-xs text-black">
                             <span class="mx-1">•</span>
-                            {t("blog.by")}{" "}
-                            <a
-                              class="text-black hover:underline underline-offset-4"
-                              href={authorHref}
-                            >
-                              {authorName}
-                            </a>
+                            {t("blog.by")} {authorName}
                           </p>
                         ) : null}
                       </div>

@@ -42,6 +42,7 @@ import { ArrowCounterClockwise, DotsSixVertical, SidebarSimple } from "@phosphor
 import { appPath } from "@/lib/appUrl";
 import { prefetchRouteChunk } from "@/lib/routePrefetch";
 import { useTheme } from "next-themes";
+import { AppHeaderBar } from "@/components/layouts/AppHeaderBar";
 import {
   LearnErrorState,
   LearnMissingCourseIdState,
@@ -61,6 +62,7 @@ import { useLearnEnrollmentAccess } from "./hooks/useLearnEnrollmentAccess";
 import { useLearnProgress } from "./hooks/useLearnProgress";
 import { useLearnSubmission } from "./hooks/useLearnSubmission";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { CourseCompletionCertificatePanel } from "@/components/courses/CourseCompletionCertificatePanel";
 import type { CertificateIssueReason } from "@/lib/courses";
 import type { Enrollment } from "@/types/courses";
@@ -191,6 +193,7 @@ function LearnWorkspace() {
   const [askAiSlot, setAskAiSlot] = useState<HTMLDivElement | null>(null);
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
   const reopenTabRef = useRef<HTMLButtonElement | null>(null);
+  const lessonScrollRef = useRef<HTMLElement>(null);
   const tabDrag = useEdgeTabDrag();
   const barDrag = useFloatingBarDrag();
   const reopenTabAppliedRef = useRef<{ tab: HTMLButtonElement; show: boolean } | null>(null);
@@ -457,6 +460,10 @@ function LearnWorkspace() {
   useEffect(() => {
     if (user && currentLesson && courseId) void recordLearningEvent(courseId, currentLesson.id, "lesson_started");
   }, [user, courseId, currentLesson]);
+  // The lesson column scrolls inside its own viewport, not the window, so ScrollToTop never resets it.
+  useEffect(() => {
+    lessonScrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  }, [lessonId]);
 
   useEffect(() => {
     const enrollmentId = access.enrollment?.id;
@@ -748,8 +755,7 @@ function LearnWorkspace() {
   );
 
   const topBar = (
-    <header className="relative w-full shrink-0 border-b border-border bg-background">
-      <div className="mx-auto flex h-[71px] w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-5xl">
+    <AppHeaderBar>
         {/* Left: nút quay lại khóa học (icon) + logo, theo Figma */}
         <div className="flex items-center gap-2md">
           {/* TODO(figma-learn): tạm ẩn nút quay lại khóa học trước logo, chờ thiết kế
@@ -806,15 +812,14 @@ function LearnWorkspace() {
         <div className="flex items-center gap-2">
           <LearnResourcesDrawer groups={lessonsBySection} courseResources={course.course_resources} />
         </div>
-      </div>
-    </header>
+    </AppHeaderBar>
   );
 
   const footerBar = (
     <div className="pointer-events-none absolute inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex justify-center px-3">
       <div
         ref={barDrag.barRef}
-        className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-md rounded-xl border border-border-strong bg-surface-float/95 p-1.5 shadow-dropdown backdrop-blur-md [&:not(:has(>div:not(:empty)))]:hidden"
+        className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-xs sm:gap-md rounded-xl border border-border-strong bg-surface-float/95 p-1 sm:p-1.5 shadow-dropdown backdrop-blur-md transition-[scale,box-shadow] duration-150 ease-out motion-reduce:transition-none data-[dragging]:scale-[1.02] data-[dragging]:shadow-lg data-[dragging]:will-change-transform [&:not(:has(>div:not(:empty)))]:hidden"
       >
         <Button
           type="button"
@@ -823,25 +828,31 @@ function LearnWorkspace() {
           iconOnly
           size="small"
           aria-label={translate("detail.learn.moveBar")}
-          className="cursor-grab touch-none select-none active:cursor-grabbing"
+          className="cursor-grab touch-pan-y select-none active:cursor-grabbing"
           {...barDrag.gripProps}
         >
           <DotsSixVertical weight="bold" className="size-4" aria-hidden />
         </Button>
         <div ref={setAskAiSlot} className="flex items-center empty:hidden" />
         <div ref={setFooterSlot} className="flex items-center empty:hidden" />
-        {barDrag.isMoved && (
-          <Button
-            type="button"
-            variant="cta"
-            hierarchy="tertiary"
-            iconOnly
-            size="small"
-            aria-label={translate("detail.learn.resetBar")}
-            onClick={barDrag.reset}
+        {barDrag.resetState !== "closed" && (
+          <div
+            data-state={barDrag.resetState}
+            inert={barDrag.resetState === "closing"}
+            className="max-w-8 overflow-hidden transition-[max-width,margin,opacity] duration-200 ease-out focus-within:overflow-visible motion-reduce:transition-none starting:-ml-xs starting:max-w-0 starting:opacity-0 data-[state=closing]:-ml-xs data-[state=closing]:max-w-0 data-[state=closing]:opacity-0 sm:starting:-ml-md sm:data-[state=closing]:-ml-md"
           >
-            <ArrowCounterClockwise weight="bold" className="size-4" aria-hidden />
-          </Button>
+            <Button
+              type="button"
+              variant="cta"
+              hierarchy="tertiary"
+              iconOnly
+              size="small"
+              aria-label={translate("detail.learn.resetBar")}
+              onClick={barDrag.reset}
+            >
+              <ArrowCounterClockwise weight="bold" className="size-4" aria-hidden />
+            </Button>
+          </div>
         )}
       </div>
     </div>
@@ -863,9 +874,9 @@ function LearnWorkspace() {
               className="min-w-0 bg-background"
             >
               <div className="relative flex h-full min-w-0 flex-col">
-                <main className="min-h-0 flex-1 overflow-y-auto pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName="pb-24" contentClassName="flex min-h-full min-w-0! flex-col">
                   {lessonContent}
-                </main>
+                </ScrollArea>
                 {footerBar}
                 <div ref={tabDrag.ref} {...tabDrag.handlers} className="pointer-events-none absolute top-5 right-0 z-10 touch-none">
                   <Button
@@ -903,9 +914,9 @@ function LearnWorkspace() {
         </div>
       ) : (
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <main className="min-h-0 min-w-0 flex-1 overflow-y-auto pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName="pb-24" contentClassName="flex min-h-full min-w-0! flex-col">
             {lessonContent}
-          </main>
+          </ScrollArea>
           {footerBar}
           <MobileCurriculumSheet
             key={`${courseId}:${lessonId ?? ""}:${isFinalAssignment}`}

@@ -156,6 +156,10 @@
       },
       "projects": {
         "label": "项目"
+      },
+      "blog": {
+        "label": "博客",
+        "tooltip": "落地页的博客与案例"
       }
     },
     "pageMeta": {
@@ -202,6 +206,10 @@
       "projects": {
         "title": "项目",
         "description": "项目审核"
+      },
+      "blog": {
+        "title": "博客",
+        "description": "撰写并发布显示在落地页上的文章。"
       }
     },
     "hero": {
@@ -766,6 +774,117 @@
       "empty": "尚未手动发放任何凭证。",
       "emptyFiltered": "没有符合当前筛选条件的凭证。",
       "loadFailed": "无法加载手动铸造历史。"
+    }
+  },
+  "blog": {
+    "title": "博客",
+    "description": "corelia.academy 上的文章与案例。在这里发布的文章会在一两分钟内出现在网站上。",
+    "new": "新文章",
+    "loadFailed": "无法加载文章。",
+    "list": {
+      "search": "按标题或 slug 搜索",
+      "allStatuses": "所有状态",
+      "allLocales": "所有语言",
+      "empty": "还没有文章。",
+      "noMatches": "没有符合筛选条件的文章。"
+    },
+    "status": {
+      "draft": "草稿",
+      "published": "已发布"
+    },
+    "locales": {
+      "vi": "越南语",
+      "en": "英语"
+    },
+    "contentTypes": {
+      "blog": "博客文章",
+      "case-study": "案例"
+    },
+    "fields": {
+      "title": "标题",
+      "locale": "语言",
+      "contentType": "类型",
+      "slug": "URL slug",
+      "translationKey": "翻译键",
+      "description": "摘要",
+      "category": "分类",
+      "publishedOn": "日期",
+      "author": "作者",
+      "tags": "标签",
+      "status": "状态",
+      "cover": "封面",
+      "coverImage": "封面图片",
+      "imageUrl": "图片 URL",
+      "imageAlt": "图片描述（替代文本）",
+      "imageFit": "图片适配",
+      "youtubeUrl": "YouTube 链接",
+      "body": "正文"
+    },
+    "cover": {
+      "none": "无封面",
+      "image": "图片",
+      "youtube": "YouTube 视频",
+      "fitCover": "填满画框（裁剪）",
+      "fitContain": "显示整张图片"
+    },
+    "hints": {
+      "slugPublished": "修改已发布文章的 slug 会使指向它的链接失效。",
+      "translationKey": "同一篇文章的越南语版和英语版共用此键。留空则使用 slug。",
+      "description": "显示在标题下方、列表以及搜索和社交预览中。",
+      "tags": "（已选 {{selected}} 个，发布需要 {{min}}–{{max}} 个）",
+      "image": "PNG、JPEG、WebP、GIF 或 AVIF，最大 5 MB。",
+      "body": "Markdown：## 标题、**加粗**、[链接](https://…)、- 列表。HTML 会按文字显示。"
+    },
+    "editor": {
+      "newTitle": "新文章",
+      "editTitle": "编辑文章",
+      "back": "所有文章",
+      "write": "撰写",
+      "preview": "预览",
+      "bodyPlaceholder": "用 Markdown 撰写文章…",
+      "previewEmpty": "还没有可预览的内容。",
+      "unsaved": "有未保存的更改",
+      "saved": "所有更改已保存",
+      "notFound": "这篇文章已不存在。"
+    },
+    "actions": {
+      "edit": "编辑",
+      "view": "在网站上查看",
+      "saveDraft": "保存草稿",
+      "publish": "发布",
+      "update": "更新",
+      "unpublish": "取消发布",
+      "delete": "删除",
+      "uploadCover": "上传图片",
+      "insertImage": "插入图片",
+      "addTranslation": "添加{{language}}版本",
+      "openTranslation": "打开{{language}}版本"
+    },
+    "confirm": {
+      "delete": "删除“{{title}}”？此操作无法撤销。"
+    },
+    "messages": {
+      "draftSaved": "草稿已保存。",
+      "published": "已发布。文章会在一两分钟内出现在网站上。",
+      "deleted": "文章已删除。"
+    },
+    "errors": {
+      "titleRequired": "请输入标题。",
+      "slugInvalid": "slug 只能包含小写字母、数字和连字符。",
+      "translationKeyInvalid": "翻译键只能包含小写字母、数字和连字符。",
+      "dateInvalid": "请选择有效的日期。",
+      "imageRequired": "请上传封面图片，或选择“无封面”。",
+      "imageUrlInvalid": "图片 URL 必须以 https:// 或 / 开头。",
+      "youtubeInvalid": "请输入有效的 YouTube 链接。",
+      "tagsCount": "发布前请选择 {{min}} 到 {{max}} 个标签。",
+      "bodyRequired": "发布前请撰写正文。",
+      "slugTaken": "该语言的另一篇文章已使用此 slug。",
+      "translationTaken": "此翻译键在该语言下已有文章。",
+      "saveFailed": "无法保存文章，请重试。",
+      "deleteFailed": "无法删除文章，请重试。",
+      "imageType": "请选择 PNG、JPEG、WebP、GIF 或 AVIF 图片。",
+      "imageTooLarge": "图片超过 5 MB。",
+      "uploadFailed": "无法上传图片，请重试。"
     }
   }
 }

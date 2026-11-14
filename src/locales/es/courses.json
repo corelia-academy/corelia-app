@@ -57,6 +57,10 @@
     "corelia": "Curso de Corelia",
     "external_partner": "Curso de instructor asociado"
   },
+  "aiGenerated": {
+    "label": "Generado con IA",
+    "description": "Contenido creado por IA y revisado automáticamente."
+  },
   "catalog": {
     "title": "Cursos",
     "pageTitle": "Biblioteca de cursos",
@@ -503,8 +507,11 @@
     "retry": "Reintentar",
     "source": "Código fuente",
     "unavailable": "Lección no disponible.",
+    "lessonDataErrorTitle": "No se encontraron los datos de la lección.",
+    "lessonDataErrorDescription": "Revisa tu conexión o avisa a un administrador.",
     "askAi": {
       "trigger": "Preguntar a la IA",
+      "triggerShort": "IA",
       "chatgpt": "Preguntar a ChatGPT",
       "claude": "Preguntar a Claude",
       "gemini": "Preguntar a Gemini (copia el prompt)",
@@ -545,6 +552,8 @@
     "completed": "Completada",
     "markComplete": "Marcar como completada",
     "markIncomplete": "Marcar como incompleta",
+    "markCompleteShort": "Completada",
+    "markIncompleteShort": "Incompleta",
     "redoFromStart": "Empezar de nuevo",
     "redoConfirm": "¿Empezar este ejercicio de nuevo? Se borrarán tus respuestas actuales y el borrador local. Los envíos anteriores permanecerán en tu historial.",
     "resources": "Recursos",
@@ -552,6 +561,7 @@
     "previous": "Anterior",
     "next": "Siguiente lección",
     "finish": "Terminar curso",
+    "partLetter": "Part {{letter}}",
     "lessonNumber": "Lección {{number}}",
     "saving": "Guardando…",
     "login": "Iniciar sesión",
@@ -612,6 +622,19 @@
     "finalRetrySameSubmission": "El contenido y los archivos enviados se mantienen sin cambios. Reintenta para obtener el resultado sin volver a subir los archivos.",
     "duplicate": "Duplicar",
     "quizRetrySameAnswers": "Tus respuestas enviadas se conservan mientras el resultado no está disponible. Reintenta para obtener el resultado de este envío.",
+    "questionNumber": "Pregunta {{number}}",
+    "quizType": {
+      "mcq": "Opción múltiple"
+    },
+    "quizCorrect": "Correcto",
+    "quizThinkAgain": "Piénsalo de nuevo",
+    "quizAnswerCorrect": "Respuesta correcta",
+    "quizAnswerWrong": "Tu respuesta es incorrecta",
+    "quizPleaseAnswer": "Responde a la pregunta",
+    "codeFillAll": "Rellena todos los huecos",
+    "quizScoreCorrect": "correctas",
+    "quizAchieveLead": "Consigue",
+    "quizAchieveTail": "correctas para superar la prueba",
     "duplicateDraft": "Duplicar como borrador",
     "duplicateUnsaved": "Esta copia no está guardada. Guarda para añadirla al plan de estudios.",
     "copyTitle": "{{title}} (copia)",

@@ -6,7 +6,8 @@ import { Info } from "lucide-react";
 import { FileText } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { CourseBadge } from "./CourseBadge";
+import { CourseBadge } from "@/components/courses/CourseBadge";
+import { AiCourseBadge } from "@/components/courses/AiCourseBadge";
 import i18n from "@/i18n";
 import {
   checkAndIssueCertificate,
@@ -109,6 +110,7 @@ export function CourseHero({
               {getCourseLevelLabel(course.level)}
             </CourseBadge>
             <CourseBadge variant="secondary">{translate("pricing.freeLearning")}</CourseBadge>
+            <AiCourseBadge course={course} />
             {showCertificateAvailableBadge ? (
               <CourseBadge variant="secondary">
                 {translate("detail.courseDetail.certificateAvailable")}

@@ -1,13 +1,21 @@
-import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
 import { normalizeCodeLocale } from "./locale";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
-import { Button } from "@/components/ui/button";
+import { ArrowCounterClockwise } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
+import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ProgressCircle } from "@/components/ui/progress";
+import { CodeBlock, CodeBlockFrame, CodeBlockLine, CodeSpan } from "@/components/ui/code-block";
+import { codeLanguageLabel } from "@/components/ui/code-syntax";
+import { InputCode } from "@/components/ui/input-code";
+import { ExplanationBox } from "@/components/ui/explanation-box";
 import { useAuth } from "@/stores/authStore";
 import { recordLearningEvent } from "@/lib/learning";
+import { LessonConfetti } from "@/features/learning/LessonConfetti";
+import { LessonDataError } from "@/features/learning/LessonDataError";
 import type { LessonRendererProps } from "@/features/learning/types";
-import { CodeEditor } from "./CodeEditor";
 import { validateCodeConfig } from "./config";
 import { evaluateCodeExercise, MAX_SOURCE_BYTES, sourceBytes } from "./evaluate";
 import { codeDraftKey, readCodeDraft, saveCodeDraft } from "./drafts";
@@ -16,13 +24,13 @@ import type { CodeExerciseConfig, CodeExerciseResult } from "./types";
 
 export function CodeExerciseLesson(props: LessonRendererProps) {
   const { user } = useAuth();
-  const { t } = useLearningTranslation();
   const config = props.lesson.code_exercise_config;
-  if (validateCodeConfig(config).length || !config) return <p role="alert">{t("learning.unavailable")}</p>;
-  return <Exercise key={`${props.courseId}:${props.lesson.id}:${config.revision}:${user?.id}:${props.mode}:${props.draftEpoch ?? 0}`} {...props} config={config} userId={user?.id} />;
+  if (validateCodeConfig(config).length || !config) return <LessonDataError />;
+  return <Exercise key={`${props.courseId}:${props.lesson.id}:${config.revision}:${user?.id}:${props.mode}:${props.draftEpoch ?? 0}:${props.resetEpoch ?? 0}`} {...props} config={config} userId={user?.id} />;
 }
 function Exercise({ lesson, courseId, config, userId, mode, completed, onComplete, onAction, draftEpoch = 0 }: LessonRendererProps & { config: CodeExerciseConfig; userId?: string }) {
   const { t } = useLearningTranslation();
+  const { confirm, confirmation } = useLearningConfirm();
   const copy = normalizeCodeLocale(lesson.code_exercise_locale).value;
   const key = mode === "learner" && userId ? `${codeDraftKey(userId, courseId, lesson.id, config.revision)}${draftEpoch ? `:${draftEpoch}` : ""}` : null;
   useEffect(() => {
@@ -41,13 +49,60 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
   const [saved, setSaved] = useState<boolean | null>(null);
   const [solution, setSolution] = useState(false);
   const [hints, setHints] = useState(false);
-  const [tab, setTab] = useState("code");
   const segments = useMemo(() => config.mode === "fill" ? parseMarkers(config.file.starter_source) : [], [config]);
   const lines = useMemo(() => { const out = segments.reduce<FillSegment[][]>((acc, s) => {
     if (s.type === "blank") { acc[acc.length - 1].push(s); return acc; }
     s.value.split("\n").forEach((part, i) => { if (i) acc.push([]); if (part) acc[acc.length - 1].push({ type: "source", value: part }); });
     return acc;
   }, [[]]); if (out.length > 1 && !out[out.length - 1].length) out.pop(); return out; }, [segments]);
+  const fill = config.mode === "fill";
+  const blankIds = useMemo(() => segments.flatMap(s => s.type === "blank" ? [s.id] : []), [segments]);
+  const [missingId, setMissingId] = useState<string | null>(null);
+  const [celebrateKey, setCelebrateKey] = useState(0);
+  const locked = result !== null;
+  const retryable = result !== null && !result.passed;
+  useEffect(() => {
+    if (locked) {
+      (document.activeElement as HTMLElement)?.blur?.();
+    }
+  }, [locked]);
+  const notes = result ? result.results.filter(r => !r.passed).flatMap(r => [
+    ...(fill ? [] : [copy.test_copy?.[r.test_id]?.description ?? r.description]),
+    copy.blank_feedback?.[r.test_id] ?? copy.test_copy?.[r.test_id]?.failure_message ?? r.message,
+    copy.test_copy?.[r.test_id]?.hint ?? r.hint,
+  ]).filter((note): note is string => Boolean(note)) : [];
+
+  const errorLines = useMemo(() => {
+    if (!result || result.passed || config.mode !== "edit") return undefined;
+    const sourceLines = source.split("\n");
+    const solutionLines = (config.reference_solution ?? "").split("\n");
+    const wrong: number[] = [];
+    sourceLines.forEach((line, idx) => {
+      if (solutionLines[idx] === undefined || line.trimEnd() !== solutionLines[idx].trimEnd()) {
+        wrong.push(idx + 1);
+      }
+    });
+    if (wrong.length === 0 && sourceLines.length < solutionLines.length) {
+      wrong.push(sourceLines.length || 1);
+    }
+    return wrong.length > 0 ? wrong : undefined;
+  }, [result, config.mode, config.reference_solution, source]);
+
+  async function handleReset() {
+    const isModified = config.mode === "fill"
+      ? Object.values(answers).some(Boolean)
+      : source !== config.file.starter_source;
+    if (isModified && !await confirm(t("learning.resetConfirm"))) return;
+    setSource(config.file.starter_source);
+    setAnswers({});
+    setResult(null);
+    setError(null);
+    setCompletionPending(false);
+    if (key) {
+      try { localStorage.removeItem(key); } catch { /* Ignore */ }
+    }
+  }
+
   const save = useCallback(() => {
     if (!key) return;
     setSaved(saveCodeDraft(key, config.mode === "fill" ? { mode: "fill", answers, updated_at: new Date().toISOString() } : { mode: "edit", source, updated_at: new Date().toISOString() }));
@@ -65,12 +120,23 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
   }, [key, config.mode, answers, source]);
   const check = useCallback(async () => {
     if (inFlight.current) return;
+    if (fill && !completionPending) {
+      const empty = blankIds.find(id => !(answers[id] ?? "").trim());
+      if (empty) {
+        setMissingId(empty);
+        const input = document.querySelector<HTMLInputElement>(`[data-blank="${empty}"]`);
+        input?.scrollIntoView({ behavior: "smooth", block: "center" });
+        input?.focus({ preventScroll: true });
+        return;
+      }
+    }
     inFlight.current = true;
     setBusy(true); setError(null);
     try {
       if (completionPending) {
         await onComplete();
         setCompletionPending(false);
+        setCelebrateKey(k => k + 1);
         return;
       }
       const evaluated = evaluateCodeExercise(config, { answers, source });
@@ -81,48 +147,64 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
         await onComplete();
         setCompletionPending(false);
       }
+      if (evaluated.passed) setCelebrateKey(k => k + 1);
     } catch { setError(t("learning.systemError")); }
     finally { inFlight.current = false; setBusy(false); }
-  }, [config, answers, source, key, courseId, lesson.id, mode, completed, completionPending, onComplete, t]);
-  useEffect(() => { onAction({ label: t(busy ? "learning.checking" : completionPending ? "learning.retryProgress" : "learning.checkCode"), disabled: busy, pending: busy, run: check }); return () => onAction(null); }, [onAction, check, busy, completionPending, t]);
-  const { confirm, confirmation } = useLearningConfirm();
-  async function reset() {
-    if ((source !== config.file.starter_source || Object.values(answers).some(Boolean)) && !await confirm(t("learning.resetConfirm"))) return;
-    setSource(config.file.starter_source); setAnswers({}); setResult(null); setError(null); setCompletionPending(false);
-  }
-  return <div className="space-y-4" onKeyDown={e => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); void check(); }
+  }, [config, fill, blankIds, answers, source, key, courseId, lesson.id, mode, completed, completionPending, onComplete, t]);
+  const retry = useCallback(() => { setResult(null); setMissingId(null); setError(null); setCompletionPending(false); }, []);
+  const act = retryable ? retry : check;
+  useEffect(() => { onAction({
+    label: t(busy ? "learning.checking" : completionPending ? "learning.retryProgress" : retryable ? "learning.retry" : "learning.checkCode"),
+    disabled: busy, pending: busy,
+    run: act,
+  }); return () => onAction(null); }, [onAction, act, busy, completionPending, retryable, t]);
+  return <div className="relative space-y-4" onKeyDown={e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); void act(); }
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(); }
   }}>
-    {config.mode === "edit" && <><p className="text-sm text-foreground-muted lg:hidden">{t("learning.desktopRecommended")}</p><div className="flex gap-2 lg:hidden" role="group">{["code", "tests"].map(value => <Button type="button" key={value} variant="cta" hierarchy={(tab === value ? "primary" : "secondary")} onClick={() => setTab(value)}>{t(`learning.${value}`)}</Button>)}</div></>}
-    <div className={config.mode === "edit" ? "grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(240px,1fr)]" : "space-y-4"}>
-      <div className={config.mode === "edit" && tab !== "code" ? "hidden lg:block" : "min-w-0"}>
-        {config.mode === "fill" ? <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
-          <p className="border-b border-border-subtle px-4 py-2 font-mono text-xs text-foreground-muted">{config.file.path}</p>
-          <pre className="overflow-x-auto py-3 font-mono text-sm leading-9 max-sm:leading-[2.75rem]">{lines.map((line, n) => <div key={n} className="flex min-h-9 max-sm:min-h-11">
-            <span aria-hidden="true" className="w-10 shrink-0 select-none pr-3 text-right text-foreground-subtle">{n + 1}</span>
-            <code className="whitespace-pre pr-4">{line.map((s, i) => {
-              if (s.type === "source") return <span key={i}>{s.value}</span>;
-              const value = answers[s.id] ?? "";
-              const passed = result?.results.find(r => r.test_id === s.id)?.passed;
-              return <input key={s.id} disabled={busy} aria-label={s.id} aria-invalid={passed === false} value={value} placeholder="…" spellCheck={false} autoCapitalize="off" autoCorrect="off" autoComplete="off" style={{ width: `calc(${Math.max(6, value.length + 1)}ch + 1rem)` }} onChange={e => { setAnswers(a => ({ ...a, [s.id]: e.target.value.slice(0, 1024) })); setResult(null); setError(null); setCompletionPending(false); }} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); void check(); } }} className={cn("mx-0.5 h-8 max-w-full rounded-md border border-dashed px-2 align-middle font-mono text-sm text-foreground outline-none transition-colors placeholder:text-foreground-subtle focus:border-solid focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 max-sm:h-10", passed === undefined ? "border-primary/40 bg-surface-base" : passed ? "border-solid border-success bg-success/10" : "border-solid border-destructive bg-destructive/10")} />;
-            })}</code>
-          </div>)}</pre>
-        </div> : <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-raised"><p className="border-b border-border-subtle px-4 py-2 font-mono text-xs text-foreground-muted">{config.file.path}</p><CodeEditor language={config.language} source={source} readOnly={busy} onChange={value => { if (sourceBytes(value) <= MAX_SOURCE_BYTES) { setSource(value); setResult(null); setError(null); setCompletionPending(false); } else setError(t("learning.sourceLimit")); }} /></div>}
-      </div>
-      <div aria-live="polite" className={cn(config.mode === "edit" && tab !== "tests" ? "hidden lg:block" : "space-y-2", config.mode === "edit" && "lg:sticky lg:top-4 lg:self-start lg:max-h-[70vh] lg:overflow-y-auto")}>
-        <h3 className="font-medium">{t("learning.tests")}</h3>
-        {result ? <><p className={cn("font-medium", result.passed ? "text-success" : "text-destructive")}>{t(result.passed ? "learning.passed" : "learning.failed")}</p>{[...result.results].sort((a,b) => Number(b.required)-Number(a.required)).map(r => <div key={r.test_id} className={cn("space-y-1 rounded-lg border p-3 text-sm", r.passed ? "border-success/25 bg-success/10" : "border-destructive/30 bg-destructive/10")}><p className="font-medium"><span aria-hidden="true" className={r.passed ? "text-success" : "text-destructive"}>{r.passed ? "✓" : "✕"}</span> {copy.test_copy?.[r.test_id]?.description ?? r.description}</p>{!r.passed && <p className="text-foreground-muted">{copy.blank_feedback?.[r.test_id] ?? copy.test_copy?.[r.test_id]?.failure_message ?? r.message}</p>}{!r.passed && r.hint && <p className="text-foreground-muted">{copy.test_copy?.[r.test_id]?.hint ?? r.hint}</p>}</div>)}</> : <p className="text-foreground-muted">{t("learning.checkPrompt")}</p>}
+    <LessonConfetti burstKey={celebrateKey} />
+    <div className="space-y-4">
+      <div className="min-w-0">
+        {config.mode === "fill" ? <CodeBlockFrame label={codeLanguageLabel(config.language)}>
+          <div className="overflow-x-auto px-2xl py-lg font-mono text-[16px] leading-8 tracking-[-0.01em]">
+            {lines.map((line, n) => <CodeBlockLine key={n} number={n + 1} digits={String(lines.length).length}>{line.map((s, i) => {
+                if (s.type === "source") return <CodeSpan key={i} code={s.value} language={config.language} />;
+                const value = answers[s.id] ?? "";
+                const passed = result?.results.find(r => r.test_id === s.id)?.passed;
+                // The hidden mirror has the same font and padding as the input, so the field grows to fit its text exactly.
+                return <span key={s.id} className="inline-grid min-w-[140px] max-w-full shrink-0">
+                  <span aria-hidden="true" className={`invisible col-start-1 row-start-1 h-0 overflow-hidden whitespace-pre border border-transparent pl-3 font-body text-body-large leading-[1.4] tracking-[0.02em] ${passed ? "pr-10" : "pr-3"}`}>{value}{" "}</span>
+                  <Input aria-label={s.id} data-blank={s.id} value={value} disabled={busy} readOnly={locked} aria-invalid={passed === false}
+                    statusIcon={passed ? <ProgressCircle done className="size-5" aria-label={t("learning.quizAnswerCorrect")} /> : undefined}
+                    controlClassName="col-start-1 row-start-1 w-full" className="w-0" spellCheck={false} autoCapitalize="off" autoCorrect="off" autoComplete="off"
+                    onChange={e => { setAnswers(a => ({ ...a, [s.id]: e.target.value.slice(0, 1024) })); setResult(null); setError(null); setCompletionPending(false); }}
+                    onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); void act(); } }} />
+                </span>;
+              })}</CodeBlockLine>)}
+          </div>
+        </CodeBlockFrame> : <div className={cn("min-w-0", (busy || locked) && "pointer-events-none")}>
+          <InputCode language={config.language} value={source} disabled={busy} readOnly={locked} errorLines={errorLines} ariaLabel={t("learning.source")} onChange={value => { if (sourceBytes(value) <= MAX_SOURCE_BYTES) { setSource(value); setResult(null); setError(null); setCompletionPending(false); } else setError(t("learning.sourceLimit")); }} />
+        </div>}
+        {fill && missingId && !(answers[missingId] ?? "").trim() && <p role="alert" className="mt-lg text-body-medium text-input-field-error">{t("learning.codeFillAll")}</p>}
+        <div aria-live="polite">{result && <ExplanationBox className="mt-6xl" status={result.passed ? "correct" : "incorrect"}
+          title={t(result.passed ? "learning.quizCorrect" : "learning.quizThinkAgain")}
+          statusLabel={t(result.passed ? "learning.quizAnswerCorrect" : "learning.quizAnswerWrong")}>
+        {notes.length ? <ul className="flex list-disc flex-col gap-sm pl-5">{notes.map((note, i) => <li key={i}>{note}</li>)}</ul> : undefined}
+      </ExplanationBox>}</div>
       </div>
     </div>
     {error && <p role="alert" className="text-destructive">{error}</p>}
     <div className="flex flex-wrap items-center gap-2">
-      {confirmation}<Button type="button" variant="cta" hierarchy="secondary" disabled={busy} onClick={reset}>{t("learning.reset")}</Button>
-      <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => setHints(v => !v)}>{t("learning.hints")}</Button>
-      <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => setSolution(v => !v)}>{t("learning.solution")}</Button>
+      {confirmation}
+      <Button type="button" variant="cta" hierarchy="tertiary" size="small" disabled={busy} onClick={() => void handleReset()}
+        leadingIcon={<ArrowCounterClockwise weight="bold" className="size-4" aria-hidden />}>
+        {t("learning.reset")}
+      </Button>
+      <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setHints(v => !v)}>{t("learning.hints")}</Button>
+      <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setSolution(v => !v)}>{t("learning.solution")}</Button>
       {key && saved !== null && <span role="status" className="text-xs text-foreground-muted">{t(saved ? "learning.draftSaved" : "learning.draftUnavailable")}</span>}
     </div>
     {hints && <ul className="list-disc space-y-1 rounded-xl border border-border-subtle bg-surface-raised py-3 pl-8 pr-4 text-sm">{(copy.hints ?? config.hints ?? []).map((hint,i) => <li key={i}>{hint}</li>)}</ul>}
-    {solution && <pre className="overflow-x-auto rounded-xl border border-border-subtle bg-surface-raised p-4 font-mono text-sm leading-6">{config.reference_solution}</pre>}
+    {solution && <CodeBlock language={config.language} code={config.reference_solution} copyable={false} header={false} />}
   </div>;
 }

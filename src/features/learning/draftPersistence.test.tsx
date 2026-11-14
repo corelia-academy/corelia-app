@@ -224,7 +224,7 @@ it("checks preview code without reading learner drafts, recording events, or com
       input.dispatchEvent(new Event("input", { bubbles: true }));
     });
     await act(async () => { await onAction.mock.lastCall?.[0].run(); });
-    expect(container.textContent).toContain("learning.passed");
+    expect(container.querySelector('[data-slot="explanation-box"]')?.getAttribute("data-status")).toBe("correct");
     act(() => window.dispatchEvent(new Event("pagehide")));
   } finally { act(() => root.unmount()); }
   expect(getItem).not.toHaveBeenCalled();

@@ -57,6 +57,10 @@
     "corelia": "Corelia 강의",
     "external_partner": "파트너 강사 강의"
   },
+  "aiGenerated": {
+    "label": "AI 생성",
+    "description": "AI가 만들고 자동으로 검수한 콘텐츠입니다."
+  },
   "catalog": {
     "title": "강의",
     "pageTitle": "강의 라이브러리",
@@ -485,8 +489,11 @@
     "retry": "다시 시도",
     "source": "소스 코드",
     "unavailable": "레슨을 이용할 수 없습니다.",
+    "lessonDataErrorTitle": "레슨 데이터를 찾을 수 없습니다.",
+    "lessonDataErrorDescription": "연결 상태를 확인하거나 관리자에게 신고해 주세요.",
     "askAi": {
       "trigger": "AI에게 질문",
+      "triggerShort": "AI",
       "chatgpt": "ChatGPT에게 질문",
       "claude": "Claude에게 질문",
       "gemini": "Gemini에게 질문 (프롬프트 복사)",
@@ -527,6 +534,8 @@
     "completed": "완료",
     "markComplete": "완료로 표시",
     "markIncomplete": "미완료로 표시",
+    "markCompleteShort": "완료",
+    "markIncompleteShort": "미완료",
     "redoFromStart": "처음부터 다시",
     "redoConfirm": "이 실습을 처음부터 다시 시작할까요? 현재 답안과 로컬 임시 저장이 삭제됩니다. 이전 제출물은 기록에 남습니다.",
     "resources": "자료",
@@ -534,6 +543,7 @@
     "previous": "이전",
     "next": "다음 레슨",
     "finish": "강의 마치기",
+    "partLetter": "Part {{letter}}",
     "lessonNumber": "레슨 {{number}}",
     "saving": "저장 중…",
     "login": "로그인",
@@ -594,6 +604,19 @@
     "finalRetrySameSubmission": "제출한 내용과 파일은 그대로 유지됩니다. 파일을 다시 업로드하지 않고 결과를 가져오려면 다시 시도하세요.",
     "duplicate": "복제",
     "quizRetrySameAnswers": "결과를 확인할 수 없는 동안 제출한 답안은 유지됩니다. 이 제출의 결과를 가져오려면 다시 시도하세요.",
+    "questionNumber": "문제 {{number}}",
+    "quizType": {
+      "mcq": "객관식"
+    },
+    "quizCorrect": "정답",
+    "quizThinkAgain": "다시 생각해 보세요",
+    "quizAnswerCorrect": "정답",
+    "quizAnswerWrong": "선택한 답이 틀렸습니다",
+    "quizPleaseAnswer": "문제에 답해 주세요",
+    "codeFillAll": "모든 빈칸을 채워 주세요",
+    "quizScoreCorrect": "정답",
+    "quizAchieveLead": "통과하려면",
+    "quizAchieveTail": "문제를 맞혀야 합니다",
     "duplicateDraft": "초안으로 복제",
     "duplicateUnsaved": "이 사본은 저장되지 않았습니다. 저장해야 커리큘럼에 추가됩니다.",
     "copyTitle": "{{title}} (사본)",

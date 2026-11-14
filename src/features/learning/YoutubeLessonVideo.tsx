@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { loadYoutubePlayerApi, type YoutubePlayer } from "@/lib/youtubePlayerApi";
 import { cn } from "@/lib/utils";
 import { useLearningTranslation } from "./useLearningTranslation";
+import { LESSON_MEDIA_MAX_HEIGHT } from "./lessonLayout";
 
 type Props = { url: string; title: string; flush?: boolean };
 export function YoutubeLessonVideo(props: Props) {
@@ -22,7 +23,7 @@ function Player({ url, title, flush = false }: Props) {
     frame.referrerPolicy = "strict-origin-when-cross-origin";
     frame.src = src.toString();
     frame.title = title;
-    frame.className = "block h-full w-full";
+    frame.className = "mx-auto block aspect-video h-full max-w-full";
     frame.allow = "encrypted-media; picture-in-picture";
     frame.allowFullscreen = true;
     host.append(frame);
@@ -46,8 +47,8 @@ function Player({ url, title, flush = false }: Props) {
       host.replaceChildren();
     };
   }, [url, title]);
-  return <div className={flush ? undefined : "space-y-3"}>
-    <div ref={container} className={cn("aspect-video w-full overflow-hidden bg-black", !flush && "rounded-xl")} />
+  return <div className={flush ? "border-b border-border" : "space-y-3"}>
+    <div ref={container} className={cn("aspect-video w-full overflow-hidden bg-background", !flush && "rounded-xl")} style={flush ? { maxHeight: LESSON_MEDIA_MAX_HEIGHT } : undefined} />
     {failed && <p role="alert" className={flush ? "px-4 py-3 sm:px-6 md:px-8xl" : undefined}>{t("learning.videoError")}</p>}
   </div>;
 }

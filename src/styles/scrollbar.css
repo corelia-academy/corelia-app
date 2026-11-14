@@ -1,0 +1,103 @@
+/*
+ * Scrollbar design: single source of truth. Use by class only.
+ *   .scrollbar-design   visible native scrollbar
+ *   .scrollbar-hidden   scrollable without a scrollbar
+ *   .scrollbar-overlay  floating scrollbar drawn over the content (markup: components/ui/scroll-area.tsx)
+ */
+.scrollbar-design,
+.scrollbar-overlay {
+  --scrollbar-size: 6px;
+  --scrollbar-gap: 1px;
+  --scrollbar-thumb: var(--neutral-400);
+  --scrollbar-thumb-hover: var(--foreground-muted);
+}
+
+/* Below md: same thumb proportions at half scale (4px track, 2px thumb). */
+@media (max-width: 767px) {
+  .scrollbar-design,
+  .scrollbar-overlay {
+    --scrollbar-size: 4px;
+    --scrollbar-gap: 1px;
+  }
+}
+
+.scrollbar-design {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+@supports selector(::-webkit-scrollbar) {
+  .scrollbar-design {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  .scrollbar-design::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+  }
+
+  .scrollbar-design::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-design::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border: var(--scrollbar-gap) solid transparent;
+    background-clip: content-box;
+    border-radius: 8px;
+  }
+
+  .scrollbar-design::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+  }
+
+  .scrollbar-design::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+/* Overlay: the thumb floats above the content and takes no layout space. */
+.scrollbar-overlay-track {
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  width: var(--scrollbar-size);
+  padding: var(--scrollbar-gap);
+}
+
+.scrollbar-overlay-thumb {
+  width: 100%;
+  border-radius: 8px;
+  background-color: var(--scrollbar-thumb);
+}
+
+.scrollbar-overlay-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+/* Auto-hide: visible while the area scrolls (data-active, set by ScrollArea on every scroll event) or is hovered. */
+.scrollbar-overlay-track[data-autohide] {
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.scrollbar-overlay[data-active] .scrollbar-overlay-track[data-autohide],
+.scrollbar-overlay-track[data-autohide]:hover {
+  opacity: 1;
+  transition-duration: 150ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollbar-overlay-track[data-autohide] {
+    transition: none;
+  }
+}

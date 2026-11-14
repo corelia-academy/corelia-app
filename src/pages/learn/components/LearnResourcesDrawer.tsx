@@ -46,7 +46,7 @@ export function LearnResourcesDrawer({ groups, courseResources }: { groups: Curr
       <SheetTrigger render={<Button type="button" variant="cta" hierarchy="secondary" size="small" className="max-sm:size-8 max-sm:px-0" trailingIcon={<ListIcon weight="duotone" aria-hidden />} />}>
         <span className="max-sm:sr-only">{t("learning.resources")}</span>
       </SheetTrigger>
-      <SheetContent side="right" showCloseButton={false} initialFocus={(type) => type === "keyboard"} className="h-dvh min-h-0 w-[min(30rem,100vw)]! max-w-none! gap-2xl bg-background p-0 data-[side=right]:border-border">
+      <SheetContent side="right" showCloseButton={false} initialFocus={(type) => type === "keyboard"} className="h-dvh min-h-0 w-[min(30rem,100vw)]! max-w-none! bg-background p-0 data-[side=right]:border-border">
         <SheetHeader className="shrink-0 gap-1.5 p-3xl pr-14">
           <SheetTitle data-reveal="" className="font-display text-heading-medium leading-[1.2] text-action-text">{t("learning.resources")}</SheetTitle>
           <SheetDescription data-reveal="" className="text-body-medium leading-[1.4] tracking-[0.02em] text-foreground-subtle">{t("learning.resourcesDrawerHint")}</SheetDescription>
@@ -59,10 +59,10 @@ export function LearnResourcesDrawer({ groups, courseResources }: { groups: Curr
         <div className="scrollbar-design min-h-0 flex-1 space-y-3xl overflow-y-auto px-3xl pb-3xl">
           {all.length ? all.map(group => (
             <section key={group.id}>
-              <h3 data-reveal="" className="pb-md text-label-small leading-[1.4] text-foreground-subtle">{group.title}</h3>
-              <ul className="space-y-md">
+              <h3 data-reveal="" className="pt-3xl pb-md text-label-small leading-[1.4] text-foreground-subtle">{group.title}</h3>
+              <ul className="flex flex-col gap-md">
                 {group.items.map((item, index) => (
-                  <li key={`${item.url}:${index}`} data-reveal="" className="rounded-xl bg-[var(--neutral-800)]">
+                  <li key={`${item.url}:${index}`} data-reveal="" className="rounded-xl bg-resource-item-surface">
                     <Action
                       size="large"
                       nativeButton={false}

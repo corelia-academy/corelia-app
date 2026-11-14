@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { parseLessonImageRef } from "@/lib/lessonImage";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
-import { CodeBlock } from "./CodeBlock";
+import { CodeBlock } from "@/components/ui/code-block";
 
-function MarkdownImage({ src, alt }: { src?: string; alt: string }) {
+function MarkdownImage({ src, alt, lesson = false }: { src?: string; alt: string; lesson?: boolean }) {
   const isRef = parseLessonImageRef(src) !== null;
   const [resolved, setResolved] = useState<string | null>(null);
   useEffect(() => {
@@ -26,12 +26,12 @@ function MarkdownImage({ src, alt }: { src?: string; alt: string }) {
       alt={alt}
       loading="lazy"
       decoding="async"
-      className="my-3 h-auto max-w-full rounded-lg border border-border-subtle"
+      className={cn("my-3 h-auto max-w-full rounded-lg border border-border-subtle", lesson && "max-h-[max(60vh,20rem)]")}
     />
   );
 }
 
-export function Markdown({ content, compact, variant = "default" }: { content: string; compact?: boolean; variant?: "default" | "lesson" }) {
+export function Markdown({ content, compact, variant = "default", codeHeader = true }: { content: string; compact?: boolean; variant?: "default" | "lesson"; codeHeader?: boolean }) {
   const value = content?.trim();
   if (!value) return null;
   const lesson = variant === "lesson" && !compact;
@@ -68,7 +68,7 @@ export function Markdown({ content, compact, variant = "default" }: { content: s
           a: (props) => (
             <a className="text-primary underline underline-offset-4 hover:opacity-80" {...props} />
           ),
-          img: ({ src, alt }) => <MarkdownImage src={typeof src === "string" ? src : undefined} alt={alt ?? ""} />,
+          img: ({ src, alt }) => <MarkdownImage src={typeof src === "string" ? src : undefined} alt={alt ?? ""} lesson={lesson} />,
           ul: (props) => <ul className="list-disc space-y-1 pl-5" {...props} />,
           ol: (props) => <ol className="list-decimal space-y-1 pl-5" {...props} />,
           li: (props) => <li className={lesson ? undefined : "leading-7"} {...props} />,
@@ -79,12 +79,12 @@ export function Markdown({ content, compact, variant = "default" }: { content: s
                 <CodeBlock
                   language={language}
                   code={String(children).replace(/\n$/, "")}
-                  variant={lesson ? "lesson" : "default"}
+                  header={codeHeader}
                 />
               );
             }
             return (
-              <code className="rounded bg-surface-raised px-1.5 py-0.5 font-mono text-[0.9em] text-foreground">
+              <code className={lesson ? "rounded-md bg-code-block-surface px-1.5 py-0.5 font-mono text-[0.9em] text-foreground" : "rounded bg-surface-raised px-1.5 py-0.5 font-mono text-[0.9em] text-foreground"}>
                 {children}
               </code>
             );
@@ -97,6 +97,12 @@ export function Markdown({ content, compact, variant = "default" }: { content: s
               {...props}
             />
           ),
+          // Lesson tables keep a readable minimum width and scroll sideways on narrow screens instead of squeezing their columns.
+          table: (props) => lesson
+            ? <div className="scrollbar-design max-w-full overflow-x-auto"><table className="w-full min-w-[32rem] border-collapse text-left [overflow-wrap:normal]" {...props} /></div>
+            : <table {...props} />,
+          th: (props) => <th className={lesson ? "border-b border-border-subtle px-md py-sm font-medium" : undefined} {...props} />,
+          td: (props) => <td className={lesson ? "border-b border-border-subtle px-md py-sm align-top" : undefined} {...props} />,
         }}
       >
         {value}

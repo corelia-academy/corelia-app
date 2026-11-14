@@ -16,6 +16,7 @@ vi.mock("@/stores/authStore", () => ({
   useAuth: () => ({ user: null, profile: null }),
 }));
 
+vi.mock("@/components/ui/input-code-monaco", () => ({ default: () => null }));
 import AdminComponentsPage from "./AdminComponentsPage";
 
 function LocationProbe({
@@ -31,6 +32,10 @@ function LocationProbe({
 
   return null;
 }
+
+// The showcase renders every component section (and GSAP motion) per test;
+// the default 5s budget is too tight when the full suite runs in parallel.
+vi.setConfig({ testTimeout: 15_000 });
 
 describe("AdminComponentsPage", () => {
   afterEach(() => {
@@ -51,9 +56,12 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(21);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(24);
     expect(container.querySelector('a[href="/components/timestamp"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/toast-bar"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/components/explanation-box"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/components/code-block"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/components/input-code"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/action"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/avatar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/scrollbar"]')).not.toBeNull();
@@ -75,14 +83,17 @@ describe("AdminComponentsPage", () => {
     expect(navigation?.classList.contains("overflow-x-auto")).toBe(true);
     expect(navigation?.classList.contains("overflow-x-hidden")).toBe(false);
     expect(container.querySelector("main")?.classList.contains("select-none")).toBe(false);
-    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(20);
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(23);
     expect(container.querySelector("#component-full-page-empty-state")).toBeNull();
-    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(20);
+    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(23);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
     expect(container.textContent).toContain("Selection");
     expect(container.querySelector("#component-timestamp")).not.toBeNull();
     expect(container.querySelector("#component-toast-bar")).not.toBeNull();
+    expect(container.querySelector("#component-explanation-box")).not.toBeNull();
+    expect(container.querySelector("#component-code-block")).not.toBeNull();
+    expect(container.querySelector("#component-input-code")).not.toBeNull();
     expect(container.querySelector("#component-tooltip")).not.toBeNull();
     expect(container.querySelector("#component-stepper")).not.toBeNull();
     expect(container.querySelector("#component-informative-icon")).not.toBeNull();
@@ -100,7 +111,7 @@ describe("AdminComponentsPage", () => {
       emptyStateSection?.querySelectorAll(
         '[data-testid^="empty-state-illustration-"]',
       ),
-    ).toHaveLength(6);
+    ).toHaveLength(9);
 
     const buttonSection = container.querySelector<HTMLElement>("#component-button");
     expect(buttonSection).not.toBeNull();
@@ -225,7 +236,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -248,7 +263,9 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
     const badgeSection = container.querySelector("#component-badge");
     expect(observer).toBeDefined();
     expect(badgeSection).not.toBeNull();
@@ -292,7 +309,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -316,7 +337,9 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
     const selectionSection = container.querySelector<HTMLElement>(
       "#component-selection",
     );
@@ -381,7 +404,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -405,7 +432,9 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
     const tagSection = container.querySelector<HTMLElement>("#component-tag");
     const activeMenuItem = container.querySelector<HTMLElement>(
       '[data-component-nav-item="tag"]',
@@ -479,7 +508,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -516,7 +549,9 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
     const selectionSection = container.querySelector<HTMLElement>(
       "#component-selection",
     );
@@ -540,7 +575,11 @@ describe("AdminComponentsPage", () => {
 
     expect(pathnames).toContain("/components/selection");
     expect(container.isConnected).toBe(true);
-    expect(MockIntersectionObserver.instances).toHaveLength(1);
+    expect(
+      MockIntersectionObserver.instances.filter((instance) =>
+        instance.targets.some((target) => target.id.startsWith("component-")),
+      ),
+    ).toHaveLength(1);
 
     await act(async () => root.unmount());
     container.remove();
@@ -565,7 +604,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -598,7 +641,9 @@ describe("AdminComponentsPage", () => {
     });
 
     const badgeLink = container.querySelector('a[href="/components/badge"]');
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
     expect(badgeLink).not.toBeNull();
     expect(observer).toBeDefined();
 
@@ -642,7 +687,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -671,7 +720,9 @@ describe("AdminComponentsPage", () => {
     const selectionLink = container.querySelector(
       'a[href="/components/selection"]',
     );
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
 
     expect(selectionSection).not.toBeNull();
     expect(selectionLink).not.toBeNull();

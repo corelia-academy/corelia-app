@@ -163,7 +163,7 @@ export default function AppSidebar({
         </SidebarHeader>
       ) : null}
 
-      <SidebarContent className="py-lg px-xs">
+      <SidebarContent className="p-lg">
         {/* <SidebarGroup>
           <SidebarGroupContent className="px-1">
             <SidebarMenu className="gap-1">
@@ -199,11 +199,10 @@ export default function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup> */}
 
-        <SidebarGroup className="gap-2xl">
+        <SidebarGroup className="gap-2xl p-0">
           {primaryNavSections.map((section) => (
             <SidebarGroupContent
               key={section.labelKey ?? "home"}
-              className="px-1"
             >
               {section.labelKey ? (
                 <SidebarGroupLabel className="h-5 gap-4 px-0 pb-md text-body-xsmall">
@@ -251,10 +250,10 @@ export default function AppSidebar({
           ))}
         </SidebarGroup>
 
-        <SidebarSeparator className="mt-1" />
+        <SidebarSeparator className="mt-lg" />
 
-        <SidebarGroup>
-          <SidebarGroupContent className="px-1">
+        <SidebarGroup className="px-0 py-md">
+          <SidebarGroupContent>
             <SidebarMenu className="gap-1">
               <ShowForRole roles={ROLE_GROUPS.instructorWorkspace}>
                 <SidebarMenuItem>
@@ -309,8 +308,8 @@ export default function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupContent className="px-1">
+        <SidebarGroup className="mt-auto p-0">
+          <SidebarGroupContent>
             <SidebarMenu className="gap-1">
               {sidebarUtilityLinks.map(
                 ({ labelKey, href, icon: Icon, showArrow }) => (

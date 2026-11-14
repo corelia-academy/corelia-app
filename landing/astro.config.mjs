@@ -20,13 +20,20 @@ export default defineConfig({
     optimizeDeps: {
       include: ["gsap", "gsap/ScrollTrigger", "gsap/SplitText"],
     },
+    build: {
+      rollupOptions: {
+        // Cloudflare Workers Builds hits EMFILE with Rollup's default of 1000 parallel file reads.
+        maxParallelFileOps: 100,
+      },
+    },
   },
 
   integrations: [
     react(),
     // Static pages only; /sitemap-catalog.xml lists the server-rendered catalog.
     sitemap({
-      filter: (page) => !/\/404\/?$/.test(page),
+      // /roadmap is hidden (noindex) until its content is final.
+      filter: (page) => !/\/(404|roadmap)\/?$/.test(page),
       // Pages are served without a trailing slash (wrangler html_handling) and canonicalised that way.
       serialize: (item) => ({ ...item, url: item.url.replace(/(?<=[^/])\/$/, "") }),
     }),

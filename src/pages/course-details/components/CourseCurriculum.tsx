@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { CourseBadge } from "./CourseBadge";
+import { CourseBadge } from "@/components/courses/CourseBadge";
 import {
   isLessonDraftForLearners,
   isVideoLessonUpdating,

@@ -14,12 +14,12 @@ export function AppShellSkeleton({ children }: { children?: ReactNode }) {
   return (
     <div className="min-h-svh bg-background" role="status" aria-live="polite" aria-busy="true">
       <span className="sr-only">Loading</span>
-      <header className="flex h-[72px] items-center gap-4 border-b border-border bg-surface-base px-4 sm:px-6">
+      <header className="flex h-16 items-center gap-4 border-b border-border bg-surface-base px-4 sm:px-6">
         <Skeleton className="h-9 w-32 rounded-lg" />
         <Skeleton className="mx-auto hidden h-10 w-full max-w-xl rounded-full md:block" />
         <Skeleton className="size-10 rounded-full" />
       </header>
-      <div className="flex min-h-[calc(100svh-72px)]">
+      <div className="flex min-h-[calc(100svh-64px)]">
         <aside className="hidden w-60 shrink-0 border-r border-border bg-surface-base p-4 lg:block">
           <div className="space-y-3">
             <Skeleton className="h-10 w-full rounded-lg" />

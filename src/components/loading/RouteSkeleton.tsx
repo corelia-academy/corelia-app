@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
+import { AppHeaderBar } from "@/components/layouts/AppHeaderBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { LessonColumn } from "@/features/learning/lessonLayout";
 import { skeletonRevealClass } from "./skeletonReveal";
 
 import type { RouteSkeletonVariant } from "./routeSkeletonVariant";
@@ -141,63 +143,78 @@ function TableContent() {
 }
 
 /**
- * Lesson player body, mirroring `LessonPlayerCard`: format label, title and summary above the
- * lesson media, then the sticky Previous / lesson number / primary action footer.
+ * Lesson player body, mirroring `LessonPlayerCard` with its content frame: the video runs edge to
+ * edge on top, then the text frame (format label, title, summary) with the same width and padding
+ * as the frame in `LessonRenderer`. The floating action bar is drawn by `LearnShellSkeleton`.
  */
 export function LessonPlayerSkeletonBody() {
   return (
     <div className="flex min-h-full flex-col" aria-hidden>
-      <div className="mx-auto w-full max-w-5xl flex-1 space-y-5 px-4 py-6 sm:px-6">
+      <div className="border-b border-border"><Skeleton className="aspect-video max-h-[80vh] w-full rounded-none" /></div>
+      <LessonColumn className="flex flex-col gap-6xl pb-7xl pt-6xl">
         <div>
           <Skeleton className="h-4 w-16" />
           <Skeleton className="mt-3 h-8 w-3/4 max-w-xl rounded-lg" />
           <Skeleton className="mt-3 h-4 w-full max-w-2xl" />
         </div>
-        <Skeleton className="aspect-video w-full rounded-xl" />
-      </div>
-      <div className="sticky bottom-0 border-t border-border bg-surface-base px-3 pb-3 pt-2 sm:px-6 sm:pt-3">
-        <div className="grid grid-cols-2 items-center gap-2 sm:grid-cols-[auto_1fr_auto] sm:gap-3">
-          <Skeleton className="h-11 w-full rounded-lg sm:w-28" />
-          <Skeleton className="mx-auto hidden h-4 w-16 sm:block" />
-          <Skeleton className="h-11 w-full rounded-lg sm:w-28" />
-        </div>
-      </div>
+      </LessonColumn>
     </div>
   );
 }
 
-/** Full Learn screen: h-12 top bar, lesson player and (from 1280px) the curriculum panel. */
+/**
+ * Full Learn screen, mirroring `Learn.tsx`: shared `AppHeaderBar` header, the lesson column with the floating
+ * action bar (and the curriculum edge tab below 1280px) and, from 1280px, the curriculum panel
+ * at its default 28% share.
+ */
 export function LearnShellSkeleton({ className, immediate }: { className?: string; immediate?: boolean }) {
   return (
     <LoadingStatus className={cn("flex h-full flex-col bg-background", className)} immediate={immediate}>
-      {/* Top bar sits on surface-raised, so its placeholders use the darker base tone to stay visible. */}
-      <div className="relative flex h-12 shrink-0 items-center border-b border-border-subtle bg-surface-raised px-3" aria-hidden>
-        <Skeleton className="size-8 rounded-md bg-surface-base" />
-        <Skeleton className="absolute left-1/2 h-4 w-64 max-w-[50%] -translate-x-1/2 bg-surface-base" />
-        <Skeleton className="ml-auto size-8 rounded-md bg-surface-base" />
-      </div>
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        <div className="min-w-0 flex-1 overflow-hidden">
-          <LessonPlayerSkeletonBody />
+      <AppHeaderBar aria-hidden>
+        <Skeleton className="h-9 w-[108px] rounded-md" />
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-[15px] xl:absolute xl:left-1/2 xl:max-w-[50%] xl:flex-none xl:-translate-x-1/2">
+          <Skeleton className="hidden h-5 w-40 sm:block" />
+          <span className="hidden w-px shrink-0 self-stretch bg-border sm:block" />
+          <Skeleton className="h-5 w-16" />
         </div>
-        <div className="hidden w-[24%] shrink-0 flex-col border-l border-border-subtle bg-surface-base xl:flex" aria-hidden>
-          <div className="grid grid-cols-2 gap-1 border-b border-border-subtle p-2">
-            <Skeleton className="h-8 rounded-md" />
-            <Skeleton className="h-8 rounded-md" />
-          </div>
-          <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
-            <div className="flex items-center justify-between">
-              <Skeleton className="h-4 w-28 bg-surface-base" />
-              <Skeleton className="h-3 w-8 bg-surface-base" />
+        <Skeleton className="h-8 w-28 rounded-md max-sm:size-8" />
+      </AppHeaderBar>
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <div className="relative min-w-0 flex-[72_1_0%] overflow-hidden">
+          <LessonPlayerSkeletonBody />
+          <div className="absolute inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex justify-center px-3" aria-hidden>
+            <div className="flex items-center gap-md rounded-xl border border-border-strong bg-surface-float/95 p-1.5">
+              <Skeleton className="size-8 rounded-md" />
+              <Skeleton className="h-8 w-28 rounded-md" />
+              <Skeleton className="h-8 w-40 rounded-md" />
             </div>
-            <Skeleton className="mt-2 h-1.5 w-full rounded-full bg-surface-base" />
-            <Skeleton className="mt-2 h-3 w-24 bg-surface-base" />
           </div>
-          <div className="space-y-1 p-2">
-            {Array.from({ length: 8 }, (_, index) => (
-              <div key={index} className="flex items-center gap-3 px-2 py-2">
-                <Skeleton className="size-5 shrink-0 rounded-full" />
-                <Skeleton className="h-4 flex-1" />
+          <Skeleton className="absolute right-0 top-5 z-10 h-10 w-10 rounded-l-lg rounded-r-none xl:hidden" aria-hidden />
+        </div>
+        <div className="hidden min-h-0 flex-[28_1_0%] flex-col overflow-hidden border-l border-border bg-surface-base xl:flex" aria-hidden>
+          <div className="flex items-center gap-xl border-b border-border bg-sidebar px-2xl py-xl">
+            <Skeleton className="size-6 rounded-full" />
+            <Skeleton className="mx-auto h-5 w-28" />
+            <Skeleton className="size-6 rounded-md" />
+          </div>
+          <div className="flex flex-col gap-md pb-2xl">
+            {[3, 2, 2].map((lessons, section) => (
+              <div key={section} className="flex flex-col gap-md">
+                <div className="border-y border-border">
+                  <div className="flex items-center gap-lg border border-transparent px-lg py-2md">
+                    <Skeleton className="h-[22px] flex-1" />
+                    <Skeleton className="size-4" />
+                  </div>
+                </div>
+                <div className="flex flex-col px-lg">
+                  {Array.from({ length: lessons }, (_, row) => (
+                    <div key={row} className="flex items-center gap-lg border border-transparent px-2md py-2md">
+                      <Skeleton className="size-5 shrink-0 rounded-full" />
+                      <Skeleton className="h-4 flex-1" />
+                      <Skeleton className="h-3 w-10" />
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

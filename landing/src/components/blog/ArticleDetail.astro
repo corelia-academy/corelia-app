@@ -15,9 +15,12 @@ import {
   caseStudyIndexUrl,
   caseStudyPostUrl,
   getBlogOgImage,
+  getBlogPosts,
+  getCaseStudyPosts,
   type BlogLocale,
   type BlogPost,
 } from "@/lib/blog";
+import { renderBlogMarkdown } from "@/lib/blogMarkdown";
 import { blogCategoryLabel } from "@/lib/blogTaxonomy";
 
 type Props = {
@@ -30,20 +33,14 @@ type Props = {
 const { post, locale, languageHrefs, alternates } = Astro.props as Props;
 const isCaseStudy = post.data.contentType === "case-study";
 const t = useTranslations(locale);
-const { Content } = await post.render();
+const articleHtml = renderBlogMarkdown(post.body);
 const members = await getCollection("members");
 const author = post.data.author
   ? members.find((member) => member.slug === post.data.author)
   : null;
 const authorName = author?.data.name ?? post.data.author;
-const authorHref = post.data.author ? `/member/${post.data.author}` : null;
-const allSameLocale = await getCollection(
-  "blog",
-  (entry) =>
-    !entry.data.draft &&
-    entry.data.locale === locale &&
-    entry.data.contentType === post.data.contentType,
-);
+// Related articles are optional: the article still renders if the list cannot be read.
+const allSameLocale = await (isCaseStudy ? getCaseStudyPosts(locale) : getBlogPosts(locale)).catch(() => []);
 const currentTags = new Set(post.data.tags);
 const candidates = allSameLocale
   .filter((candidate) => candidate.id !== post.id)
@@ -73,7 +70,7 @@ const canonicalUrl = `https://corelia.academy${canonicalPath}`;
 const og = getBlogOgImage(post.data.media);
 const readMinutes = Math.max(
   1,
-  Math.ceil((post.body?.trim().split(/\s+/).filter(Boolean).length ?? 0) / 200),
+  Math.ceil(post.data.wordCount / 200),
 );
 const readTimeLabel =
   locale === "en" ? `${readMinutes} min read` : `Đọc trong ${readMinutes} phút`;
@@ -113,7 +110,7 @@ const defaultOgImage = `https://corelia.academy/corelia-og-site-v2-${locale}.png
       image: og?.url ?? defaultOgImage,
       datePublished: post.data.date.toISOString(),
       dateModified: post.data.date.toISOString(),
-      ...(authorName ? { author: { "@type": "Person", name: authorName, ...(authorHref ? { url: `https://corelia.academy${authorHref}` } : {}) } } : {}),
+      ...(authorName ? { author: { "@type": "Person", name: authorName } } : {}),
       publisher: { "@type": "Organization", name: "Corelia Academy", logo: { "@type": "ImageObject", url: "https://corelia.academy/corelia_favicon.svg" } },
       mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
     })} />
@@ -141,9 +138,9 @@ const defaultOgImage = `https://corelia.academy/corelia-og-site-v2-${locale}.png
               </div>
               <span class="text-border-strong" aria-hidden="true">•</span>
               <p class="text-border-strong">{fmtDate.format(post.data.date)}</p>
-              {authorHref && <>
+              {authorName && <>
                 <span class="text-border-strong" aria-hidden="true">•</span>
-                <p class="text-border-strong">{t("blog.by")} <a class="text-primary-a hover:underline underline-offset-4" href={authorHref}>{authorName}</a></p>
+                <p class="text-border-strong">{t("blog.by")} {authorName}</p>
               </>}
             </div>
             {post.data.description && <p class="text-sm leading-[1.4] text-border-strong md:text-base" data-reveal="fade-up" data-reveal-delay="250">{post.data.description}</p>}
@@ -169,7 +166,7 @@ const defaultOgImage = `https://corelia.academy/corelia-og-site-v2-${locale}.png
                   [&_code]:rounded-md [&_code]:bg-white/10 [&_code]:px-1.5 [&_code]:py-0.5
                   [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-black/30 [&_pre]:p-4"
               >
-                <Content />
+                <Fragment set:html={articleHtml} />
               </article>
             </div>
             <div class="self-start lg:sticky lg:top-[calc(var(--site-header-height,56px)+2rem)]">

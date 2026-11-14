@@ -313,6 +313,7 @@
   --shadow-dropdown: var(--dropdown-shadow);
   /* Action interaction token mapped from the Figma hover surface. */
   --color-action-hover: var(--action-hover);
+  --color-resource-item-surface: var(--resource-item-surface);
   --color-action-text: var(--action-text);
   --color-action-supporting: var(--action-supporting);
   --color-action-destructive: var(--action-destructive);
@@ -389,9 +390,24 @@
   --color-selection-unchecked: var(--selection-unchecked);
   --color-selection-disabled: var(--selection-disabled);
   --color-selection-disabled-mark: var(--selection-disabled-mark);
+  --color-selection-disabled-foreground: var(--selection-disabled-foreground);
   --color-selection-feedback: var(--selection-feedback);
   --color-selection-feedback-pressed: var(--selection-feedback-pressed);
   --color-selection-card-selected-border: var(--selection-card-selected-border);
+  --color-selection-card-surface: var(--selection-card-surface);
+  --color-explanation-box-surface: var(--explanation-box-surface);
+  --color-code-block-header-surface: var(--code-block-header-surface);
+  --color-code-block-surface: var(--code-block-surface);
+  --color-input-code-surface: var(--input-code-surface);
+  --color-input-code-focus: var(--input-code-focus-ring);
+  --color-code-block-text: var(--code-block-text);
+  --color-code-block-line-number: var(--code-block-line-number);
+  --color-confetti-yellow: var(--confetti-yellow);
+  --color-confetti-green: var(--confetti-green);
+  --color-confetti-sky: var(--confetti-sky);
+  --color-confetti-teal: var(--confetti-teal);
+  --color-confetti-coral: var(--confetti-coral);
+  --color-confetti-purple: var(--confetti-purple);
 
   /* Brand tokens */
   --color-brand-navy: var(--brand-navy);
@@ -709,23 +725,23 @@
   --radius: 0.65rem;
   --content-px: clamp(1rem, 3vw, 2rem);
   --app-max-width: 80rem;
-  /* Light mode: use shared palette shades with stronger contrast on the light surface. */
-  --progress-track: var(--neutral-400);
-  --progress-neutral: var(--neutral-700);
-  --progress-neutral-fill: var(--neutral-600);
+  /* Light mode: use bright shared palette shades matching Figma design. */
+  --progress-track: var(--neutral-200);
+  --progress-neutral: var(--neutral-400);
+  --progress-neutral-fill: var(--neutral-400);
   --progress-accent-fill: var(--blue-600);
   --progress-status-low: var(--error-400);
   --progress-status-medium: var(--accent-yellow-400);
-  --progress-status-good: var(--accent-teal-500);
-  --progress-status-done: var(--success-400);
-  --progress-circle-success: var(--success-500);
-  --progress-circle-error: var(--error-500);
+  --progress-status-good: var(--accent-teal-400);
+  --progress-status-done: var(--success-300);
+  --progress-circle-success: var(--success-400);
+  --progress-circle-error: var(--error-400);
   --progress-circle-blue: var(--blue-600);
   --progress-circle-purple: var(--accent-purple-400);
   --progress-circle-sky: var(--accent-sky-400);
-  --progress-circle-yellow: var(--accent-yellow-500);
-  --progress-circle-neutral: var(--neutral-500);
-  --progress-circle-done-neutral: var(--neutral-500);
+  --progress-circle-yellow: var(--accent-yellow-400);
+  --progress-circle-neutral: var(--neutral-300);
+  --progress-circle-done-neutral: var(--neutral-400);
   --progress-circle-icon: var(--neutral-50);
   --progress-circle-icon-on-bright: var(--neutral-50);
   --progress-circle-ring-default: color-mix(in srgb, var(--progress-neutral) 40%, var(--background));
@@ -849,22 +865,22 @@
 
   /* Informative Icon tokens — defaults match Figma and can be overridden per theme. */
   --informative-icon-error-surface: var(--error-400);
-  --informative-icon-error-content: var(--error-200);
-  --informative-icon-error-outline: var(--error-600);
-  --informative-icon-warning-surface: var(--warning-500);
-  --informative-icon-warning-content: var(--warning-200);
-  --informative-icon-warning-outline: var(--warning-600);
-  --informative-icon-success-surface: var(--success-500);
-  --informative-icon-success-content: var(--success-200);
-  --informative-icon-success-outline: var(--success-600);
-  --informative-icon-blue-surface: var(--accent-sky-500);
-  --informative-icon-blue-content: var(--accent-sky-200);
-  --informative-icon-blue-outline: var(--accent-sky-600);
+  --informative-icon-error-content: var(--error-100);
+  --informative-icon-error-outline: var(--error-300);
+  --informative-icon-warning-surface: var(--warning-400);
+  --informative-icon-warning-content: var(--warning-100);
+  --informative-icon-warning-outline: var(--warning-200);
+  --informative-icon-success-surface: var(--success-400);
+  --informative-icon-success-content: var(--success-100);
+  --informative-icon-success-outline: var(--success-300);
+  --informative-icon-blue-surface: var(--accent-sky-300);
+  --informative-icon-blue-content: var(--accent-sky-100);
+  --informative-icon-blue-outline: var(--accent-sky-200);
 
-  /* Toast Bar tokens — exact Figma Dark Midnight Navy specification */
-  --toast-bar-surface: var(--neutral-800);
-  --toast-bar-border: color-mix(in srgb, var(--neutral-700) 40%, transparent);
-  --toast-bar-foreground: var(--neutral-50);
+  /* Toast Bar tokens — Light mode reversed from Dark Midnight Navy */
+  --toast-bar-surface: var(--neutral-50);
+  --toast-bar-border: var(--neutral-200);
+  --toast-bar-foreground: var(--text-primary-2);
 
   --text-primary-2: #121926;
   --text-secondary: #4b5565;
@@ -1029,6 +1045,8 @@
   --home-xp-progress-track: var(--neutral-200);
   /* Light hover uses a visible neutral layer instead of the page background. */
   --action-hover: var(--neutral-200);
+  /* Learn resources drawer row: one neutral step off the drawer background (--background = neutral-50). */
+  --resource-item-surface: var(--neutral-100);
   --action-text: var(--foreground);
   --action-supporting: var(--neutral-400);
   --action-destructive: var(--destructive);
@@ -1069,9 +1087,26 @@
   --selection-unchecked: var(--neutral-600);
   --selection-disabled: var(--neutral-400);
   --selection-disabled-mark: var(--neutral-50);
+  --selection-disabled-foreground: var(--neutral-500);
   --selection-feedback: color-mix(in srgb, var(--blue-700) 10%, transparent);
   --selection-feedback-pressed: color-mix(in srgb, var(--blue-700) 20%, transparent);
   --selection-card-selected-border: var(--blue-700);
+  --selection-card-surface: var(--surface-raised);
+  --explanation-box-surface: var(--neutral-100);
+  --code-block-header-surface: var(--neutral-300);
+  --code-block-surface: var(--neutral-200);
+  /* Code Block text and syntax colors (Figma DS Codeblock). Light values keep contrast on --code-block-surface. */
+  --code-block-text: var(--neutral-800);
+  --code-block-line-number: var(--neutral-500);
+  --code-syntax-function: var(--blue-700);
+  --code-syntax-string: var(--success-600);
+  --code-syntax-keyword: var(--error-500);
+  --code-syntax-builtin: var(--warning-600);
+  /* Input Code (Figma DS Codeblock): editor surface, current-line band, wrong-line band and focus ring. */
+  --input-code-surface: var(--neutral-100);
+  --input-code-line-highlight: var(--neutral-200);
+  --input-code-error-line: color-mix(in srgb, var(--error-500) 20%, transparent);
+  --input-code-focus-ring: var(--blue-700);
   /* Badge semantic colors preserve the current light Figma mapping. */
   --badge-outline-background: color-mix(in srgb, var(--neutral-50) 5%, transparent);
   --badge-primary: var(--blue-500);
@@ -1153,7 +1188,13 @@
   --mint-revoked-badge-surface: var(--neutral-500);
   --mint-revoked-badge-text: var(--neutral-400);
   --mint-revoked-badge-border: var(--neutral-500);
-  --selection-mark: var(--blue-100);
+  --selection-mark: var(--neutral-50);
+  --confetti-yellow: var(--accent-yellow-400);
+  --confetti-green: var(--success-400);
+  --confetti-sky: var(--accent-sky-400);
+  --confetti-teal: var(--accent-teal-400);
+  --confetti-coral: var(--error-400);
+  --confetti-purple: var(--accent-purple-400);
 }
 
 .dark {
@@ -1320,6 +1361,7 @@
   --on-primary-container: var(--blue-200);
 
   /* Issue #382 — Avatar semantic aliases follow dark mode. */
+  --avatar-brand: var(--background);
   --avatar-filled: var(--blue-600);
   --avatar-set: var(--neutral-600);
   --avatar-action-edit: var(--neutral-900);
@@ -1388,6 +1430,8 @@
   --home-xp-progress-track: var(--surface-raised);
   /* Dark hover maps to the Figma neutral raised surface. */
   --action-hover: var(--neutral-700);
+  /* Figma Neutral/800 row on the dark drawer. */
+  --resource-item-surface: var(--neutral-800);
   --action-text: var(--neutral-200);
   --action-supporting: var(--neutral-400);
   --action-destructive: var(--error-400);
@@ -1425,12 +1469,28 @@
   --toggle-pressed-disabled-foreground: var(--neutral-800);
   /* Selection semantic colors follow the primary theme in dark mode. */
   --selection-active: var(--blue-700);
-  --selection-unchecked: var(--foreground-muted);
+  --selection-unchecked: var(--foreground);
   --selection-disabled: var(--neutral-500);
-  --selection-disabled-mark: var(--neutral-400);
+  --selection-disabled-mark: var(--neutral-800);
+  --selection-disabled-foreground: var(--neutral-500);
   --selection-feedback: color-mix(in srgb, var(--blue-700) 10%, transparent);
   --selection-feedback-pressed: color-mix(in srgb, var(--blue-700) 20%, transparent);
   --selection-card-selected-border: var(--blue-700);
+  --selection-card-surface: var(--neutral-800);
+  --explanation-box-surface: var(--neutral-800);
+  --code-block-header-surface: var(--neutral-700);
+  --code-block-surface: var(--neutral-800);
+  /* Dark syntax colors are the existing lesson code palette; Figma uses #1ebfff and #2fe921, no primitive matches. */
+  --code-block-text: var(--neutral-200);
+  --code-block-line-number: var(--neutral-500);
+  --code-syntax-function: #1ebfff;
+  --code-syntax-string: #2fe921;
+  --code-syntax-keyword: #ff8787;
+  --code-syntax-builtin: #ffa159;
+  --input-code-surface: var(--neutral-900);
+  --input-code-line-highlight: var(--neutral-800);
+  --input-code-error-line: color-mix(in srgb, var(--error-400) 20%, transparent);
+  --input-code-focus-ring: var(--blue-400);
   /* Badge semantic colors preserve the current dark Figma mapping. */
   --badge-outline-background: color-mix(in srgb, var(--neutral-50) 5%, transparent);
   --badge-primary: var(--blue-500);
@@ -1519,7 +1579,13 @@
   --mint-revoked-badge-surface: var(--neutral-500);
   --mint-revoked-badge-text: var(--neutral-400);
   --mint-revoked-badge-border: var(--neutral-500);
-  --selection-mark: var(--blue-100);
+  --selection-mark: var(--neutral-50);
+  --confetti-yellow: var(--accent-yellow-400);
+  --confetti-green: var(--success-400);
+  --confetti-sky: var(--accent-sky-400);
+  --confetti-teal: var(--accent-teal-400);
+  --confetti-coral: var(--error-400);
+  --confetti-purple: var(--accent-purple-400);
 }
 
 @layer base {
@@ -1626,43 +1692,6 @@
   line-height: 1.7;
 }
 
-/* Shared native scrollbar styles */
-.scrollbar-design {
-  scrollbar-width: thin;
-  scrollbar-color: var(--neutral-400) transparent;
-}
-
-@supports selector(::-webkit-scrollbar) {
-  .scrollbar-design {
-    scrollbar-width: auto;
-    scrollbar-color: auto;
-  }
-
-  .scrollbar-design::-webkit-scrollbar {
-    width: 16px;
-    height: 16px;
-  }
-
-  .scrollbar-design::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .scrollbar-design::-webkit-scrollbar-thumb {
-    background-color: var(--neutral-400);
-    border: 6px solid transparent;
-    background-clip: content-box;
-    border-radius: 8px;
-  }
-
-  .scrollbar-design::-webkit-scrollbar-thumb:hover {
-    background-color: var(--foreground-muted);
-  }
-
-  .scrollbar-design::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-}
-
 @layer components {
   [data-slot="dropdown-menu-checkbox-item"][data-variant="warning"] {
     --dropdown-title: var(--dropdown-warning);
@@ -1672,6 +1701,31 @@
   [data-slot="dropdown-menu-checkbox-item"][data-disabled] {
     --dropdown-title: var(--dropdown-disabled);
     --dropdown-supporting: var(--dropdown-disabled);
+  }
+
+  /* Input Code: Monaco decorations mark a wrong line, and a disabled editor dims its text. */
+  .input-code-error-line {
+    background-color: var(--input-code-error-line);
+  }
+
+  .input-code-error-number {
+    color: var(--input-field-error) !important;
+  }
+
+  [data-slot="input-code"][data-status="disabled"] .monaco-editor .view-line span,
+  [data-slot="input-code"][data-status="disabled"] .monaco-editor .line-numbers,
+  [data-slot="input-code"][data-status="disabled"] .monaco-editor .active-line-number {
+    color: var(--input-field-disabled-foreground) !important;
+  }
+
+  /* Hide cursor caret when readOnly or disabled so no blinking caret remains after evaluation */
+  [data-slot="input-code"][data-readonly="true"] .monaco-editor .cursors-layer,
+  [data-slot="input-code"][data-status="disabled"] .monaco-editor .cursors-layer {
+    display: none !important;
+  }
+
+  [data-slot="input-code"]:not([data-status="disabled"]):focus-within .monaco-editor .active-line-number:not(.input-code-error-number) {
+    color: var(--foreground) !important;
   }
 
   input[data-slot="input"]:autofill {
@@ -1757,6 +1811,30 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Scroll target highlight: ScrollToTarget sets data-scroll-highlight on the focused block. */
+@keyframes scrollTargetPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+
+  30% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 35%, transparent);
+  }
+}
+
+[data-scroll-highlight="true"] {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  animation: scrollTargetPulse 1.2s ease-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll-highlight="true"] {
+    animation: none;
   }
 }
 

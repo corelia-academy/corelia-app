@@ -1,7 +1,7 @@
 {
   "name": "corelia-app",
   "private": true,
-  "version": "0.18.2",
+  "version": "0.19.0",
   "packageManager": "pnpm@9.12.2",
   "type": "module",
   "scripts": {
@@ -12,6 +12,7 @@
     "functions:serve:cron-learning-reminders": "supabase functions serve cron-learning-reminders --env-file supabase/functions/.env",
     "functions:serve:cron-jobs": "supabase functions serve cron-jobs --env-file supabase/functions/.env",
     "functions:serve:cron-email-center": "supabase functions serve cron-email-center --env-file supabase/functions/.env",
+    "studio:tick": "node scripts/studio/tick.mjs",
     "functions:deploy": "supabase functions deploy corelia-api",
     "functions:deploy:cron-learning-reminders": "supabase functions deploy cron-learning-reminders",
     "functions:deploy:cron-jobs": "supabase functions deploy cron-jobs",
@@ -84,6 +85,7 @@
     "react-syntax-highlighter": "^16.1.1",
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.1",
+    "roughjs": "4.6.6",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",

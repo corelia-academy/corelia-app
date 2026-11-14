@@ -11,11 +11,17 @@ import {
 
 const STORAGE_KEY = "learn-dock-bar-v1"
 const KEY_STEP = 16
+// Same press-and-hold feel as the image reorder in the project editor.
+const LONG_PRESS_MS = 250
+const TOUCH_SLOP = 8
+const MOUSE_SLOP = 4
+// How long the reset button stays mounted while it animates out; keep in sync with its duration in Learn.tsx.
+const EXIT_MS = 200
 const ORIGIN: Point = { x: 0, y: 0 }
 // The bar can travel hundreds of px, so the same spring overshoots it by far more than the small edge tab.
 export const BAR_DAMPING = 22
 
-type DragState = { id: number; startX: number; startY: number; start: Point }
+type DragState = { id: number; startX: number; startY: number; start: Point; active: boolean }
 
 /**
  * Floating action bar that can be dragged anywhere inside its bounds and sprung back to its default place.
@@ -28,8 +34,12 @@ export function useFloatingBarDrag() {
   const observerRef = useRef<ResizeObserver | null>(null)
   const offsetRef = useRef<Point>(ORIGIN)
   const dragRef = useRef<DragState | null>(null)
+  const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const cancelSpringRef = useRef<(() => void) | null>(null)
   const [isMoved, setIsMoved] = useState(false)
+  const [resetClosing, setResetClosing] = useState(false)
+  const movedRef = useRef(false)
+  const closingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const api = useMemo(() => {
     const boundsOf = (bar: HTMLElement) => bar.parentElement?.parentElement ?? null
@@ -57,12 +67,31 @@ export function useFloatingBarDrag() {
       }
     }
 
+    const setMoved = (moved: boolean) => {
+      const wasMoved = movedRef.current
+      movedRef.current = moved
+      if (closingTimerRef.current) {
+        clearTimeout(closingTimerRef.current)
+        closingTimerRef.current = null
+      }
+      if (moved || !wasMoved || prefersReducedMotion()) {
+        setResetClosing(false)
+      } else {
+        setResetClosing(true)
+        closingTimerRef.current = setTimeout(() => {
+          closingTimerRef.current = null
+          setResetClosing(false)
+        }, EXIT_MS)
+      }
+      setIsMoved(moved)
+    }
+
     const commit = (offset: Point) => {
       applyOffset(offset)
       const bar = barElRef.current
       const box = bar ? boundsOf(bar) : null
       const moved = Math.abs(offset.x) > 0.5 || Math.abs(offset.y) > 0.5
-      setIsMoved(moved)
+      setMoved(moved)
       if (!box || box.clientWidth === 0 || box.clientHeight === 0) return
       writeStored(STORAGE_KEY, moved ? { x: offset.x / box.clientWidth, y: offset.y / box.clientHeight } : null)
     }
@@ -75,7 +104,7 @@ export function useFloatingBarDrag() {
       const offset = { x: stored.x * box.clientWidth, y: stored.y * box.clientHeight }
       applyOffset(offset)
       applyOffset(clampOffset(offset))
-      setIsMoved(true)
+      setMoved(true)
     }
 
     const reclamp = () => {
@@ -98,7 +127,35 @@ export function useFloatingBarDrag() {
       commit(clampOffset({ x: current.x + dx, y: current.y + dy }))
     }
 
-    return { restore, reclamp, reset, applyOffset, clampOffset, commit, nudge }
+    const preventTouchScroll = (event: TouchEvent) => {
+      if (event.cancelable) event.preventDefault()
+    }
+
+    function onWindowBlur() {
+      endGesture(true)
+    }
+
+    const endGesture = (commitMove: boolean) => {
+      const drag = dragRef.current
+      dragRef.current = null
+      if (pressTimerRef.current) {
+        clearTimeout(pressTimerRef.current)
+        pressTimerRef.current = null
+      }
+      window.removeEventListener("touchmove", preventTouchScroll)
+      window.removeEventListener("blur", onWindowBlur)
+      barElRef.current?.removeAttribute("data-dragging")
+      if (drag?.active && commitMove) commit(offsetRef.current)
+    }
+
+    const activate = (drag: DragState) => {
+      drag.active = true
+      barElRef.current?.setAttribute("data-dragging", "")
+      window.addEventListener("touchmove", preventTouchScroll, { passive: false })
+      window.addEventListener("blur", onWindowBlur)
+    }
+
+    return { restore, reclamp, reset, applyOffset, clampOffset, commit, nudge, endGesture, activate }
   }, [])
 
   const barRef = useCallback(
@@ -106,6 +163,7 @@ export function useFloatingBarDrag() {
       observerRef.current?.disconnect()
       observerRef.current = null
       cancelSpringRef.current?.()
+      api.endGesture(false)
       barElRef.current = el
       if (!el) return
       api.restore()
@@ -124,30 +182,49 @@ export function useFloatingBarDrag() {
       onPointerDown(event: PointerEvent<HTMLElement>) {
         if (event.pointerType === "mouse" && event.button !== 0) return
         cancelSpringRef.current?.()
-        dragRef.current = {
+        api.endGesture(false) // drop anything left over from a lost pointer
+        try {
+          event.currentTarget.setPointerCapture(event.pointerId)
+        } catch {
+          return // the pointer may already have been canceled by the browser
+        }
+        const drag: DragState = {
           id: event.pointerId,
           startX: event.clientX,
           startY: event.clientY,
           start: offsetRef.current,
+          active: false,
         }
-        event.currentTarget.setPointerCapture(event.pointerId)
+        dragRef.current = drag
+        if (event.pointerType === "touch") {
+          pressTimerRef.current = setTimeout(() => {
+            pressTimerRef.current = null
+            api.activate(drag)
+          }, LONG_PRESS_MS)
+        }
       },
       onPointerMove(event: PointerEvent<HTMLElement>) {
         const drag = dragRef.current
         if (!drag || drag.id !== event.pointerId) return
-        api.applyOffset(
-          api.clampOffset({
-            x: drag.start.x + event.clientX - drag.startX,
-            y: drag.start.y + event.clientY - drag.startY,
-          }),
-        )
+        const dx = event.clientX - drag.startX
+        const dy = event.clientY - drag.startY
+        if (!drag.active) {
+          const distance = Math.hypot(dx, dy)
+          if (event.pointerType === "touch") {
+            // Moved before the hold finished: this is a scroll, not a drag.
+            if (distance > TOUCH_SLOP) api.endGesture(false)
+            return
+          }
+          if (distance <= MOUSE_SLOP) return
+          api.activate(drag)
+        }
+        api.applyOffset(api.clampOffset({ x: drag.start.x + dx, y: drag.start.y + dy }))
       },
       onPointerUp(event: PointerEvent<HTMLElement>) {
         const drag = dragRef.current
         if (!drag || drag.id !== event.pointerId) return
-        dragRef.current = null
         if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
-        api.commit(offsetRef.current)
+        api.endGesture(true)
       },
       onKeyDown(event: KeyboardEvent<HTMLElement>) {
         const step: Record<string, Point> = {
@@ -167,8 +244,10 @@ export function useFloatingBarDrag() {
 
   return {
     barRef,
-    gripProps: { ...gripProps, onPointerCancel: gripProps.onPointerUp },
+    gripProps: { ...gripProps, onPointerCancel: gripProps.onPointerUp, onLostPointerCapture: gripProps.onPointerUp },
     isMoved,
+    /** Lifecycle of the reset button: it stays mounted ("closing") while it animates out. */
+    resetState: (isMoved ? "open" : resetClosing ? "closing" : "closed") as "open" | "closing" | "closed",
     reset: api.reset,
   }
 }

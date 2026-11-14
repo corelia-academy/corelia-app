@@ -19,6 +19,7 @@ import {
   ImageIcon,
   Mail,
   Medal,
+  Newspaper,
   Package,
   Settings,
   Trophy,
@@ -188,6 +189,19 @@ export function AdminSidebar() {
                     <NavLink to="/admin/hackathons" className="flex w-full items-center gap-2">
                       <Trophy className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.hackathons.label")}</span>
+                    </NavLink>
+                  }
+                />
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="rounded-md"
+                  tooltip={t("layout.sidebar.blog.tooltip")}
+                  isActive={pathname.startsWith("/admin/blog")}
+                  render={
+                    <NavLink to="/admin/blog" className="flex w-full items-center gap-2">
+                      <Newspaper className="size-4" aria-hidden />
+                      <span>{t("layout.sidebar.blog.label")}</span>
                     </NavLink>
                   }
                 />

@@ -41,6 +41,15 @@ it("submits once and does not navigate when the old completion resolves after a 
   expect(host.textContent).not.toContain("learning.saving");
 });
 
+it.each(["article", "quiz"] as const)("puts the %s footer in the lesson column", format => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  act(() => root.render(
+    <TestCard {...props} lesson={{ ...lesson, lesson_format: format }} courseId="c" onMarkComplete={vi.fn()} onNavigateToLesson={vi.fn()} actionSlot={document.createElement("div")} />,
+  ));
+  expect(host.querySelectorAll("[data-lesson-column]")).toHaveLength(1);
+});
+
 it("keeps a failed completion on the same lesson and clears its error for another course", async () => {
   const host = document.createElement("div"), root = createRoot(host);
   cleanup = () => act(() => root.unmount());
@@ -117,7 +126,11 @@ it("uses the floating bar as a complete/incomplete toggle without a next-lesson 
   expect(navigate).not.toHaveBeenCalled();
   act(() => root.render(<TestCard {...props} completed courseId="course" actionSlot={slot} onMarkComplete={complete} onReset={reset} onNavigateToLesson={navigate} />));
   expect(slot.querySelectorAll("button")).toHaveLength(1);
-  expect(slot.textContent).toBe("learning.markIncomplete");
+  const incompleteToggle = slot.querySelector("button")!;
+  // The full label stays the accessible name; a short one is shown below the sm breakpoint.
+  expect(incompleteToggle.getAttribute("aria-label")).toBe("learning.markIncomplete");
+  expect(incompleteToggle.querySelector('[class~="max-sm:hidden"]')?.textContent).toBe("learning.markIncomplete");
+  expect(incompleteToggle.querySelector('[class~="sm:hidden"]')?.textContent).toBe("learning.markIncompleteShort");
   expect(slot.textContent).not.toContain("learning.next");
   await act(async () => slot.querySelector("button")!.click());
   expect(reset).toHaveBeenCalledExactlyOnceWith(false);

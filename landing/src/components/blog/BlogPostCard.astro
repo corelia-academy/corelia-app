@@ -19,7 +19,6 @@ const { locale, post, fmtDate, memberBySlug, byText } = Astro.props as Props;
 
 const author = post.data.author ? memberBySlug.get(post.data.author) : null;
 const authorName = author?.data.name ?? post.data.author;
-const authorHref = post.data.author ? `/member/${post.data.author}` : null;
 const href = blogPostUrl(locale, post.slug);
 ---
 
@@ -41,16 +40,10 @@ const href = blogPostUrl(locale, post.slug);
         {fmtDate.format(post.data.date)}
       </p>
       {
-        authorHref ? (
+        authorName ? (
           <p class="text-xs text-muted-foreground">
             <span class="mx-1">•</span>
-            {byText}{" "}
-            <a
-              class="text-primary hover:underline underline-offset-4"
-              href={authorHref}
-            >
-              {authorName}
-            </a>
+            {byText} {authorName}
           </p>
         ) : null
       }

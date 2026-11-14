@@ -57,6 +57,10 @@
     "corelia": "Corelia 课程",
     "external_partner": "合作讲师课程"
   },
+  "aiGenerated": {
+    "label": "AI 生成",
+    "description": "由 AI 创建并经过自动检查的内容。"
+  },
   "catalog": {
     "title": "课程",
     "pageTitle": "课程库",
@@ -485,8 +489,11 @@
     "retry": "重试",
     "source": "源代码",
     "unavailable": "课时不可用。",
+    "lessonDataErrorTitle": "未找到课时数据。",
+    "lessonDataErrorDescription": "请检查网络连接，或向管理员反馈。",
     "askAi": {
       "trigger": "询问 AI",
+      "triggerShort": "AI",
       "chatgpt": "询问 ChatGPT",
       "claude": "询问 Claude",
       "gemini": "询问 Gemini（复制提示词）",
@@ -527,6 +534,8 @@
     "completed": "已完成",
     "markComplete": "标记为已完成",
     "markIncomplete": "标记为未完成",
+    "markCompleteShort": "已完成",
+    "markIncompleteShort": "未完成",
     "redoFromStart": "重新开始",
     "redoConfirm": "重新开始此练习？您当前的答案和本地草稿将被清除。之前的提交会保留在历史记录中。",
     "resources": "资源",
@@ -534,6 +543,7 @@
     "previous": "上一个",
     "next": "下一课时",
     "finish": "完成课程",
+    "partLetter": "Part {{letter}}",
     "lessonNumber": "课时 {{number}}",
     "saving": "正在保存…",
     "login": "登录",
@@ -594,6 +604,19 @@
     "finalRetrySameSubmission": "已提交的内容和文件保持不变。请重试以获取结果，无需重新上传文件。",
     "duplicate": "复制",
     "quizRetrySameAnswers": "结果暂不可用期间，您已提交的答案会被保留。请重试以获取本次提交的结果。",
+    "questionNumber": "第 {{number}} 题",
+    "quizType": {
+      "mcq": "选择题"
+    },
+    "quizCorrect": "正确",
+    "quizThinkAgain": "再想一想",
+    "quizAnswerCorrect": "正确答案",
+    "quizAnswerWrong": "您的答案不正确",
+    "quizPleaseAnswer": "请回答这道题",
+    "codeFillAll": "请填写所有空白处",
+    "quizScoreCorrect": "正确",
+    "quizAchieveLead": "答对",
+    "quizAchieveTail": "题即可通过测试",
     "duplicateDraft": "复制为草稿",
     "duplicateUnsaved": "此副本尚未保存。保存后才会加入课程大纲。",
     "copyTitle": "{{title}}（副本）",
