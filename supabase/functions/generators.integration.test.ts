@@ -258,6 +258,73 @@ describe("Edge Functions Integration: generate-questions and generate-descriptio
       expect(data.bundle.sectors).toEqual([{ id: "sector-1", name: "Giáo dục" }]);
     });
 
+    it("rejects instructors from the staff-only blog translation scope", async () => {
+      await import("./generate-description/index");
+      const res = await descriptionHandler!(
+        new Request("http://localhost", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer test-token" },
+          body: JSON.stringify({
+            action: "translate",
+            type: "blog",
+            targetField: "description",
+            locale: "en",
+            sourceLocale: "vi",
+            bundleKind: "blog",
+            sourceBundle: { title: "Bài viết mẫu", markdownDescription: "Nội dung" },
+          }),
+        }),
+      );
+      expect(res.status).toBe(403);
+      expect((await res.json()).message).toBe("Bạn không có quyền dịch bài blog.");
+    });
+
+    it("translates a blog article for staff and refuses an answer without the body", async () => {
+      await import("./generate-description/index");
+      let answer: Record<string, string> = {
+        title: "Sample article",
+        shortDescription: "English summary",
+        markdownDescription: "## Heading\n\n![](https://cdn.example/a.png)",
+        imageAlt: "Students at the event",
+      };
+      globalThis.fetch = vi.fn().mockImplementation(async (url: string | URL) => {
+        const urlStr = String(url);
+        const ok = (body: unknown) =>
+          new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json", "Content-Range": "0-0/1" } });
+        if (urlStr.includes("/auth/v1/user")) return ok({ id: "support-1", email_confirmed_at: "2026-08-01T00:00:00Z" });
+        if (urlStr.includes("/rest/v1/profiles")) return ok({ role: "support_staff" });
+        if (urlStr.includes("/rest/v1/rpc/consume_rate_limit")) return new Response(null, { status: 204 });
+        if (urlStr === "https://api.openai.com/v1/responses") return ok({ output_text: JSON.stringify(answer) });
+        return new Response(JSON.stringify({ message: "Not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
+      });
+      const request = () =>
+        new Request("http://localhost", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer test-token" },
+          body: JSON.stringify({
+            action: "translate",
+            type: "blog",
+            targetField: "description",
+            locale: "en",
+            sourceLocale: "vi",
+            bundleKind: "blog",
+            sourceBundle: {
+              title: "Bài viết mẫu",
+              shortDescription: "Tóm tắt",
+              markdownDescription: "## Tiêu đề\n\n![](https://cdn.example/a.png)",
+              imageAlt: "Sinh viên tại sự kiện",
+            },
+          }),
+        });
+
+      const res = await descriptionHandler!(request());
+      expect(res.status).toBe(200);
+      expect((await res.json()).bundle).toEqual(answer);
+
+      answer = { title: "Sample article" };
+      expect((await descriptionHandler!(request())).status).not.toBe(200);
+    });
+
     it("stops before OpenAI when the hourly generation quota is used", async () => {
       await import("./generate-description/index");
       const fetchMock = vi.fn().mockImplementation(async (url: string | URL) => {

@@ -2,7 +2,7 @@ import { supabaseFunctionHeaders } from "./coreliaEdgeApi";
 import { supabase } from "./supabase";
 import type { SupportedCourseLocale } from "../types/courses";
 
-export type DescriptionGeneratorType = "course" | "lesson" | "hackathon";
+export type DescriptionGeneratorType = "course" | "lesson" | "hackathon" | "blog";
 export type DescriptionGeneratorAction = "generate" | "translate";
 export type DescriptionGeneratorTargetField =
   | "title"
@@ -15,7 +15,8 @@ export type DescriptionTranslationBundleKind =
   | "section"
   | "lesson"
   | "assignment"
-  | "hackathon";
+  | "hackathon"
+  | "blog";
 
 export type HackathonTranslationItem = {
   id: string;
@@ -55,6 +56,7 @@ export type DescriptionTranslationBundle = {
   instructions?: string;
   resourcesMarkdown?: string;
   prizeDescriptionMarkdown?: string;
+  imageAlt?: string;
   tracks?: HackathonTranslationItem[];
   sectors?: HackathonTranslationItem[];
   techStacks?: HackathonTranslationItem[];
@@ -84,6 +86,17 @@ type HackathonTranslationRequest = GenerateDescriptionRequestCommon & {
   lessonId?: never;
 };
 
+/** Admin → Blog: translates the editor's form, so there is no resource id. */
+export type BlogTranslationRequest = {
+  action: "translate";
+  type: "blog";
+  targetField: "description";
+  bundleKind: "blog";
+  locale: SupportedCourseLocale;
+  sourceLocale: SupportedCourseLocale;
+  sourceBundle: DescriptionTranslationBundle;
+};
+
 type CourseOrLessonDescriptionRequest = GenerateDescriptionRequestCommon & {
   action?: DescriptionGeneratorAction;
   type: "course" | "lesson";
@@ -98,7 +111,7 @@ export type GenerateDescriptionRequest =
   | HackathonTranslationRequest
   | CourseOrLessonDescriptionRequest;
 
-export function serializeGenerateDescriptionRequest(body: GenerateDescriptionRequest): string {
+export function serializeGenerateDescriptionRequest(body: GenerateDescriptionRequest | BlogTranslationRequest): string {
   return JSON.stringify(body);
 }
 
@@ -118,7 +131,7 @@ export function descriptionGeneratorFunctionUrl(): string {
 }
 
 export async function invokeGenerateDescription(
-  body: GenerateDescriptionRequest,
+  body: GenerateDescriptionRequest | BlogTranslationRequest,
 ): Promise<GenerateDescriptionResponse> {
   const url = descriptionGeneratorFunctionUrl();
   if (!url) throw new Error("Missing Supabase functions URL");

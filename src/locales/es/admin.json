@@ -786,7 +786,9 @@
       "allStatuses": "Todos los estados",
       "allLocales": "Todos los idiomas",
       "empty": "Aún no hay artículos.",
-      "noMatches": "Ningún artículo coincide con estos filtros."
+      "noMatches": "Ningún artículo coincide con estos filtros.",
+      "total": "{{total}} artículos",
+      "notPublished": "Aún sin publicar"
     },
     "status": {
       "draft": "Borrador",
@@ -825,7 +827,9 @@
       "image": "Imagen",
       "youtube": "Vídeo de YouTube",
       "fitCover": "Llenar el marco (recortar)",
-      "fitContain": "Mostrar la imagen completa"
+      "fitContain": "Mostrar la imagen completa",
+      "youtubeShort": "YouTube",
+      "noneShort": "Ninguna"
     },
     "hints": {
       "slugPublished": "Cambiar el slug de un artículo publicado rompe los enlaces que apuntan a él.",
@@ -845,7 +849,25 @@
       "previewEmpty": "Aún no hay nada que previsualizar.",
       "unsaved": "Cambios sin guardar",
       "saved": "Todos los cambios guardados",
-      "notFound": "Este artículo ya no existe."
+      "notFound": "Este artículo ya no existe.",
+      "titlePlaceholder": "Título del artículo",
+      "descriptionPlaceholder": "Un resumen de una o dos frases…",
+      "words": "{{total}} palabras",
+      "translateBanner": "Esta versión aún no tiene contenido. Traduce la versión en el otro idioma y luego revísala.",
+      "sections": {
+        "settings": "Ajustes",
+        "organize": "Categoría y etiquetas",
+        "advanced": "URL y traducción",
+        "coverOptions": "Más opciones de portada"
+      }
+    },
+    "toolbar": {
+      "bold": "Negrita",
+      "italic": "Cursiva",
+      "heading": "Encabezado",
+      "link": "Enlace",
+      "list": "Lista",
+      "quote": "Cita"
     },
     "actions": {
       "edit": "Editar",
@@ -858,15 +880,19 @@
       "uploadCover": "Subir imagen",
       "insertImage": "Insertar imagen",
       "addTranslation": "Añadir versión en {{language}}",
-      "openTranslation": "Abrir versión en {{language}}"
+      "openTranslation": "Abrir versión en {{language}}",
+      "editVersion": "Editar la versión en {{language}} ({{status}})",
+      "translateAi": "Traducir del {{language}} con IA"
     },
     "confirm": {
-      "delete": "¿Eliminar «{{title}}»? No se puede deshacer."
+      "delete": "¿Eliminar «{{title}}»? No se puede deshacer.",
+      "translateOverwrite": "¿Reemplazar el título, el resumen y el contenido por una nueva traducción?"
     },
     "messages": {
       "draftSaved": "Borrador guardado.",
       "published": "Publicado. Aparece en el sitio en uno o dos minutos.",
-      "deleted": "Artículo eliminado."
+      "deleted": "Artículo eliminado.",
+      "translated": "Traducido del {{language}}. Revísalo antes de publicar."
     },
     "errors": {
       "titleRequired": "Escribe un título.",
@@ -879,6 +905,7 @@
       "tagsCount": "Elige de {{min}} a {{max}} etiquetas antes de publicar.",
       "bodyRequired": "Escribe el contenido antes de publicar.",
       "slugTaken": "Otro artículo en este idioma ya usa este slug.",
+      "translateFailed": "No se pudo traducir el artículo. Inténtalo de nuevo.",
       "translationTaken": "Esta clave de traducción ya tiene un artículo en este idioma.",
       "saveFailed": "No se pudo guardar el artículo. Inténtalo de nuevo.",
       "deleteFailed": "No se pudo eliminar el artículo. Inténtalo de nuevo.",

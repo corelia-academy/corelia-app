@@ -733,7 +733,9 @@
       "allStatuses": "Mọi trạng thái",
       "allLocales": "Mọi ngôn ngữ",
       "empty": "Chưa có bài viết nào.",
-      "noMatches": "Không có bài viết nào khớp bộ lọc."
+      "noMatches": "Không có bài viết nào khớp bộ lọc.",
+      "total": "{{total}} bài viết",
+      "notPublished": "Chưa đăng"
     },
     "status": {
       "draft": "Bản nháp",
@@ -772,7 +774,9 @@
       "image": "Hình ảnh",
       "youtube": "Video YouTube",
       "fitCover": "Phủ kín khung (cắt ảnh)",
-      "fitContain": "Hiện toàn bộ ảnh"
+      "fitContain": "Hiện toàn bộ ảnh",
+      "youtubeShort": "YouTube",
+      "noneShort": "Không"
     },
     "hints": {
       "slugPublished": "Đổi slug của bài đã đăng sẽ làm hỏng các liên kết cũ tới bài.",
@@ -792,7 +796,25 @@
       "previewEmpty": "Chưa có nội dung để xem trước.",
       "unsaved": "Có thay đổi chưa lưu",
       "saved": "Đã lưu mọi thay đổi",
-      "notFound": "Bài viết này không còn tồn tại."
+      "notFound": "Bài viết này không còn tồn tại.",
+      "titlePlaceholder": "Tiêu đề bài viết",
+      "descriptionPlaceholder": "Tóm tắt trong một, hai câu…",
+      "words": "{{total}} từ",
+      "translateBanner": "Bản này chưa có nội dung. Dịch từ bản ngôn ngữ kia, rồi xem lại và chỉnh sửa.",
+      "sections": {
+        "settings": "Cài đặt",
+        "organize": "Chuyên mục và thẻ",
+        "advanced": "URL và bản dịch",
+        "coverOptions": "Tuỳ chọn ảnh bìa khác"
+      }
+    },
+    "toolbar": {
+      "bold": "In đậm",
+      "italic": "In nghiêng",
+      "heading": "Tiêu đề mục",
+      "link": "Liên kết",
+      "list": "Danh sách",
+      "quote": "Trích dẫn"
     },
     "actions": {
       "edit": "Sửa",
@@ -805,15 +827,19 @@
       "uploadCover": "Tải ảnh lên",
       "insertImage": "Chèn ảnh",
       "addTranslation": "Thêm bản {{language}}",
-      "openTranslation": "Mở bản {{language}}"
+      "openTranslation": "Mở bản {{language}}",
+      "editVersion": "Sửa bản {{language}} ({{status}})",
+      "translateAi": "Dịch từ {{language}} bằng AI"
     },
     "confirm": {
-      "delete": "Xóa “{{title}}”? Không thể hoàn tác."
+      "delete": "Xóa “{{title}}”? Không thể hoàn tác.",
+      "translateOverwrite": "Thay tiêu đề, tóm tắt và nội dung bằng bản dịch mới?"
     },
     "messages": {
       "draftSaved": "Đã lưu bản nháp.",
       "published": "Đã đăng. Bài sẽ lên trang trong vòng một đến hai phút.",
-      "deleted": "Đã xóa bài viết."
+      "deleted": "Đã xóa bài viết.",
+      "translated": "Đã dịch từ {{language}}. Hãy xem lại trước khi đăng."
     },
     "errors": {
       "titleRequired": "Hãy nhập tiêu đề.",
@@ -826,6 +852,7 @@
       "tagsCount": "Hãy chọn từ {{min}} đến {{max}} thẻ trước khi đăng.",
       "bodyRequired": "Hãy viết nội dung trước khi đăng.",
       "slugTaken": "Một bài khác cùng ngôn ngữ đã dùng slug này.",
+      "translateFailed": "Không dịch được bài viết. Hãy thử lại.",
       "translationTaken": "Khóa bản dịch này đã có bài ở ngôn ngữ này.",
       "saveFailed": "Không lưu được bài viết. Hãy thử lại.",
       "deleteFailed": "Không xóa được bài viết. Hãy thử lại.",
