@@ -396,7 +396,7 @@ body {
     font-family: var(--font-heading);
   }
   .blog-card-title-featured {
-    @apply line-clamp-3 text-xl font-medium leading-[1.25] tracking-[-0.03em] text-foreground md:text-2xl;
+    @apply line-clamp-3 text-xl font-medium leading-[1.25] tracking-[-0.03em] text-foreground lg:text-2xl;
     font-family: var(--font-heading);
   }
   .blog-chip {
