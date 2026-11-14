@@ -6,8 +6,8 @@ import path from "node:path";
 import os from "node:os";
 import { takeCatalogSnapshot } from "../scripts/catalog-snapshot.mjs";
 
-test("catalog-snapshot: AC11 - quét thật trên repo nhận đúng 2 khóa hiện có và state produced", () => {
-  const repoRoot = path.resolve(".");
+test("catalog-snapshot: AC11 - quét trên fixture cô lập nhận đúng 2 khóa hiện có và state produced", () => {
+  const repoRoot = path.resolve(".claude/skills/course-planner/test/fixtures/repo");
   const catalog = takeCatalogSnapshot(repoRoot);
 
   assert.ok(catalog);
@@ -141,6 +141,106 @@ test("catalog-snapshot: E-01 - export DB dùng slug lệch đã khai báo ánh x
     assert.strictEqual(result.courses.length, 1);
     assert.strictEqual(result.courses[0].slug, "canonical-new-slug");
     assert.strictEqual(result.courses[0].state, "in_catalog");
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("catalog-snapshot: AC6 - kiểm tra đúng lessons_total, lessons_published và content_state ở cả 4 trạng thái", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "cat-snap-ac6-"));
+  try {
+    const planDir = path.join(tmpDir, ".course-plan");
+    fs.mkdirSync(planDir, { recursive: true });
+
+    const exportData = [
+      {
+        slug: "c-empty-no-lessons",
+        title: "Khóa rỗng không có bài",
+        modules: []
+      },
+      {
+        slug: "c-empty-zero-pub",
+        title: "Khóa rỗng chưa publish bài nào",
+        modules: [
+          {
+            id: "m1",
+            lessons: [
+              { id: "l1", title: "Bài 1", published: false },
+              { id: "l2", title: "Bài 2", published: false }
+            ]
+          }
+        ]
+      },
+      {
+        slug: "c-partial",
+        title: "Khóa publish dở dang",
+        modules: [
+          {
+            id: "m1",
+            lessons: [
+              { id: "l1", title: "Bài 1", published: true },
+              { id: "l2", title: "Bài 2", published: false }
+            ]
+          }
+        ]
+      },
+      {
+        slug: "c-complete",
+        title: "Khóa hoàn tất",
+        modules: [
+          {
+            id: "m1",
+            lessons: [
+              { id: "l1", title: "Bài 1", published: true },
+              { id: "l2", title: "Bài 2", published: true }
+            ]
+          }
+        ]
+      },
+      {
+        slug: "c-unknown-legacy",
+        title: "Khóa export cũ không có cột published",
+        modules: [
+          {
+            id: "m1",
+            lessons: [
+              { id: "l1", title: "Bài 1" },
+              { id: "l2", title: "Bài 2" }
+            ]
+          }
+        ]
+      }
+    ];
+
+    fs.writeFileSync(path.join(planDir, "catalog-export.json"), JSON.stringify(exportData, null, 2));
+
+    const result = takeCatalogSnapshot(tmpDir);
+    assert.strictEqual(result.courses.length, 5);
+
+    const emptyNo = result.courses.find((c) => c.slug === "c-empty-no-lessons");
+    assert.strictEqual(emptyNo.lessons_total, 0);
+    assert.strictEqual(emptyNo.lessons_published, 0);
+    assert.strictEqual(emptyNo.content_state, "empty");
+
+    const emptyZero = result.courses.find((c) => c.slug === "c-empty-zero-pub");
+    assert.strictEqual(emptyZero.lessons_total, 2);
+    assert.strictEqual(emptyZero.lessons_published, 0);
+    assert.strictEqual(emptyZero.content_state, "empty");
+
+    const partial = result.courses.find((c) => c.slug === "c-partial");
+    assert.strictEqual(partial.lessons_total, 2);
+    assert.strictEqual(partial.lessons_published, 1);
+    assert.strictEqual(partial.content_state, "partial");
+
+    const complete = result.courses.find((c) => c.slug === "c-complete");
+    assert.strictEqual(complete.lessons_total, 2);
+    assert.strictEqual(complete.lessons_published, 2);
+    assert.strictEqual(complete.content_state, "complete");
+
+    const unknown = result.courses.find((c) => c.slug === "c-unknown-legacy");
+    assert.strictEqual(unknown.lessons_total, 2);
+    assert.strictEqual(unknown.lessons_published, 0);
+    assert.strictEqual(unknown.content_state, "unknown");
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }

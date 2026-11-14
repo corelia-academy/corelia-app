@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-11-14T06:46:53.860Z",
+  "courses": [
+    {
+      "slug": "rust-error-handling",
+      "title": "Xử lý lỗi trong Rust",
+      "level": "intermediate",
+      "state": "produced",
+      "source": ".course-runs/rust-error-handling",
+      "is_updating": false,
+      "goals": [],
+      "modules": [
+        {
+          "id": "M1",
+          "title": "Module 1",
+          "lessons": [
+            {
+              "id": "L1",
+              "title": "Bài 1"
+            }
+          ]
+        }
+      ],
+      "outcomes": [],
+      "lessons_total": 1,
+      "lessons_published": 0,
+      "content_state": "unknown"
+    },
+    {
+      "slug": "smart-contract-reading-before-interacting",
+      "title": "Đọc smart contract trước khi tương tác",
+      "level": "beginner",
+      "state": "produced",
+      "source": ".course-runs/smart-contract-reading-before-interacting",
+      "is_updating": false,
+      "goals": [],
+      "modules": [
+        {
+          "id": "M1",
+          "title": "Module 1",
+          "lessons": [
+            {
+              "id": "L1",
+              "title": "Bài 1"
+            }
+          ]
+        }
+      ],
+      "outcomes": [],
+      "lessons_total": 1,
+      "lessons_published": 0,
+      "content_state": "unknown"
+    }
+  ]
+}

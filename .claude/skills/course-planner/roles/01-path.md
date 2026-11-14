@@ -33,12 +33,18 @@ Tất cả các path do role này tạo ra **BẮT BUỘC** lưu ở trạng th�
 
 ## Cấu trúc File Đầu Ra
 
+Path được dựng nháp (`status: "draft"`) quanh khóa đã chốt từ shortlist: chuỗi tiên quyết và tối đa 2 khóa kế tiếp. Bắt buộc ghi `origin` trỏ tới file shortlist tương ứng và `pitch_slug` là slug của khóa đã được Human chốt.
+
 File được ghi tại `.course-plan/paths/<path-slug>.json`:
 
 ```json
 {
   "slug": "blockchain-security-auditor",
   "title": "Lộ trình Kiểm toán An ninh Hợp đồng Thông minh",
+  "origin": {
+    "shortlist": ".course-plan/shortlists/YYYY-MM-DD-1.json",
+    "pitch_slug": "smart-contract-reading-before-interacting"
+  },
   "axis": "role",
   "goal": "Đào tạo kỹ sư an ninh có khả năng phân tích, rà soát mã nguồn và phát hiện các lỗ hổng bảo mật phổ biến trên Web3.",
   "audience": "Lập trình viên đã biết lập trình cơ bản muốn chuyên sâu mảng audit hợp đồng thông minh.",

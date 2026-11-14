@@ -1,0 +1,315 @@
+{
+  "date": "2026-11-13",
+  "round": 1,
+  "chosen_slug": "pitch-1",
+  "user_quote": "Tôi chọn Smart Contract Security Defense vì rất cấp thiết",
+  "rejected": [],
+  "shortlist": [
+    {
+      "slug": "pitch-1",
+      "title": "Smart Contract Security Defense",
+      "direction": {
+        "axis": "role",
+        "entry": "Smart Contract Developer"
+      },
+      "level": "intermediate",
+      "kind": "new",
+      "promise": "Phát hiện và vá 5 lỗ hổng reentrancy phổ biến trong smart contract",
+      "starting_point": {
+        "knowledge": "Cơ bản về Solidity",
+        "requires": []
+      },
+      "final_product": "Báo cáo audit và bản vá smart contract nộp tại bài tập cuối khóa",
+      "alternatives": [
+        {
+          "name": "OpenZeppelin Docs",
+          "url": "https://docs.openzeppelin.com",
+          "gap": "Thiếu bài tập thực hành phòng thủ"
+        },
+        {
+          "name": "Damn Vulnerable DeFi",
+          "url": "https://damnvulnerabledefi.xyz",
+          "gap": "Không có hướng dẫn tiếng Việt chi tiết"
+        }
+      ],
+      "why_now": {
+        "claim": "Nhiều vụ hack smart contract gần đây",
+        "urls": [
+          "https://rekt.news"
+        ],
+        "kind": "direct",
+        "observed_on": "2026-11-13"
+      },
+      "corelia_hook": "Chứng chỉ bảo mật Smart Contract trên Corelia",
+      "feasibility": "feasible",
+      "feasibility_basis": "platform.md mục smart contract hỗ trợ compiler và test runner",
+      "criteria": {
+        "continues_catalog": {
+          "met": false,
+          "basis": "Người mới",
+          "refs": []
+        },
+        "fills_direction": {
+          "met": true,
+          "basis": "Chưa có khóa bảo mật",
+          "refs": [
+            "catalog.json"
+          ]
+        },
+        "timely": {
+          "met": true,
+          "basis": "Các vụ khai thác 2026",
+          "refs": [
+            "https://rekt.news"
+          ]
+        },
+        "differentiated": {
+          "met": true,
+          "basis": "Có bài tập thực hành tiếng Việt",
+          "refs": [
+            "https://damnvulnerabledefi.xyz"
+          ]
+        },
+        "showable_product": {
+          "met": true,
+          "basis": "Nộp báo cáo và repo mã nguồn",
+          "refs": [
+            "corelia-project"
+          ]
+        }
+      },
+      "risks": [
+        "Học viên cần máy tính cài sẵn Node.js"
+      ],
+      "missing_evidence": []
+    },
+    {
+      "slug": "pitch-2",
+      "title": "Solana Anchor Framework",
+      "direction": {
+        "axis": "role",
+        "entry": "Solana Developer"
+      },
+      "level": "beginner",
+      "kind": "new",
+      "promise": "Viết chương trình Anchor đầu tiên trên Solana localnet",
+      "starting_point": {
+        "knowledge": "Rust cơ bản",
+        "requires": []
+      },
+      "final_product": "Chương trình Anchor hoàn chỉnh có test suite",
+      "alternatives": [
+        {
+          "name": "Anchor Book",
+          "url": "https://www.anchor-lang.com",
+          "gap": "Tài liệu tiếng Anh không kèm quiz"
+        },
+        {
+          "name": "Solana Cookbook",
+          "url": "https://solanacookbook.com",
+          "gap": "Chỉ là cookbook rời rạc"
+        }
+      ],
+      "why_now": {
+        "claim": "Hệ sinh thái Solana tăng trưởng mạnh",
+        "urls": [
+          "https://solana.com"
+        ],
+        "kind": "direct",
+        "observed_on": "2026-11-13"
+      },
+      "corelia_hook": "Dự án Solana Hackathon Corelia",
+      "feasibility": "feasible",
+      "feasibility_basis": "platform.md hỗ trợ bài code rust",
+      "criteria": {
+        "continues_catalog": {
+          "met": false,
+          "basis": "Người mới",
+          "refs": []
+        },
+        "fills_direction": {
+          "met": true,
+          "basis": "Chưa có khóa Solana",
+          "refs": [
+            "catalog.json"
+          ]
+        },
+        "timely": {
+          "met": true,
+          "basis": "Solana Radar hackathon",
+          "refs": [
+            "https://solana.com"
+          ]
+        },
+        "differentiated": {
+          "met": true,
+          "basis": "Tài liệu tiếng Việt thực chiến",
+          "refs": [
+            "https://www.anchor-lang.com"
+          ]
+        },
+        "showable_product": {
+          "met": true,
+          "basis": "Nộp mã nguồn chương trình",
+          "refs": [
+            "corelia-hackathon"
+          ]
+        }
+      },
+      "risks": [],
+      "missing_evidence": []
+    },
+    {
+      "slug": "pitch-3",
+      "title": "Ethereum Layer 2 Development with Arbitrum",
+      "direction": {
+        "axis": "ecosystem",
+        "entry": "Arbitrum"
+      },
+      "level": "intermediate",
+      "kind": "new",
+      "promise": "Triển khai và tối ưu gas cho smart contract trên Arbitrum Nitro",
+      "starting_point": {
+        "knowledge": "Solidity cơ bản",
+        "requires": []
+      },
+      "final_product": "Hợp đồng thông minh đã deploy trên Arbitrum Sepolia",
+      "alternatives": [
+        {
+          "name": "Arbitrum Docs",
+          "url": "https://docs.arbitrum.io",
+          "gap": "Thiếu bài thực hành cụ thể"
+        },
+        {
+          "name": "Offchain Labs Tutorials",
+          "url": "https://offchainlabs.com",
+          "gap": "Khó tiếp cận cho người mới"
+        }
+      ],
+      "why_now": {
+        "claim": "TVL Arbitrum duy trì cao",
+        "urls": [
+          "https://l2beat.com"
+        ],
+        "kind": "direct",
+        "observed_on": "2026-11-13"
+      },
+      "corelia_hook": "Chứng chỉ Arbitrum Builder",
+      "feasibility": "feasible",
+      "feasibility_basis": "platform.md hỗ trợ EVM",
+      "criteria": {
+        "continues_catalog": {
+          "met": false,
+          "basis": "Người mới",
+          "refs": []
+        },
+        "fills_direction": {
+          "met": true,
+          "basis": "Chưa có khóa Arbitrum",
+          "refs": [
+            "catalog.json"
+          ]
+        },
+        "timely": {
+          "met": true,
+          "basis": "L2Beat 2026 data",
+          "refs": [
+            "https://l2beat.com"
+          ]
+        },
+        "differentiated": {
+          "met": true,
+          "basis": "Hướng dẫn tối ưu gas độc quyền",
+          "refs": [
+            "https://docs.arbitrum.io"
+          ]
+        },
+        "showable_product": {
+          "met": true,
+          "basis": "Contract verified trên Arbiscan",
+          "refs": [
+            "corelia-cert"
+          ]
+        }
+      },
+      "risks": [],
+      "missing_evidence": []
+    },
+    {
+      "slug": "c-partial",
+      "title": "Hoàn thiện khóa học lập trình Web3 Frontend",
+      "direction": {
+        "axis": "skill",
+        "entry": "React"
+      },
+      "level": "beginner",
+      "kind": "complete_existing",
+      "promise": "Tích hợp ví Wagmi và RainbowKit vào ứng dụng React",
+      "starting_point": {
+        "knowledge": "React cơ bản",
+        "requires": []
+      },
+      "final_product": "DApp Frontend kết nối ví hoàn chỉnh",
+      "alternatives": [
+        {
+          "name": "Wagmi Documentation",
+          "url": "https://wagmi.sh",
+          "gap": "Chỉ là API docs"
+        },
+        {
+          "name": "RainbowKit Guides",
+          "url": "https://rainbowkit.com",
+          "gap": "Thiếu bài tập thực hành nộp chấm điểm"
+        }
+      ],
+      "why_now": {
+        "claim": "Wagmi v2 phổ biến",
+        "urls": [
+          "https://wagmi.sh"
+        ],
+        "kind": "direct",
+        "observed_on": "2026-11-13"
+      },
+      "corelia_hook": "Bài tập dự án Web3 Frontend trên Corelia",
+      "feasibility": "feasible",
+      "feasibility_basis": "platform.md hỗ trợ react preview",
+      "criteria": {
+        "continues_catalog": {
+          "met": false,
+          "basis": "Người mới",
+          "refs": []
+        },
+        "fills_direction": {
+          "met": true,
+          "basis": "Hoàn thiện khóa partial",
+          "refs": [
+            "catalog.json:c-partial"
+          ]
+        },
+        "timely": {
+          "met": true,
+          "basis": "Wagmi v2 cập nhật mới",
+          "refs": [
+            "https://wagmi.sh"
+          ]
+        },
+        "differentiated": {
+          "met": true,
+          "basis": "Có code preview tương tác",
+          "refs": [
+            "https://wagmi.sh"
+          ]
+        },
+        "showable_product": {
+          "met": true,
+          "basis": "Web app React chạy trực tiếp",
+          "refs": [
+            "corelia-project"
+          ]
+        }
+      },
+      "risks": [],
+      "missing_evidence": []
+    }
+  ]
+}

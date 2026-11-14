@@ -33,8 +33,13 @@ export function decideNext({
   const isExcludedState = (state) =>
     state === "in_production" || state === "produced" || state === "in_catalog";
 
-  const isSatisfiedState = (state) =>
-    state === "produced" || state === "in_catalog";
+  const isSatisfiedState = (catReq) => {
+    if (!catReq) return false;
+    if (catReq.content_state) {
+      return catReq.content_state !== "empty";
+    }
+    return catReq.state === "produced" || catReq.state === "in_catalog";
+  };
 
   // 2. Đọc các path có status === "approved"
   const approvedPaths = [];
@@ -87,6 +92,8 @@ export function decideNext({
         title: p.title,
         priority: typeof p.priority === "number" ? p.priority : 9999,
         hasDirectEvidence,
+        origin: p.origin || null,
+        pathRaw: p,
         suggested_order: typeof c.suggested_order === "number" ? c.suggested_order : 9999
       });
     }
@@ -143,6 +150,7 @@ export function decideNext({
   const needs_research = [];
   const blocked = [];
   const readyCandidates = [];
+  const allWarnings = [];
 
   // 4. Kiểm tra điều kiện "Sẵn sàng" TRƯỚC (V-02)
   // Khóa chưa đủ điều kiện tiên quyết (requires chưa produced / in_catalog) vào blocked ngay,
@@ -154,8 +162,10 @@ export function decideNext({
     for (const req of cand.requires) {
       if (!req || !req.slug) continue;
       const catReq = catalogMap.get(req.slug);
-      if (!catReq || !isSatisfiedState(catReq.state)) {
+      if (!catReq || !isSatisfiedState(catReq)) {
         unmetRequires.push(req.slug);
+      } else if (!catReq.content_state || catReq.content_state === "unknown") {
+        allWarnings.push(`Khóa tiên quyết "${req.slug}" của "${cand.slug}" ${!catReq.content_state ? "thiếu content_state" : "có content_state unknown"} (cần export catalog mới)`);
       }
     }
 
@@ -326,7 +336,121 @@ export function decideNext({
       continue;
     }
 
-    // Đã thỏa mãn tiên quyết và qua cả 5 Gate -> Sẵn sàng
+    // Gate 6: path của ứng viên có origin trỏ tới một shortlist tồn tại,
+    // trong đó chosen_slug bằng origin.pitch_slug và user_quote khác rỗng.
+    const pathOrigin = cand.primaryPath?.origin;
+    if (!pathOrigin || typeof pathOrigin !== "object") {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: cand.primaryPath.slug,
+        reason: "Path thiếu origin trỏ tới shortlist"
+      });
+      continue;
+    }
+
+    const shortlistRef = pathOrigin.shortlist;
+    const pitchSlug = pathOrigin.pitch_slug;
+    if (!shortlistRef || !pitchSlug) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: cand.primaryPath.slug,
+        reason: "Path origin thiếu shortlist hoặc pitch_slug"
+      });
+      continue;
+    }
+
+    // P-08: origin.pitch_slug phải thuộc courses[] của path
+    const pathCourses = cand.primaryPath?.pathRaw?.courses || [];
+    const pathCourseSlugs = new Set(pathCourses.map((c) => c?.slug).filter(Boolean));
+    if (!pathCourseSlugs.has(pitchSlug)) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: cand.primaryPath.slug,
+        reason: `origin.pitch_slug "${pitchSlug}" không thuộc danh sách courses của path "${cand.primaryPath.slug}"`
+      });
+      continue;
+    }
+
+    let slFilePath = path.isAbsolute(shortlistRef)
+      ? shortlistRef
+      : path.join(root, shortlistRef);
+    if (!fs.existsSync(slFilePath)) {
+      const inDir = path.join(root, ".course-plan", "shortlists", path.basename(shortlistRef));
+      if (fs.existsSync(inDir)) {
+        slFilePath = inDir;
+      }
+    }
+
+    if (!fs.existsSync(slFilePath)) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: cand.primaryPath.slug,
+        reason: `File shortlist "${shortlistRef}" không tồn tại`
+      });
+      continue;
+    }
+
+    let slData = null;
+    try {
+      slData = JSON.parse(fs.readFileSync(slFilePath, "utf8"));
+    } catch (err) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: cand.primaryPath.slug,
+        reason: `File shortlist hỏng: ${err.message}`
+      });
+      continue;
+    }
+
+    if (!slData.chosen_slug) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: cand.primaryPath.slug,
+        reason: "Shortlist chưa có chosen_slug được Human phê duyệt"
+      });
+      continue;
+    }
+
+    if (slData.chosen_slug !== pitchSlug) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: cand.primaryPath.slug,
+        reason: `chosen_slug "${slData.chosen_slug}" không khớp origin.pitch_slug "${pitchSlug}"`
+      });
+      continue;
+    }
+
+    // P-08: file shortlist phải chứa đề xuất có slug đó
+    const slProposals = Array.isArray(slData.shortlist) ? slData.shortlist : [];
+    const hasPitch = slProposals.some((prop) => prop?.slug === pitchSlug);
+    if (!hasPitch) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: cand.primaryPath.slug,
+        reason: `shortlist "${shortlistRef}" không chứa đề xuất có slug "${pitchSlug}"`
+      });
+      continue;
+    }
+
+    if (!slData.user_quote || typeof slData.user_quote !== "string" || !slData.user_quote.trim()) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: cand.primaryPath.slug,
+        reason: "Shortlist thiếu user_quote của Human"
+      });
+      continue;
+    }
+
+    // Đã thỏa mãn tiên quyết và qua cả 6 Gate -> Sẵn sàng
     readyCandidates.push({
       ...cand,
       evaluation: evData
@@ -524,6 +648,7 @@ export function decideNext({
     blocked,
     needs_research,
     rejected,
+    warnings: allWarnings,
     user_decision: null
   };
 

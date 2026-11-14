@@ -49,6 +49,10 @@ Chuẩn bị sẵn dữ liệu hợp đồng để khi khóa học được ch�
 - `topic`: Một nhiệm vụ cụ thể người học hoàn thành được khi học xong (dùng động từ quan sát được).
 - `audience`: Đối tượng người học.
 - `level`: Trình độ (`"beginner"` | `"intermediate"` | `"advanced"`).
+- `promise`: Một câu, một hành động quan sát được người học làm được khi học xong (không mở đầu bằng "hiểu", "nắm", "biết", "tìm hiểu", "làm quen").
+- `final_product`: Sản phẩm cụ thể người học nộp ở bài cuối khóa và tình huống thực tế, nộp được qua các trường trong `platform.md`.
+- `differentiation`: Điểm khác biệt vượt trội mà khóa học này lấp được (gộp từ gap của các nguồn thay thế).
+- `corelia_hook`: Sản phẩm cuối gắn với tính năng nào của Corelia (dự án, hackathon, chứng chỉ).
 - `scope_note`: Ghi chú phạm vi BẮT BUỘC, suy trực tiếp từ path: nêu rõ điều khóa này giả định từ khóa tiên quyết và điều để lại cho khóa sau.
 - `path`: Slug của path chứa khóa.
 - `is_foundation`: Boolean.
@@ -99,6 +103,10 @@ File được ghi tại `.course-plan/evaluations/<slug>.json`:
     "topic": "Tái hiện tấn công reentrancy trên test contract và áp dụng checks-effects-interactions pattern để chặn rút tiền trái phép.",
     "audience": "Lập trình viên Solidity đã biết đọc hiểu hàm nạp/rút tiền cơ bản và cấu trúc modifier.",
     "level": "intermediate",
+    "promise": "Xây dựng và triển khai cơ chế kiểm tra checks-effects-interactions chặn đứng tấn công rút tiền reentrancy trên testnet.",
+    "final_product": "Repo GitHub chứa smart contract đã được vá lỗi, kèm test suite tự động mô phỏng tấn công thất bại.",
+    "differentiation": "Cung cấp bài tập thực hành sửa lỗi trực tiếp trên code thay vì chỉ phân tích lý thuyết như các khóa học khác.",
+    "corelia_hook": "Sản phẩm cuối khóa nộp nhận Chứng chỉ chuyên môn Web3 Security Auditor của Corelia.",
     "scope_note": "Tập trung vào single-function và cross-function reentrancy cơ bản, không đi sâu vào read-only reentrancy.",
     "path": "blockchain-security-auditor",
     "is_foundation": false,

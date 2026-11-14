@@ -15,6 +15,7 @@ FROM (
     'level', COALESCE(c.data->>'level', 'all'),
     'state', 'in_catalog',
     'source', 'db_export',
+    'is_updating', COALESCE((c.data->>'is_updating')::boolean, false),
     'goals', COALESCE(c.data->'learning_outcomes', '[]'::jsonb),
     'outcomes', COALESCE(c.data->'learning_outcomes', '[]'::jsonb),
     'modules', COALESCE(
@@ -28,7 +29,8 @@ FROM (
                 SELECT jsonb_agg(
                   jsonb_build_object(
                     'id', l.id,
-                    'title', COALESCE(l.data->>'title', l.id)
+                    'title', COALESCE(l.data->>'title', l.id),
+                    'published', l.published
                   ) ORDER BY l.sort_order
                 )
                 FROM public.course_lessons l

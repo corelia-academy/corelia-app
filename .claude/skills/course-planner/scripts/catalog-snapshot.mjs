@@ -4,6 +4,39 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+export function calculateContentState(modules) {
+  let lessons_total = 0;
+  let lessons_published = 0;
+  let hasAnyPublishedField = false;
+
+  for (const m of modules || []) {
+    for (const l of m.lessons || []) {
+      lessons_total++;
+      if (typeof l.published === "boolean") {
+        hasAnyPublishedField = true;
+        if (l.published) {
+          lessons_published++;
+        }
+      }
+    }
+  }
+
+  let content_state = "unknown";
+  if (lessons_total === 0) {
+    content_state = "empty";
+  } else if (!hasAnyPublishedField) {
+    content_state = "unknown";
+  } else if (lessons_published === 0) {
+    content_state = "empty";
+  } else if (lessons_published < lessons_total) {
+    content_state = "partial";
+  } else {
+    content_state = "complete";
+  }
+
+  return { lessons_total, lessons_published, content_state };
+}
+
 export function takeCatalogSnapshot(repoRoot = ".") {
   const root = path.resolve(repoRoot);
   const courseRunsDir = path.join(root, ".course-runs");
@@ -40,15 +73,22 @@ export function takeCatalogSnapshot(repoRoot = ".") {
   for (const c of dbCourses) {
     if (!c || !c.slug) continue;
     const resolvedSlug = slugAliases[c.slug] || c.slug;
+    const modules = Array.isArray(c.modules) ? c.modules : [];
+    const stats = calculateContentState(modules);
+
     coursesMap.set(resolvedSlug, {
       slug: resolvedSlug,
       title: c.title || resolvedSlug,
       level: c.level || "all",
       state: "in_catalog",
       source: c.source || "db_export",
+      is_updating: Boolean(c.is_updating),
       goals: Array.isArray(c.goals) ? c.goals : [],
-      modules: Array.isArray(c.modules) ? c.modules : [],
-      outcomes: Array.isArray(c.outcomes) ? c.outcomes : []
+      modules,
+      outcomes: Array.isArray(c.outcomes) ? c.outcomes : [],
+      lessons_total: stats.lessons_total,
+      lessons_published: stats.lessons_published,
+      content_state: stats.content_state
     });
   }
 
@@ -189,6 +229,10 @@ export function takeCatalogSnapshot(repoRoot = ".") {
         existing.state = "in_catalog";
         if ((!existing.modules || existing.modules.length === 0) && modules.length > 0) {
           existing.modules = modules;
+          const stats = calculateContentState(modules);
+          existing.lessons_total = stats.lessons_total;
+          existing.lessons_published = stats.lessons_published;
+          existing.content_state = stats.content_state;
         }
         if ((!existing.goals || existing.goals.length === 0) && brief?.goals) {
           existing.goals = brief.goals;
@@ -198,15 +242,20 @@ export function takeCatalogSnapshot(repoRoot = ".") {
         }
       } else {
         const itemInfo = brief || handoff || {};
+        const stats = calculateContentState(modules);
         coursesMap.set(canonicalSlug, {
           slug: canonicalSlug,
           title: itemInfo.title || itemInfo.title_en || canonicalSlug,
           level: itemInfo.level || "all",
           state,
           source: `.course-runs/${folderName}`,
+          is_updating: false,
           goals: Array.isArray(itemInfo.goals) ? itemInfo.goals : [],
           modules,
-          outcomes: curriculum?.outcomes || []
+          outcomes: curriculum?.outcomes || [],
+          lessons_total: stats.lessons_total,
+          lessons_published: stats.lessons_published,
+          content_state: stats.content_state
         });
       }
     }

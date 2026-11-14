@@ -301,3 +301,108 @@ test("plan-lint: E-02 - ô thiếu task rỗng hoặc thiếu ranh giới (scope
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test("plan-lint: P-08 - kiểm tra origin của path (pitch_slug không thuộc courses, shortlist không tồn tại, shortlist không có đề xuất)", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "lint-origin-"));
+  try {
+    const pathsDir = path.join(tmpDir, ".course-plan", "paths");
+    fs.mkdirSync(pathsDir, { recursive: true });
+
+    const slFile = path.join(tmpDir, "my-shortlist.json");
+    // Shortlist có đề xuất 'pitch-valid'
+    fs.writeFileSync(slFile, JSON.stringify({
+      shortlist: [{ slug: "pitch-valid", title: "Valid" }]
+    }, null, 2));
+
+    const baseCourse = {
+      slug: "course-1",
+      title: "K1",
+      task: "T1",
+      level: "intermediate",
+      scope: ["S1"],
+      out_of_scope: ["O1"],
+      suggested_order: 1,
+      is_foundation: false,
+      requires: []
+    };
+
+    // Case 1: origin.pitch_slug không thuộc courses[] của path
+    const pInvalidPitch = {
+      slug: "p-invalid-pitch",
+      title: "Path",
+      axis: "skill",
+      goal: "G",
+      audience: "A",
+      entry_level: "intermediate",
+      scope: ["S"],
+      out_of_scope: ["O"],
+      status: "approved",
+      priority: 1,
+      origin: { shortlist: slFile, pitch_slug: "pitch-not-in-path" },
+      evidence: [{ claim: "C", kind: "direct", urls: ["https://u"], observed_on: "2026-11-13" }],
+      missing_evidence: [],
+      courses: [baseCourse]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p-invalid-pitch.json"), JSON.stringify(pInvalidPitch, null, 2));
+
+    let res = lintPlans(tmpDir);
+    assert.strictEqual(res.ok, false);
+    assert.ok(res.problems.some((p) => p.includes("không thuộc danh sách courses[] của path")));
+
+    // Case 2: origin.shortlist không tồn tại
+    fs.unlinkSync(path.join(pathsDir, "p-invalid-pitch.json"));
+    const pMissingShortlist = {
+      ...pInvalidPitch,
+      slug: "p-missing-sl",
+      origin: { shortlist: path.join(tmpDir, "nonexistent.json"), pitch_slug: "course-1" },
+      courses: [baseCourse]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p-missing-sl.json"), JSON.stringify(pMissingShortlist, null, 2));
+
+    res = lintPlans(tmpDir);
+    assert.strictEqual(res.ok, false);
+    assert.ok(res.problems.some((p) => p.includes("không tồn tại")));
+
+    // Case 3: shortlist không chứa đề xuất có slug đó
+    fs.unlinkSync(path.join(pathsDir, "p-missing-sl.json"));
+    const pPitchNotInSl = {
+      ...pInvalidPitch,
+      slug: "p-pitch-not-in-sl",
+      origin: { shortlist: slFile, pitch_slug: "course-1" },
+      courses: [baseCourse]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p-pitch-not-in-sl.json"), JSON.stringify(pPitchNotInSl, null, 2));
+
+    res = lintPlans(tmpDir);
+    assert.strictEqual(res.ok, false);
+    assert.ok(res.problems.some((p) => p.includes("không chứa đề xuất có slug")));
+
+    // Case 4: Hợp lệ (pitch-valid có trong courses và có trong shortlist)
+    fs.unlinkSync(path.join(pathsDir, "p-pitch-not-in-sl.json"));
+    const pValid = {
+      ...pInvalidPitch,
+      slug: "p-valid",
+      origin: { shortlist: slFile, pitch_slug: "pitch-valid" },
+      courses: [{ ...baseCourse, slug: "pitch-valid" }]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p-valid.json"), JSON.stringify(pValid, null, 2));
+
+    res = lintPlans(tmpDir);
+    assert.strictEqual(res.ok, true, "Path có origin hợp lệ phải pass: " + res.problems.join("; "));
+
+    // Case 5: Path không có origin -> vẫn hợp lệ
+    fs.unlinkSync(path.join(pathsDir, "p-valid.json"));
+    const pNoOrigin = {
+      ...pInvalidPitch,
+      slug: "p-no-origin",
+      courses: [baseCourse]
+    };
+    delete pNoOrigin.origin;
+    fs.writeFileSync(path.join(pathsDir, "p-no-origin.json"), JSON.stringify(pNoOrigin, null, 2));
+
+    res = lintPlans(tmpDir);
+    assert.strictEqual(res.ok, true, "Path không có origin vẫn hợp lệ ở plan-lint: " + res.problems.join("; "));
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});

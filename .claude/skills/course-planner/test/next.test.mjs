@@ -7,18 +7,35 @@ import os from "node:os";
 import { decideNext } from "../scripts/next.mjs";
 import { takeCatalogSnapshot } from "../scripts/catalog-snapshot.mjs";
 
+function makeOrigin(tmpDir, pitchSlug) {
+  const shortlistsDir = path.join(tmpDir, ".course-plan", "shortlists");
+  fs.mkdirSync(shortlistsDir, { recursive: true });
+  const fileRel = `.course-plan/shortlists/${pitchSlug}.json`;
+  const fileAbs = path.join(shortlistsDir, `${pitchSlug}.json`);
+  fs.writeFileSync(fileAbs, JSON.stringify({
+    date: "2026-11-13",
+    chosen_slug: pitchSlug,
+    user_quote: `Human approved ${pitchSlug}`,
+    shortlist: [{ slug: pitchSlug, title: `Khóa ${pitchSlug}` }],
+    rejected: []
+  }, null, 2));
+  return { shortlist: fileRel, pitch_slug: pitchSlug };
+}
+
 function setupFixture() {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "next-test-"));
   const pathsDir = path.join(tmpDir, ".course-plan", "paths");
   const evalsDir = path.join(tmpDir, ".course-plan", "evaluations");
+  const shortlistsDir = path.join(tmpDir, ".course-plan", "shortlists");
   const catFile = path.join(tmpDir, ".course-plan", "catalog.json");
 
   fs.mkdirSync(pathsDir, { recursive: true });
   fs.mkdirSync(evalsDir, { recursive: true });
+  fs.mkdirSync(shortlistsDir, { recursive: true });
 
   fs.writeFileSync(catFile, JSON.stringify({ courses: [] }, null, 2));
 
-  return { tmpDir, pathsDir, evalsDir, catFile };
+  return { tmpDir, pathsDir, evalsDir, shortlistsDir, catFile };
 }
 
 test("next: AC1 - chạy hai lần trên cùng fixture cho JSON giống hệt", () => {
@@ -29,6 +46,7 @@ test("next: AC1 - chạy hai lần trên cùng fixture cho JSON giống hệt", 
       title: "Path 1",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "c1"),
       evidence: [{ claim: "Hot", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "c1", title: "Khóa 1", level: "beginner", suggested_order: 1, requires: [] },
@@ -65,6 +83,7 @@ test("next: AC2 - fixture 2 khóa cùng path, khác suggested_order, không có 
       title: "Path 2 Khóa Sẵn Sàng",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "course-order-1"),
       evidence: [{ claim: "Tuyển", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "course-order-1", title: "Khóa Order 1", level: "beginner", suggested_order: 1, requires: [] },
@@ -107,6 +126,7 @@ test("next: AC4 - fixture khóa đã có brief.json (in_production) -> không n�
       title: "Path",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "c-prod"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "c-prod", title: "Đang sản xuất", level: "beginner", suggested_order: 1, requires: [] },
@@ -140,6 +160,7 @@ test("next: AC5 - foundation_basis hợp lệ -> qua gate; trỏ tới path khô
       title: "Path Nền tảng",
       status: "approved",
       priority: 2,
+      origin: makeOrigin(tmpDir, "c-found"),
       evidence: [{ claim: "Nhiều star", kind: "inferred", urls: ["https://gh.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "c-found", title: "Khóa Nền", level: "beginner", suggested_order: 1, is_foundation: true, requires: [] }
@@ -153,6 +174,7 @@ test("next: AC5 - foundation_basis hợp lệ -> qua gate; trỏ tới path khô
       title: "Path Đích Có Direct",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "c-target-direct"),
       evidence: [{ claim: "JD yêu cầu", kind: "direct", urls: ["https://jd.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "c-target-direct", title: "Khóa Đích Direct", level: "advanced", suggested_order: 1, requires: [{ slug: "c-found", reason: "Cần c-found" }] }
@@ -166,6 +188,7 @@ test("next: AC5 - foundation_basis hợp lệ -> qua gate; trỏ tới path khô
       title: "Path Đích Không Direct",
       status: "approved",
       priority: 3,
+      origin: makeOrigin(tmpDir, "c-target-no-direct"),
       evidence: [{ claim: "Chỉ inferred", kind: "inferred", urls: ["https://forum.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "c-target-no-direct", title: "Khóa Đích No Direct", level: "advanced", suggested_order: 1, requires: [{ slug: "c-found", reason: "Cần c-found" }] }
@@ -221,6 +244,7 @@ test("next: AC6 - khóa dùng chung hai path -> vị trí theo path có priority
       title: "Path A",
       status: "approved",
       priority: 3,
+      origin: makeOrigin(tmpDir, "shared-course"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "shared-course", title: "Khóa Dùng Chung", level: "intermediate", suggested_order: 1, requires: [] }
@@ -234,6 +258,7 @@ test("next: AC6 - khóa dùng chung hai path -> vị trí theo path có priority
       title: "Path B",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "shared-course"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "shared-course", title: "Khóa Dùng Chung", level: "intermediate", suggested_order: 1, requires: [] }
@@ -247,6 +272,7 @@ test("next: AC6 - khóa dùng chung hai path -> vị trí theo path có priority
       title: "Path C",
       status: "approved",
       priority: 2,
+      origin: makeOrigin(tmpDir, "course-p2"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "course-p2", title: "Khóa P2", level: "intermediate", suggested_order: 1, requires: [] }
@@ -280,6 +306,7 @@ test("next: AC7 - hai path cùng priority có khóa sẵn sàng đứng đầu k
       title: "Path Alpha",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "course-alpha"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "course-alpha", title: "Khóa Alpha", level: "beginner", suggested_order: 1, requires: [] }
@@ -292,6 +319,7 @@ test("next: AC7 - hai path cùng priority có khóa sẵn sàng đứng đầu k
       title: "Path Beta",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "course-beta"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "course-beta", title: "Khóa Beta", level: "beginner", suggested_order: 1, requires: [] }
@@ -327,6 +355,7 @@ test("next: AC8 - catalog.verdict = update_existing -> nằm trong updates, khô
       title: "Path",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "course-to-update"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "course-to-update", title: "Khóa Cần Update", level: "intermediate", suggested_order: 1, requires: [] }
@@ -393,6 +422,7 @@ test("next: candidate bị chặn bởi khóa chưa produced -> vào blocked kè
       title: "Path",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "c-blocked"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "c-blocked", title: "Khóa Bị Chặn", level: "intermediate", suggested_order: 2, requires: [{ slug: "unmet-prereq", reason: "cần kiến thức" }] }
@@ -426,6 +456,7 @@ test("next: V-01 - khóa dùng chung được xếp theo suggested_order trong p
       title: "Path Z",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "shared"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "shared", title: "Khóa Shared", level: "beginner", suggested_order: 1, requires: [] },
@@ -440,6 +471,7 @@ test("next: V-01 - khóa dùng chung được xếp theo suggested_order trong p
       title: "Path A",
       status: "approved",
       priority: 2,
+      origin: makeOrigin(tmpDir, "shared"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "shared", title: "Khóa Shared", level: "beginner", suggested_order: 9, requires: [] }
@@ -471,6 +503,7 @@ test("next: V-02 - candidate bị chặn mà chưa có evaluation bị xếp và
       title: "Path Dep",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "base"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "base", title: "Base", level: "beginner", suggested_order: 1, requires: [] },
@@ -504,15 +537,24 @@ test("next: V-06 - khóa đã có handoff.json được catalog-snapshot nhận 
     const runsDir = path.join(tmpDir, ".course-runs");
     const pathsDir = path.join(tmpDir, ".course-plan", "paths");
     const evalsDir = path.join(tmpDir, ".course-plan", "evaluations");
+    const shortlistsDir = path.join(tmpDir, ".course-plan", "shortlists");
     fs.mkdirSync(pathsDir, { recursive: true });
     fs.mkdirSync(evalsDir, { recursive: true });
     fs.mkdirSync(runsDir, { recursive: true });
+    fs.mkdirSync(shortlistsDir, { recursive: true });
+    fs.writeFileSync(path.join(shortlistsDir, "approved.json"), JSON.stringify({
+      date: "2026-11-13",
+      chosen_slug: "approved-pitch",
+      user_quote: "Human approved approved-pitch",
+      rejected: []
+    }, null, 2));
 
     const p = {
       slug: "p-handoff",
       title: "Path",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "c-first"),
       evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "c-first", title: "Khóa 1", level: "beginner", suggested_order: 1, requires: [] },
@@ -559,6 +601,7 @@ test("next: V-07 - foundation_basis có reason rỗng hoặc target không phụ
       title: "Path",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "c-found"),
       evidence: [{ claim: "Direct", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "c-found", title: "Nền", level: "beginner", suggested_order: 1, requires: [] },
@@ -582,6 +625,7 @@ test("next: V-07 - foundation_basis có reason rỗng hoặc target không phụ
       title: "Path No Direct",
       status: "approved",
       priority: 2,
+      origin: makeOrigin(tmpDir, "c-found-2"),
       evidence: [{ claim: "Inferred", kind: "inferred", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "c-found-2", title: "Nền 2", level: "beginner", suggested_order: 1, requires: [] }
@@ -621,6 +665,7 @@ test("next: E-03 - handoff thiếu scope_note -> needs_research", () => {
       title: "Path E03",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "c-e03"),
       evidence: [{ claim: "Hot", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "c-e03", title: "Khóa E03", level: "beginner", suggested_order: 1, requires: [] }
@@ -671,6 +716,7 @@ test("next: E-04 - evaluation đối chiếu {A}; catalog có thêm B -> candida
       title: "Path E04",
       status: "approved",
       priority: 1,
+      origin: makeOrigin(tmpDir, "c-e04"),
       evidence: [{ claim: "Hot", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
       courses: [
         { slug: "c-e04", title: "Khóa E04", level: "beginner", suggested_order: 1, requires: [] }
@@ -695,6 +741,281 @@ test("next: E-04 - evaluation đối chiếu {A}; catalog có thêm B -> candida
     const nr = res.needs_research.find((x) => x.slug === "c-e04");
     assert.ok(nr, "Candidate phải vào needs_research khi catalog có khóa mới chưa đối chiếu");
     assert.match(nr.reason, /course-b/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+
+test("next: AC7 - path không có origin -> needs_research", () => {
+  const { tmpDir, pathsDir, evalsDir } = setupFixture();
+  try {
+    const p = {
+      slug: "p-no-origin",
+      title: "Path No Origin",
+      status: "approved",
+      priority: 1,
+      // KHÔNG CÓ origin
+      evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
+      courses: [
+        { slug: "c-no-origin", title: "Khóa No Origin", level: "beginner", suggested_order: 1, requires: [] }
+      ]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p.json"), JSON.stringify(p, null, 2));
+
+    fs.writeFileSync(path.join(evalsDir, "c-no-origin.json"), JSON.stringify({
+      slug: "c-no-origin",
+      catalog: { verdict: "new", basis: "New", refs: [] },
+      feasibility: { verdict: "feasible", basis: "Ok" },
+      handoff: { title: "T", topic: "T", audience: "A", level: "beginner", path: "p-no-origin", scope_note: "Phạm vi" }
+    }, null, 2));
+
+    const res = decideNext({ repoRoot: tmpDir });
+    assert.strictEqual(res.pick, null);
+    const nr = res.needs_research.find((x) => x.slug === "c-no-origin");
+    assert.ok(nr, "Path không có origin phải vào needs_research");
+    assert.match(nr.reason, /origin/i);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("next: AC7 - origin trỏ shortlist chưa có chosen_slug -> needs_research", () => {
+  const { tmpDir, pathsDir, evalsDir, shortlistsDir } = setupFixture();
+  try {
+    // Shortlist chưa chốt chosen_slug
+    fs.writeFileSync(path.join(shortlistsDir, "unapproved.json"), JSON.stringify({
+      date: "2026-11-13",
+      chosen_slug: null,
+      user_quote: null,
+      rejected: []
+    }, null, 2));
+
+    const p = {
+      slug: "p-unapproved",
+      title: "Path",
+      status: "approved",
+      priority: 1,
+      origin: { shortlist: ".course-plan/shortlists/unapproved.json", pitch_slug: "c-unapproved" },
+      evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
+      courses: [
+        { slug: "c-unapproved", title: "Khóa", level: "beginner", suggested_order: 1, requires: [] }
+      ]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p.json"), JSON.stringify(p, null, 2));
+
+    fs.writeFileSync(path.join(evalsDir, "c-unapproved.json"), JSON.stringify({
+      slug: "c-unapproved",
+      catalog: { verdict: "new", basis: "New", refs: [] },
+      feasibility: { verdict: "feasible", basis: "Ok" },
+      handoff: { title: "T", topic: "T", audience: "A", level: "beginner", path: "p-unapproved", scope_note: "Phạm vi" }
+    }, null, 2));
+
+    const res = decideNext({ repoRoot: tmpDir });
+    assert.strictEqual(res.pick, null);
+    const nr = res.needs_research.find((x) => x.slug === "c-unapproved");
+    assert.ok(nr, "Shortlist chưa có chosen_slug phải vào needs_research");
+    assert.match(nr.reason, /chosen_slug/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("next: AC7 - tiên quyết mang content_state: empty -> blocked", () => {
+  const { tmpDir, pathsDir, evalsDir, catFile } = setupFixture();
+  try {
+    // Catalog có khóa tiên quyết ở state in_catalog nhưng content_state là empty
+    fs.writeFileSync(catFile, JSON.stringify({
+      courses: [
+        { slug: "prereq-empty", title: "Tiên quyết rỗng", state: "in_catalog", content_state: "empty" }
+      ]
+    }, null, 2));
+
+    const p = {
+      slug: "p-prereq-empty",
+      title: "Path",
+      status: "approved",
+      priority: 1,
+      origin: makeOrigin(tmpDir, "c-needs-prereq"),
+      evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
+      courses: [
+        { slug: "c-needs-prereq", title: "Khóa Cần Tiên Quyết", level: "intermediate", suggested_order: 1, requires: [{ slug: "prereq-empty", reason: "cần kiến thức" }] }
+      ]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p.json"), JSON.stringify(p, null, 2));
+
+    fs.writeFileSync(path.join(evalsDir, "c-needs-prereq.json"), JSON.stringify({
+      slug: "c-needs-prereq",
+      catalog: { verdict: "new", basis: "New", refs: [] },
+      feasibility: { verdict: "feasible", basis: "Ok" },
+      handoff: { title: "T", topic: "T", audience: "A", level: "intermediate", path: "p-prereq-empty", scope_note: "Phạm vi" }
+    }, null, 2));
+
+    const res = decideNext({ repoRoot: tmpDir });
+    assert.strictEqual(res.pick, null);
+    assert.strictEqual(res.blocked.length, 1);
+    assert.strictEqual(res.blocked[0].slug, "c-needs-prereq");
+    assert.deepStrictEqual(res.blocked[0].blocked_by, ["prereq-empty"]);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("next: AC7 - tiên quyết mang content_state: unknown -> đạt kèm warnings", () => {
+  const { tmpDir, pathsDir, evalsDir, catFile } = setupFixture();
+  try {
+    // Catalog có khóa tiên quyết ở state in_catalog với content_state là unknown
+    fs.writeFileSync(catFile, JSON.stringify({
+      courses: [
+        { slug: "prereq-unknown", title: "Tiên quyết unknown", state: "in_catalog", content_state: "unknown" }
+      ]
+    }, null, 2));
+
+    const p = {
+      slug: "p-prereq-unknown",
+      title: "Path",
+      status: "approved",
+      priority: 1,
+      origin: makeOrigin(tmpDir, "c-passed-with-warn"),
+      evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
+      courses: [
+        { slug: "c-passed-with-warn", title: "Khóa Đạt kèm Warning", level: "intermediate", suggested_order: 1, requires: [{ slug: "prereq-unknown", reason: "cần kiến thức" }] }
+      ]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p.json"), JSON.stringify(p, null, 2));
+
+    fs.writeFileSync(path.join(evalsDir, "c-passed-with-warn.json"), JSON.stringify({
+      slug: "c-passed-with-warn",
+      catalog: { verdict: "new", basis: "New", refs: [] },
+      feasibility: { verdict: "feasible", basis: "Ok" },
+      handoff: { title: "T", topic: "T", audience: "A", level: "intermediate", path: "p-prereq-unknown", scope_note: "Phạm vi" }
+    }, null, 2));
+
+    const res = decideNext({ repoRoot: tmpDir });
+    assert.strictEqual(res.pick?.slug, "c-passed-with-warn");
+    assert.ok(Array.isArray(res.warnings), "Kết quả phải chứa mảng warnings");
+    const w = res.warnings.find((msg) => msg.includes("prereq-unknown") && msg.includes("unknown"));
+    assert.ok(w, "Phải có cảnh báo về khóa tiên quyết unknown: " + JSON.stringify(res.warnings));
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("next: P-12 - khóa tiên quyết thiếu trường content_state -> đạt kèm cảnh báo", () => {
+  const { tmpDir, pathsDir, evalsDir, catFile } = setupFixture();
+  try {
+    // Catalog có khóa tiên quyết ở state in_catalog nhưng hoàn toàn KHÔNG CÓ content_state (catalog từ script cũ)
+    fs.writeFileSync(catFile, JSON.stringify({
+      courses: [
+        { slug: "prereq-legacy-no-cs", title: "Tiên quyết cũ không có content_state", state: "in_catalog" }
+      ]
+    }, null, 2));
+
+    const p = {
+      slug: "p-prereq-legacy",
+      title: "Path",
+      status: "approved",
+      priority: 1,
+      origin: makeOrigin(tmpDir, "c-legacy-warn"),
+      evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
+      courses: [
+        { slug: "c-legacy-warn", title: "Khóa Đạt kèm Cảnh báo thiếu cs", level: "intermediate", suggested_order: 1, requires: [{ slug: "prereq-legacy-no-cs", reason: "cần kiến thức" }] }
+      ]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p.json"), JSON.stringify(p, null, 2));
+
+    fs.writeFileSync(path.join(evalsDir, "c-legacy-warn.json"), JSON.stringify({
+      slug: "c-legacy-warn",
+      catalog: { verdict: "new", basis: "New", refs: [] },
+      feasibility: { verdict: "feasible", basis: "Ok" },
+      handoff: { title: "T", topic: "T", audience: "A", level: "intermediate", path: "p-prereq-legacy", scope_note: "Phạm vi" }
+    }, null, 2));
+
+    const res = decideNext({ repoRoot: tmpDir });
+    assert.strictEqual(res.pick?.slug, "c-legacy-warn");
+    assert.ok(Array.isArray(res.warnings), "Kết quả phải chứa mảng warnings");
+    const w = res.warnings.find((msg) => msg.includes("prereq-legacy-no-cs") && msg.includes("thiếu content_state"));
+    assert.ok(w, "Phải có cảnh báo về khóa tiên quyết thiếu content_state: " + JSON.stringify(res.warnings));
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+
+test("next: P-08 - Gate 6 loại ứng viên khi origin.pitch_slug không thuộc courses của path", () => {
+  const { tmpDir, pathsDir, evalsDir, shortlistsDir } = setupFixture();
+  try {
+    const slData = makeOrigin(tmpDir, "pitch-not-in-path");
+
+    const p = {
+      slug: "p-p08-wrong-pitch",
+      title: "Path",
+      status: "approved",
+      priority: 1,
+      origin: slData,
+      evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
+      courses: [
+        { slug: "c-p08-1", title: "Khóa", level: "beginner", suggested_order: 1, requires: [] }
+      ]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p.json"), JSON.stringify(p, null, 2));
+
+    fs.writeFileSync(path.join(evalsDir, "c-p08-1.json"), JSON.stringify({
+      slug: "c-p08-1",
+      catalog: { verdict: "new", basis: "New", refs: [] },
+      feasibility: { verdict: "feasible", basis: "Ok" },
+      handoff: { title: "T", topic: "T", audience: "A", level: "beginner", path: "p-p08-wrong-pitch", scope_note: "Phạm vi" }
+    }, null, 2));
+
+    const res = decideNext({ repoRoot: tmpDir });
+    assert.strictEqual(res.pick, null);
+    const nr = res.needs_research.find((x) => x.slug === "c-p08-1");
+    assert.ok(nr, "Phải bị đưa vào needs_research khi pitch_slug không thuộc courses của path");
+    assert.match(nr.reason, /không thuộc danh sách courses/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("next: P-08 - Gate 6 loại ứng viên khi file shortlist không chứa đề xuất có slug đó", () => {
+  const { tmpDir, pathsDir, evalsDir, shortlistsDir } = setupFixture();
+  try {
+    // Shortlist có chosen_slug là c-p08-2 nhưng shortlist[] không chứa c-p08-2
+    const slFileRel = ".course-plan/shortlists/missing-pitch.json";
+    const slFileAbs = path.join(shortlistsDir, "missing-pitch.json");
+    fs.writeFileSync(slFileAbs, JSON.stringify({
+      date: "2026-11-13",
+      chosen_slug: "c-p08-2",
+      user_quote: "Approved c-p08-2",
+      shortlist: [{ slug: "other-course", title: "Other" }], // thiếu c-p08-2
+      rejected: []
+    }, null, 2));
+
+    const p = {
+      slug: "p-p08-missing-prop",
+      title: "Path",
+      status: "approved",
+      priority: 1,
+      origin: { shortlist: slFileRel, pitch_slug: "c-p08-2" },
+      evidence: [{ claim: "D", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
+      courses: [
+        { slug: "c-p08-2", title: "Khóa", level: "beginner", suggested_order: 1, requires: [] }
+      ]
+    };
+    fs.writeFileSync(path.join(pathsDir, "p.json"), JSON.stringify(p, null, 2));
+
+    fs.writeFileSync(path.join(evalsDir, "c-p08-2.json"), JSON.stringify({
+      slug: "c-p08-2",
+      catalog: { verdict: "new", basis: "New", refs: [] },
+      feasibility: { verdict: "feasible", basis: "Ok" },
+      handoff: { title: "T", topic: "T", audience: "A", level: "beginner", path: "p-p08-missing-prop", scope_note: "Phạm vi" }
+    }, null, 2));
+
+    const res = decideNext({ repoRoot: tmpDir });
+    assert.strictEqual(res.pick, null);
+    const nr = res.needs_research.find((x) => x.slug === "c-p08-2");
+    assert.ok(nr, "Phải bị đưa vào needs_research khi shortlist không chứa đề xuất");
+    assert.match(nr.reason, /không chứa đề xuất có slug/);
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
