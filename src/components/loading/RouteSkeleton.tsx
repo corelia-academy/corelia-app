@@ -144,8 +144,8 @@ function TableContent() {
 
 /**
  * Lesson player body, mirroring `LessonPlayerCard` with its content frame: the video runs edge to
- * edge on top, then the text frame (format label, title, summary) with the same width and padding
- * as the frame in `LessonRenderer`. The floating action bar is drawn by `LearnShellSkeleton`.
+ * edge on top, then the text frame (title, summary) with the same width and padding
+ * as the frame in `LessonRenderer`. The pinned footer bar is drawn by `LearnShellSkeleton`.
  */
 export function LessonPlayerSkeletonBody() {
   return (
@@ -153,9 +153,8 @@ export function LessonPlayerSkeletonBody() {
       <div className="border-b border-border"><Skeleton className="aspect-video max-h-[80vh] w-full rounded-none" /></div>
       <LessonColumn className="flex flex-col gap-6xl pb-7xl pt-6xl">
         <div>
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="mt-3 h-8 w-3/4 max-w-xl rounded-lg" />
-          <Skeleton className="mt-3 h-4 w-full max-w-2xl" />
+          <Skeleton className="h-8 w-3/4 max-w-xl rounded-lg" />
+          <Skeleton className="mt-3xl h-4 w-full max-w-2xl" />
         </div>
       </LessonColumn>
     </div>
@@ -163,30 +162,36 @@ export function LessonPlayerSkeletonBody() {
 }
 
 /**
- * Full Learn screen, mirroring `Learn.tsx`: shared `AppHeaderBar` header, the lesson column with the floating
- * action bar (and the curriculum edge tab below 1280px) and, from 1280px, the curriculum panel
+ * Full Learn screen, mirroring `Learn.tsx`: shared `AppHeaderBar` header, the lesson column with the pinned
+ * footer bar (and the curriculum edge tab below 1280px) and, from 1280px, the curriculum panel
  * at its default 28% share.
  */
 export function LearnShellSkeleton({ className, immediate }: { className?: string; immediate?: boolean }) {
   return (
     <LoadingStatus className={cn("flex h-full flex-col bg-background", className)} immediate={immediate}>
       <AppHeaderBar aria-hidden>
-        <Skeleton className="h-9 w-[108px] rounded-md" />
+        <div className="flex items-center gap-2md">
+          <Skeleton className="size-8 rounded-md" />
+          <Skeleton className="h-9 w-[108px] rounded-md" />
+        </div>
         <div className="flex min-w-0 flex-1 items-center justify-center gap-[15px] xl:absolute xl:left-1/2 xl:max-w-[50%] xl:flex-none xl:-translate-x-1/2">
           <Skeleton className="hidden h-5 w-40 sm:block" />
           <span className="hidden w-px shrink-0 self-stretch bg-border sm:block" />
           <Skeleton className="h-5 w-16" />
         </div>
-        <Skeleton className="h-8 w-28 rounded-md max-sm:size-8" />
+        <Skeleton className="h-8 w-32 rounded-md max-sm:size-8" />
       </AppHeaderBar>
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <div className="relative min-w-0 flex-[72_1_0%] overflow-hidden">
-          <LessonPlayerSkeletonBody />
-          <div className="absolute inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex justify-center px-3" aria-hidden>
-            <div className="flex items-center gap-md rounded-xl border border-border-strong bg-surface-float/95 p-1.5">
+        <div className="relative flex min-w-0 flex-[72_1_0%] flex-col overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-hidden"><LessonPlayerSkeletonBody /></div>
+          <div className="flex h-16 shrink-0 items-center justify-between gap-md border-t border-border bg-background px-lg sm:px-2xl" aria-hidden>
+            <div className="flex items-center gap-xs sm:-ml-2">
+              <Skeleton className="h-8 w-[102px] rounded-md" />
+              <Skeleton className="h-8 w-32 rounded-md" />
+            </div>
+            <div className="ml-auto flex items-center gap-md">
+              <Skeleton className="h-8 w-24 rounded-md" />
               <Skeleton className="size-8 rounded-md" />
-              <Skeleton className="h-8 w-28 rounded-md" />
-              <Skeleton className="h-8 w-40 rounded-md" />
             </div>
           </div>
           <Skeleton className="absolute right-0 top-5 z-10 h-10 w-10 rounded-l-lg rounded-r-none xl:hidden" aria-hidden />

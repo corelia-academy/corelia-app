@@ -175,9 +175,9 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     )}
     {inFooter && actionSlot && createPortal(
       <>
-        {completed && textLesson && (
-          <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={!canReset || busy || action?.pending} onClick={() => void reset(false)}>
-            {t("learning.markIncompleteShort")}
+        {completed && (textLesson || isExercise) && (
+          <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={!canReset || busy || action?.pending} onClick={() => void reset(isExercise)}>
+            {t(isExercise ? "learning.redoShort" : "learning.markIncompleteShort")}
           </Button>
         )}
         <Button type="button" variant="cta" hierarchy="primary" size="small" disabled={primaryDisabled}

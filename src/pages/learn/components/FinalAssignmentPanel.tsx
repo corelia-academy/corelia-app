@@ -4,7 +4,10 @@ import { validArtifact } from "@/features/learning/validation";
 import { normalizeArtifactDraft, readArtifactDraft } from "@/features/learning/artifactDraft";
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LessonColumn } from "@/features/learning/lessonLayout";
 import { uploadFinalAssignmentFile } from "@/lib/storage";
 import type { Course } from "@/types/courses";
 
@@ -104,30 +107,36 @@ function FinalAssignmentForm({ courseId, course, profileId, initialArtifacts, su
   if (!course.final_assignment_title) return null;
 
   return (
-    <div id="final-assignment" className="mt-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-6">
-      <div className="flex items-center gap-2">
-        <h1 className="text-heading-medium font-display text-foreground">
+    <LessonColumn id="final-assignment" className="flex flex-col gap-6xl pb-7xl pt-6xl">
+      <div>
+        <h1 className="text-heading-large font-display text-action-text">
           {course.final_assignment_title}
         </h1>
+        {course.final_assignment_description ? (
+          <p className="mt-3xl whitespace-pre-wrap text-body-medium text-action-text">
+            {course.final_assignment_description}
+          </p>
+        ) : null}
       </div>
-      {course.final_assignment_description ? (
-        <p className="mt-2 whitespace-pre-wrap text-[15px] leading-[1.7] text-foreground-muted">
-          {course.final_assignment_description}
-        </p>
-      ) : null}
+
       {course.final_assignment_instructions ? (
-        <div className="mt-3 rounded-lg bg-surface-raised p-4 text-[15px] leading-[1.7] text-foreground-muted">
+        <div className="rounded-xl border border-border bg-surface-raised p-6 text-body-medium text-foreground-muted">
           <p className="whitespace-pre-wrap">
             {course.final_assignment_instructions}
           </p>
         </div>
       ) : null}
 
-      {submissionState === "loading" && <p role="status" className="mt-4 text-sm">{t("learning.loading")}</p>}
-      {submissionState === "error" && <div role="alert" className="mt-4 space-y-2"><p>{t("learning.loadError")}</p>{onRetryLoad && <Button type="button" variant="cta" hierarchy="secondary" onClick={onRetryLoad}>{t("learning.retry")}</Button>}</div>}
+      {submissionState === "loading" && <p role="status" className="text-body-medium text-foreground-muted">{t("learning.loading")}</p>}
+      {submissionState === "error" && (
+        <div role="alert" className="space-y-3">
+          <p className="text-body-medium text-destructive">{t("learning.loadError")}</p>
+          {onRetryLoad && <Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={onRetryLoad}>{t("learning.retry")}</Button>}
+        </div>
+      )}
       {submission ? (
-        <div className="mt-4 rounded-md bg-surface-raised p-4">
-          <p className="text-sm font-medium text-foreground">
+        <div className="rounded-xl border border-border bg-surface-raised p-6">
+          <p className="text-body-medium font-medium text-foreground">
             {submission.status === "approved"
               ? translate("detail.learn.finalAssignment.status.approved")
               : submission.status === "rejected"
@@ -135,20 +144,27 @@ function FinalAssignmentForm({ courseId, course, profileId, initialArtifacts, su
                 : translate("detail.learn.finalAssignment.status.pending")}
           </p>
           {submission.reviewer_comment ? (
-            <p className="mt-2 text-sm text-foreground-muted">
+            <p className="mt-2 text-body-medium text-foreground-muted">
               {submission.reviewer_comment}
             </p>
           ) : null}
         </div>
       ) : null}
 
-      {submissionState === "ready" && (submission?.status === "rejected" ||
-        !submission) ? (
-        <div className="mt-4 space-y-4">
-          {(course.final_assignment_fields ?? []).map(field => <label key={field} className="block space-y-2 text-sm"><span>{t(`learning.artifacts.${field}`)} *</span><input disabled={submitting || awaitingResult} value={artifacts[field] ?? ""} onChange={e => setArtifacts(a => ({ ...a, [field]: e.target.value }))} className="min-h-11 w-full rounded-lg border border-border bg-surface-base px-3" /></label>)}
-          {error && <p role="alert" className="text-destructive">{error}</p>}
+      {submissionState === "ready" && (submission?.status === "rejected" || !submission) ? (
+        <div className="space-y-6">
+          {(course.final_assignment_fields ?? []).map(field => (
+            <Field key={field} label={t(`learning.artifacts.${field}`)} required>
+              <Input
+                disabled={submitting || awaitingResult}
+                value={artifacts[field] ?? ""}
+                onChange={e => setArtifacts(a => ({ ...a, [field]: e.target.value }))}
+              />
+            </Field>
+          ))}
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           {error && awaitingResult && <p className="text-sm text-foreground-muted">{t("learning.finalRetrySameSubmission")}</p>}
-          {!profileId && <p>{t("learning.loginToSave")}</p>}
+          {!profileId && <p className="text-sm text-foreground-muted">{t("learning.loginToSave")}</p>}
           <div className="space-y-1.5">
             <Label htmlFor={contentId}>
               {t(contentRequired ? "learning.finalContentRequired" : "learning.finalContentOptional")}
@@ -157,9 +173,7 @@ function FinalAssignmentForm({ courseId, course, profileId, initialArtifacts, su
               id={contentId}
               required={contentRequired}
               disabled={submitting || awaitingResult}
-              placeholder={translate(
-                "detail.learn.finalAssignment.contentPlaceholder",
-              )}
+              placeholder={translate("detail.learn.finalAssignment.contentPlaceholder")}
               value={submitContent}
               onChange={(e) => setSubmitContent(e.target.value)}
               className="min-h-36 w-full rounded-md border border-border bg-surface-base px-3 py-2 text-sm leading-relaxed outline-none transition-colors duration-150 placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
@@ -181,16 +195,22 @@ function FinalAssignmentForm({ courseId, course, profileId, initialArtifacts, su
               onChange={(e) => setSubmitFiles(Array.from(e.target.files ?? []))}
             />
           </div>
-          <Button
-            onClick={() => void handleSubmit()}
-            disabled={submitting || (!awaitingResult && !canSubmit)}
-          >
-            {submitting
-              ? translate("detail.learn.finalAssignment.submitting")
-              : error && awaitingResult ? t("learning.retry") : translate("detail.learn.finalAssignment.submit")}
-          </Button>
+          <div>
+            <Button
+              type="button"
+              variant="cta"
+              hierarchy="primary"
+              size="medium"
+              onClick={() => void handleSubmit()}
+              disabled={submitting || (!awaitingResult && !canSubmit)}
+            >
+              {submitting
+                ? translate("detail.learn.finalAssignment.submitting")
+                : error && awaitingResult ? t("learning.retry") : translate("detail.learn.finalAssignment.submit")}
+            </Button>
+          </div>
         </div>
       ) : null}
-    </div>
+    </LessonColumn>
   );
 }

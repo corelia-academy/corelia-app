@@ -8,6 +8,7 @@ import { CodeExerciseLesson } from "@/features/code-exercise/CodeExerciseLesson"
 import { PracticeLesson } from "./PracticeLesson";
 import { QuizLesson } from "./QuizLesson";
 import { LESSON_MEDIA_MAX_HEIGHT, LessonColumn } from "./lessonLayout";
+import { VideoCameraSlash } from "@phosphor-icons/react";
 import { LessonDataError } from "./LessonDataError";
 import { validateLesson, validateLessonResources } from "./validation";
 import type { LessonRendererProps } from "./types";
@@ -43,8 +44,9 @@ function ContentLesson({ lesson, mode, onAction, onComplete, video = false, cont
   useEffect(() => { onAction(updating ? null : { label: t("learning.completeContinue"), run: complete }); return () => onAction(null); }, [onAction, complete, t, updating]);
   const videoNode = url && <YoutubeLessonVideo url={url} title={lesson.title} flush={!!contentFrame} />;
   const updatingNode = updating && (
-    <div role="status" className="flex aspect-video w-full items-center justify-center border-b border-border bg-surface-raised px-4 text-center text-foreground-muted" style={{ maxHeight: LESSON_MEDIA_MAX_HEIGHT }}>
-      {t("learning.videoUpdating")}
+    <div role="status" className="flex aspect-video w-full flex-col items-center justify-center gap-3 border-b border-border bg-surface-raised px-4 text-center text-foreground-muted" style={{ maxHeight: LESSON_MEDIA_MAX_HEIGHT }}>
+      <VideoCameraSlash weight="duotone" className="size-10 text-foreground-muted" aria-hidden />
+      <p className="text-body-medium font-medium">{t("learning.videoUpdating")}</p>
     </div>
   );
   const body = <Markdown content={lesson.description_markdown ?? ""} variant="lesson" />;

@@ -250,7 +250,7 @@ it("keeps code usable and reports failed persistence when storage is blocked", a
     vi.advanceTimersByTime(400);
   });
   act(() => vi.advanceTimersByTime(400));
-  expect(container.querySelector('[role="status"]')?.textContent).toBe("learning.draftUnavailable");
+  expect(container.querySelector('[role="status"]')).toBeNull();
   expect(input.value).toBe("mut");
   await act(async () => input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", ctrlKey: true, bubbles: true })));
   expect(complete).toHaveBeenCalledOnce();

@@ -142,6 +142,21 @@ it("resets modified source back to starter_source when reset button is clicked",
   expect(resetButton).toBeDefined();
 });
 
+it("disables Reset until the learner changes the code, and enables it once there is an answer", async () => {
+  const resetOf = (host: HTMLElement) => Array.from(host.querySelectorAll("button")).find(b => b.textContent?.includes("learning.reset"))!;
+  const first = document.createElement("div"), firstRoot = createRoot(first);
+  await act(async () => firstRoot.render(<CodeExerciseLesson {...props} />));
+  expect(resetOf(first).disabled).toBe(true);
+  act(() => firstRoot.unmount());
+  localStorage.setItem(codeDraftKey("learner", "course", "lesson", 1), JSON.stringify({ mode: "fill", answers: { mutable: "mut" }, updated_at: "2026-09-11T00:00:00Z" }));
+  const second = document.createElement("div"), secondRoot = createRoot(second);
+  cleanup = () => act(() => secondRoot.unmount());
+  await act(async () => secondRoot.render(<CodeExerciseLesson {...props} />));
+  expect(resetOf(second).disabled).toBe(false);
+  act(() => secondRoot.render(<CodeExerciseLesson {...props} completed />));
+  expect(resetOf(second).disabled).toBe(true);
+});
+
 const hintLesson = (hints?: string[]) => ({ ...props.lesson, code_exercise_config: { ...defaultCodeConfig(), ...(hints ? { hints } : {}) } });
 const hintButtons = (host: HTMLElement) => Array.from(host.querySelectorAll("button")).filter(button => button.textContent === "learning.hints");
 
