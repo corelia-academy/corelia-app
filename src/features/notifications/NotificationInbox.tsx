@@ -3,7 +3,7 @@ import { ProjectAutoHiddenNotification } from "./ProjectAutoHiddenNotification";
 import { feedRelativeTime } from "@/lib/feedRelativeTime";
 import { notificationTarget } from "@/lib/notificationTarget";
 import { groupNotificationsByDay, type NotificationDayGroup } from "@/lib/notificationGroups";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Action } from "@/components/ui/action";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Timestamp } from "@/components/ui/timestamp";
 import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
 import { Checks } from "@phosphor-icons/react";
@@ -50,6 +51,11 @@ function payloadInternalPath(
 ): string {
   const path = payloadString(payload, key);
   return path.startsWith("/") && !path.startsWith("//") ? path : fallback;
+}
+
+function InboxScroller({ compact, drawer, contentClassName, children }: { compact: boolean; drawer: boolean; contentClassName?: string; children: ReactNode }) {
+  if (compact) return <ScrollArea className="max-h-[21.5625rem]" viewportClassName="max-h-[inherit]" contentClassName={contentClassName}>{children}</ScrollArea>;
+  return <div className={drawer ? undefined : "py-4"}>{children}</div>;
 }
 
 export function NotificationInbox({ compact = false, drawer = false, onNavigate, onViewAll }: { compact?: boolean; drawer?: boolean; onNavigate?: () => void; onViewAll?: () => void }) {
@@ -176,8 +182,8 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
   return (
     <section aria-label={t("header.notifications")} className={compact ? "relative flex max-h-[23.875rem] flex-col" : undefined}>
       {drawer ? null : compact ? (
-        <div className="flex flex-col gap-3 px-4 pt-2">
-          <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between px-3">
             <div className="flex items-center gap-2.5">
               <h2 className="text-title-large font-body text-foreground">{t("header.notifications")}</h2>
               {unreadCount > 0 && <Badge color="gray" variant="filled" size="small">{unreadCount}</Badge>}
@@ -192,7 +198,7 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
           <Button type="button" size="xsmall" variant="cta" hierarchy="tertiary" disabled={markingAllRead} onClick={() => markAllRead()}>{t("notifications.markAllRead")}</Button>
         </div>
       )}
-      <div className={drawer ? undefined : compact ? cn("scrollbar-design min-h-0 flex-1 overflow-auto px-4 py-2", items.length > 0 && "pb-10") : "py-4"}>
+      <InboxScroller compact={compact} drawer={drawer} contentClassName={cn("py-2", items.length > 0 && "pb-10")}>
         {notificationsQuery.isError && items.length > 0 && <p role="alert" className="p-3 text-sm text-destructive">{t("notifications.loadError")} <button type="button" className="underline" onClick={() => void notificationsQuery.refetch()}>{t("notifications.retry")}</button></p>}
           {loading && items.length === 0 ? (
             <ListRowsSkeleton rows={compact ? 4 : 6} className="px-2" />
@@ -204,7 +210,7 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
               onRetry={() => void notificationsQuery.refetch()}
             />
           ) : items.length === 0 ? (
-            <div className="flex justify-center p-3xl">
+            <div className={cn("flex items-center justify-center p-3xl", compact && "min-h-[19.5rem]")}>
               <EmptyStateIllustration type="search" size="tiny" description={t("header.noNotifications")} />
             </div>
           ) : (
@@ -212,7 +218,7 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
               {groups.map(group => (
               <section key={group.key} className="flex flex-col gap-xl">
                 {group.label ? <h3 className="text-title-large font-body text-foreground">{group.label}</h3> : null}
-                <ul className="grid">
+                <ul className={cn("grid", compact && "gap-1", drawer && "gap-2.5")}>
               {group.items.map((n, index) => {
                 const isInvite = n.type === "project_collaboration_invite";
                 const isCoInstructorInvite = n.type === "co_instructor_invite";
@@ -243,13 +249,16 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                 const projectSlug = payloadString(n.payload, "project_slug");
                 const reviewNote = payloadString(n.payload, "review_note");
                 const rowTarget = n.group_key ? notificationTarget(n.payload) : null;
+                const unreadRow = !n.read_at && !n.resolved_at;
                 return (
                   <li
                     key={n.id}
-                    className="relative"
+                    className={cn("relative", compact && "flex items-start rounded-sm hover:bg-dropdown-hover", drawer && "flex flex-col gap-2.5")}
                     onClickCapture={event => { if (!n.group_key && (event.target as HTMLElement).closest("a")) markRead(n.id); }}
                   >
-                    {!n.read_at && !n.resolved_at && <span aria-hidden="true" className="absolute left-0 top-[1.53125rem] z-10 size-2 rounded-full bg-icon-destructive" />}
+                    {compact
+                      ? <span aria-hidden="true" className="relative h-7 w-2 shrink-0">{unreadRow && <span className="absolute left-0 top-5 size-2 rounded-full bg-icon-destructive" />}</span>
+                      : unreadRow && <span aria-hidden="true" className="absolute left-0 top-[1.53125rem] z-10 size-2 rounded-full bg-icon-destructive" />}
                     <Action
                     nativeButton={false}
                     render={<div />}
@@ -258,7 +267,12 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                     onClick={rowTarget ? () => { markRead(n.id); setOpen(false); navigate(rowTarget); } : undefined}
                     multiline
                     size="small"
-                    className={cn("items-start gap-2xl rounded-md border-0 px-3xl py-lg hover:rounded-md hover:bg-dropdown-hover [&>span:first-child]:!size-8 [&>span:first-child]:mt-xs", rowTarget && "cursor-pointer")}
+                    className={cn(
+                      compact
+                        ? "min-w-0 flex-1 gap-3 rounded-md border-0 p-2.5 hover:rounded-md hover:bg-transparent [&>span.shrink-0:first-child]:!size-8 [&>span.flex-col]:gap-0.5"
+                        : "items-start gap-2xl rounded-md border-0 px-3xl py-lg hover:rounded-md hover:bg-dropdown-hover [&>span.shrink-0:first-child]:!size-8 [&>span.shrink-0:first-child]:mt-xs",
+                      rowTarget && "cursor-pointer",
+                    )}
                     icon={n.group_key ? <SocialNotificationAvatar notification={n} /> : undefined}
                     label={n.group_key ? <SocialNotification notification={n} /> : isInvite ? (
                       <>
@@ -634,10 +648,10 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
               ))}
             </div>
           )}
-        </div>
+        </InboxScroller>
       {!compact && notificationsQuery.hasNextPage && <Button type="button" variant="cta" hierarchy="secondary" disabled={notificationsQuery.isFetchingNextPage} onClick={() => void notificationsQuery.fetchNextPage()}>{t("notifications.loadMore")}</Button>}
       {compact && items.length > 0 && (
-        <div className="pointer-events-none absolute -inset-x-2 -bottom-2 flex items-end justify-center bg-gradient-to-b from-transparent to-dropdown-surface to-[72%] pb-xl pt-4xl">
+        <div className="pointer-events-none absolute -inset-x-2 -bottom-2 z-30 flex items-end justify-center bg-gradient-to-b from-transparent to-dropdown-surface to-[72%] pb-xl pt-4xl">
           <Button type="button" size="small" variant="cta" hierarchy="tertiary" className="pointer-events-auto px-xs capitalize hover:bg-transparent hover:text-foreground-muted active:bg-transparent" onClick={onViewAll}>{t("notifications.viewAll")}</Button>
         </div>
       )}

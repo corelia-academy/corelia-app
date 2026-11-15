@@ -16,7 +16,7 @@ export function NotificationDrawer({ open, onOpenChange }: { open: boolean; onOp
           <X className="size-5" aria-hidden />
           <span className="sr-only">{t("actions.close")}</span>
         </SheetClose>
-        <div className="scrollbar-design min-h-0 flex-1 overflow-y-auto px-3xl pb-3xl">
+        <div className="scrollbar-design min-h-0 flex-1 overflow-y-auto px-3xl pb-3xl pt-5">
           <NotificationInbox drawer onNavigate={() => onOpenChange(false)} />
         </div>
       </SheetContent>

@@ -21,6 +21,6 @@ export function NotificationBell() {
       <Bell className="size-5" weight="duotone" aria-hidden />
       {unread > 0 && <span className="absolute -right-0.5 -top-0.5 flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] text-primary-foreground">{unread > 99 ? "99+" : unread}</span>}
     </button>} />
-    <DropdownMenuContent className="w-140 max-w-[calc(100vw-2rem)] overflow-hidden rounded-3xl border-dropdown-container-border bg-dropdown-surface p-2 shadow-sm" align="end"><NotificationInbox compact onNavigate={() => setOpen(false)} onViewAll={() => { setOpen(false); setDrawerOpen(true); }} /></DropdownMenuContent>
+    <DropdownMenuContent className="w-120 max-w-[calc(100vw-2rem)] overflow-hidden rounded-3xl border-dropdown-container-border bg-dropdown-surface p-2 shadow-sm" align="end"><NotificationInbox compact onNavigate={() => setOpen(false)} onViewAll={() => { setOpen(false); setDrawerOpen(true); }} /></DropdownMenuContent>
   </DropdownMenu><NotificationDrawer open={drawerOpen} onOpenChange={setDrawerOpen} /></>;
 }
