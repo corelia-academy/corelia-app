@@ -157,16 +157,26 @@ test("backlog-lint: AC-02 - chặn đề xuất vào ô đã covered, ô có ref
     ["backend-engineer", backendMapFixture]
   ]);
 
-  // 1. open trỏ ô metaplex-nfts (covered) -> lỗi
+  // 1. open trỏ ô đã có coverage: "covered" -> lỗi
+  const coveredSolanaFixture = JSON.parse(JSON.stringify(solanaMapFixture));
+  coveredSolanaFixture.nodes[0].coverage = "covered";
+  coveredSolanaFixture.nodes[0].course_slug = "solana-bootcamp";
+  coveredSolanaFixture.nodes[0].covered_lessons = ["Giới thiệu"];
+
+  const mapsWithCovered = new Map([
+    ["solana", coveredSolanaFixture],
+    ["backend-engineer", backendMapFixture]
+  ]);
+
   const data1 = getBaseValidBacklog();
   data1.focus = { path: "solana" };
-  data1.proposals[0].path_node = { path: "solana", node: "metaplex-nfts" };
-  data1.proposals[0].tools = ["node", "anchor"];
-  const res1 = lintBacklogData(data1, { catalogData: mockCatalog, proposalDocContent: fixtureDoc, mapsBySlug });
+  data1.proposals[0].path_node = { path: "solana", node: "accounts-model" };
+  data1.proposals[0].tools = ["solana"];
+  const res1 = lintBacklogData(data1, { catalogData: mockCatalog, proposalDocContent: fixtureDoc, mapsBySlug: mapsWithCovered });
   assert.strictEqual(res1.ok, false);
   assert.ok(
     res1.problems.some((p) => p.includes('đã có coverage: "covered", không thể đề xuất thêm khóa mới')),
-    "Phải báo lỗi ô metaplex-nfts đã covered: " + res1.problems.join("; ")
+    "Phải báo lỗi ô accounts-model đã covered: " + res1.problems.join("; ")
   );
 
   // 2. open trỏ token-program khi anchor-programs chưa covered và chưa chosen -> lỗi readiness
@@ -463,4 +473,55 @@ test("backlog-lint: V-05 - ô tiên quyết chỉ partial qua catalog KHÔNG th�
 
   res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc, mapsBySlug });
   assert.strictEqual(res.ok, true, "Có đề xuất chosen cho tiên quyết phải pass: " + res.problems.join("; "));
+});
+
+test("backlog-lint: AC-05 - từ chối tên trường nộp bài sai chuẩn (testnet_tx_hash, deployed_url)", () => {
+  const data = getBaseValidBacklog();
+
+  // 1. criteria.showable_product.refs chứa testnet_tx_hash -> lỗi
+  data.proposals[0].criteria.showable_product = {
+    met: true,
+    basis: "Nộp qua testnet",
+    refs: ["github_url", "testnet_tx_hash"],
+  };
+  let res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('trường nộp bài "testnet_tx_hash" trong showable_product.refs không hợp lệ')),
+    "Phải bắt lỗi testnet_tx_hash trong refs: " + res.problems.join("; ")
+  );
+
+  // 2. criteria.showable_product.refs chứa deployed_url -> lỗi
+  data.proposals[0].criteria.showable_product.refs = ["github_url", "deployed_url"];
+  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('trường nộp bài "deployed_url" trong showable_product.refs không hợp lệ')),
+    "Phải bắt lỗi deployed_url trong refs: " + res.problems.join("; ")
+  );
+
+  // 3. final_product chứa testnet_tx_hash -> lỗi
+  data.proposals[0].criteria.showable_product.refs = ["github_url", "transaction_url"];
+  data.proposals[0].final_product = "Kho repo nộp qua testnet_tx_hash và link";
+  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('final_product chứa tên trường nộp bài sai chuẩn "testnet_tx_hash"')),
+    "Phải bắt lỗi testnet_tx_hash trong final_product"
+  );
+
+  // 4. final_product chứa deployed_url -> lỗi
+  data.proposals[0].final_product = "Kho repo nộp qua deployed_url và link";
+  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('final_product chứa tên trường nộp bài sai chuẩn "deployed_url"')),
+    "Phải bắt lỗi deployed_url trong final_product"
+  );
+
+  // 5. Sử dụng đúng chuẩn (transaction_url, deployment_url) -> PASS
+  data.proposals[0].final_product = "Kho repo nộp qua transaction_url và deployment_url";
+  data.proposals[0].criteria.showable_product.refs = ["github_url", "transaction_url", "deployment_url", "notes"];
+  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, true, "Trường nộp bài đúng chuẩn phải pass: " + res.problems.join("; "));
 });

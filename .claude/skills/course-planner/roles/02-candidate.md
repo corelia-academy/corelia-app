@@ -9,14 +9,17 @@ Kết quả được ghi vào file `.course-plan/evaluations/<slug>.json`.
 ## Các Hạng mục Thẩm định Bắt buộc
 
 ### 1. Đối chiếu Catalog (`catalog`)
-- Phải đọc trực tiếp file `.course-plan/catalog.json` (từng module và từng lesson name).
-- **TUYỆT ĐỐI không kết luận trùng lặp chỉ dựa trên tiêu đề khóa học.** Bắt buộc phải so sánh outcome và nội dung bài học.
-- `refs`: Danh sách các tham chiếu cụ thể tới `slug`, `module_id` hoặc tên lesson trong `catalog.json`.
+- So sánh CHỈ với `published_lessons` cộng thông tin cấp khóa trong `.course-plan/catalog.json`. Bài nháp (`published = false` hoặc `archived_at IS NOT NULL`) coi như không tồn tại.
+- **TUYỆT ĐỐI không kết luận trùng lặp chỉ dựa trên tiêu đề khóa học.** Bắt buộc phải so sánh outcome và nội dung bài học đã publish.
+- `draft_lessons_ignored`: Tổng số bài nháp bỏ qua của các khóa đã đối chiếu.
+- `compared_published_counts`: Object ghi nhận số bài published của từng khóa đối chiếu tại thời điểm đánh giá (dạng `{ "<course-slug>": <published_count> }`).
+- `refs`: Danh sách các tham chiếu cụ thể tới `slug`, `section_title` hoặc tên bài học đã publish trong `catalog.json`.
 - `verdict`:
-  - `new`: Hoàn toàn mới, catalog chưa có nội dung tương đương.
-  - `covered`: Catalog đã có khóa/bài học đáp ứng trọn vẹn nhiệm vụ và mục tiêu này.
-  - `update_existing`: Nội dung chỉ cần bổ sung vào một khóa đã tồn tại trong catalog thay vì tạo khóa mới.
-  - `overlap_warning`: Có sự trùng lặp một phần đáng kể với bài học trong catalog, cần xem xét lại phạm vi.
+  - `new`: Hoàn toàn mới, catalog chưa có bài học published nào tương đương.
+  - `covered`: Catalog đã có bài học published đáp ứng trọn vẹn nhiệm vụ và mục tiêu này. Một bài dự án published chỉ chạm chủ đề mà không dạy outcome thì không đủ để kết luận `covered`. Bắt buộc nêu ít nhất một tên bài đã publish làm căn cứ.
+  - `update_existing`: Nội dung chỉ cần bổ sung vào một khóa đã tồn tại trong catalog thay vì tạo khóa mới. Bắt buộc nêu ít nhất một tên bài đã publish làm căn cứ.
+  - `overlap_warning`: Có sự trùng lặp một phần đáng kể với bài học đã publish trong catalog, cần xem xét lại phạm vi. Bắt buộc nêu ít nhất một tên bài đã publish làm căn cứ.
+- **Ràng buộc nghiêm ngặt:** Nếu không có bài published nào trùng thì TUYỆT ĐỐI KHÔNG được ra các verdict `overlap_warning`, `update_existing`, `covered` (phải là `new`). Nếu catalog export thiếu `published_lessons`, bắt buộc ghi `[CHƯA XÁC MINH]` cho phần đối chiếu bài.
 
 ### 2. Tính Khả thi trên Nền tảng (`feasibility`)
 - Bắt buộc đọc trực tiếp và đối chiếu với `.claude/skills/course-author/references/platform.md`.
@@ -30,18 +33,9 @@ Kết quả được ghi vào file `.course-plan/evaluations/<slug>.json`.
   - `feasible_with_limits`: Khả thi nếu giới hạn phạm vi bài thực hành (nêu rõ giới hạn trong `basis`).
   - `not_feasible`: Vượt quá khả năng nền tảng và không thể kiểm tra được outcome theo `platform.md`.
 
-### 3. Bằng chứng và Căn cứ Nền tảng (`evidence` & `foundation_basis`)
-- Thu thập bằng chứng thị trường cho khóa học cụ thể nếu có.
-- Nếu khóa học là khóa nền tảng (`is_foundation: true`) nhưng bản thân nó không có bằng chứng thị trường trực tiếp (`direct` evidence):
-  - Phải điền `foundation_basis` trỏ tới khóa đích mà nó phục vụ:
-    ```json
-    "foundation_basis": {
-      "target_slug": "<slug-khóa-đích>",
-      "reason": "Giải thích vì sao kiến thức của khóa này là bắt buộc để học được khóa đích"
-    }
-    ```
-  - Bắt buộc: `reason` không được để trống và khóa đích phải có quan hệ `requires` phụ thuộc vào khóa nền này (trực tiếp hoặc bắc cầu).
-  - Nếu khóa có bằng chứng trực tiếp hoặc không phải khóa nền theo cơ chế này: để `"foundation_basis": null`.
+### 3. Bằng chứng Thực tế (`evidence`)
+- Thu thập bằng chứng thị trường cho khóa học cụ thể nếu có (URL tài liệu chính thức, thảo luận kỹ thuật, bài viết).
+- Phân biệt rõ `direct` (có trích dẫn nguyên văn `quote` từ 20 đến 300 ký tự) và `inferred`.
 
 ### 4. Gói Handoff Sẵn sàng (`handoff`)
 Chuẩn bị sẵn dữ liệu hợp đồng để khi khóa học được chọn, dữ liệu này có thể truyền trực tiếp sang `course-author`:
@@ -50,12 +44,11 @@ Chuẩn bị sẵn dữ liệu hợp đồng để khi khóa học được ch�
 - `audience`: Đối tượng người học.
 - `level`: Trình độ (`"beginner"` | `"intermediate"` | `"advanced"`).
 - `promise`: Một câu, một hành động quan sát được người học làm được khi học xong (không mở đầu bằng "hiểu", "nắm", "biết", "tìm hiểu", "làm quen").
-- `final_product`: Sản phẩm cụ thể người học nộp ở bài cuối khóa và tình huống thực tế, nộp được qua các trường trong `platform.md`.
+- `final_product`: Sản phẩm cụ thể người học nộp ở bài cuối khóa và tình huống thực tế, nộp được qua các trường trong `platform.md` (`github_url`, `deployment_url`, `contract_address`, `transaction_url`, `demo_url`, `notes`).
 - `differentiation`: Điểm khác biệt vượt trội mà khóa học này lấp được (gộp từ gap của các nguồn thay thế).
 - `corelia_hook`: Sản phẩm cuối gắn với tính năng nào của Corelia (dự án, hackathon, chứng chỉ).
 - `scope_note`: Ghi chú phạm vi BẮT BUỘC, suy trực tiếp từ path: nêu rõ điều khóa này giả định từ khóa tiên quyết và điều để lại cho khóa sau.
 - `path`: Slug của path chứa khóa.
-- `is_foundation`: Boolean.
 - `prerequisite_courses`: Mảng các đường dẫn tới thư mục khóa tiên quyết mà khóa này kế thừa (dạng `[".course-runs/<prereq-slug>"]`), suy trực tiếp từ `requires` của path.
 
 Ngoài ra, evaluation BẮT BUỘC ghi trường:
@@ -74,12 +67,14 @@ File được ghi tại `.course-plan/evaluations/<slug>.json`:
   "catalog_courses": [
     "smart-contract-reading-before-interacting"
   ],
+  "compared_published_counts": {
+    "smart-contract-reading-before-interacting": 14
+  },
+  "draft_lessons_ignored": 0,
   "catalog": {
     "verdict": "new",
-    "basis": "Catalog hiện tại mới có smart-contract-reading-before-interacting (phân tích đọc hiểu), chưa có bài nào dạy về mã độc reentrancy hoặc pattern CEI.",
-    "refs": [
-      "smart-contract-reading-before-interacting/M2/L2-4"
-    ]
+    "basis": "Catalog hiện tại mới có smart-contract-reading-before-interacting với các bài published về đọc hiểu giao dịch; chưa có bài published nào dạy về lỗ hổng reentrancy hay pattern CEI.",
+    "refs": []
   },
   "feasibility": {
     "verdict": "feasible",
@@ -95,7 +90,6 @@ File được ghi tại `.course-plan/evaluations/<slug>.json`:
       "observed_on": "2026-11-13"
     }
   ],
-  "foundation_basis": null,
   "missing": [
     "Chưa có số liệu về tỉ lệ học viên vượt qua bài test CEI ở lần thử đầu tiên"
   ],
@@ -110,7 +104,6 @@ File được ghi tại `.course-plan/evaluations/<slug>.json`:
     "corelia_hook": "Sản phẩm cuối khóa nộp nhận Chứng chỉ chuyên môn Web3 Security Auditor của Corelia.",
     "scope_note": "Tập trung vào single-function và cross-function reentrancy cơ bản, không đi sâu vào read-only reentrancy.",
     "path": "blockchain-security-auditor",
-    "is_foundation": false,
     "prerequisite_courses": [
       ".course-runs/smart-contract-reading-before-interacting"
     ]

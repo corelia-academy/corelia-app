@@ -21,6 +21,8 @@ import {
   MAP_COVERAGE_STATUSES,
   KNOWN_BAD_TOOLS,
   TOOL_NAME_REGEX,
+  VALID_FINAL_ASSIGNMENT_FIELDS,
+  KNOWN_BAD_ASSIGNMENT_FIELDS,
 } from "./constants.mjs";
 
 export {
@@ -39,6 +41,8 @@ export {
   MAP_COVERAGE_STATUSES,
   KNOWN_BAD_TOOLS,
   TOOL_NAME_REGEX,
+  VALID_FINAL_ASSIGNMENT_FIELDS,
+  KNOWN_BAD_ASSIGNMENT_FIELDS,
 };
 
 // V-05: Tiên quyết requires chỉ được coi là thỏa khi:
@@ -281,6 +285,29 @@ export function validateProposalFields(prop, idx, { catalogBySlug, entriesByAxis
         add(slug, "timely-quote", 'tiêu chí "timely" có met: true đòi hỏi why_now có quote từ 20 đến 300 ký tự');
       }
     }
+
+    // AC-05: Kiểm tra criteria.showable_product.refs
+    if (criteria.showable_product?.met === true && Array.isArray(criteria.showable_product.refs)) {
+      for (const r of criteria.showable_product.refs) {
+        if (KNOWN_BAD_ASSIGNMENT_FIELDS.has(r)) {
+          add(
+            slug,
+            "showable_product-refs",
+            `trường nộp bài "${r}" trong showable_product.refs không hợp lệ, hãy đổi thành "transaction_url" hoặc "deployment_url"`
+          );
+        }
+      }
+    }
+  }
+
+  // AC-05: Kiểm tra final_product không chứa trường nộp bài sai chuẩn
+  if (typeof prop?.final_product === "string") {
+    if (/\btestnet_tx_hash\b/.test(prop.final_product)) {
+      add(slug, "final_product", 'final_product chứa tên trường nộp bài sai chuẩn "testnet_tx_hash" (hãy đổi thành "transaction_url")');
+    }
+    if (/\bdeployed_url\b/.test(prop.final_product)) {
+      add(slug, "final_product", 'final_product chứa tên trường nộp bài sai chuẩn "deployed_url" (hãy đổi thành "deployment_url")');
+    }
   }
 
   // Kiểm tra kind vs slug vs catalog
@@ -320,16 +347,23 @@ export function validateProposalFields(prop, idx, { catalogBySlug, entriesByAxis
 }
 
 // AC-04: Lint skill map
-export function lintMapData(mapData, { proposalDocContent = null, pathsDir = null, allMaps = null } = {}) {
+export function lintMapData(mapData, { proposalDocContent = null, pathsDir = null, allMaps = null, catalogData = null } = {}) {
   const problems = [];
+  const warnings = [];
   const add = (rule, detail) => problems.push(`${mapData?.slug || "map"}: ${rule}: ${detail}`);
+  const addWarn = (rule, detail) => warnings.push(`${mapData?.slug || "map"}: ${rule}: ${detail}`);
 
   if (!mapData || typeof mapData !== "object") {
     problems.push("map: Dữ liệu map bị null hoặc không phải object");
-    return { ok: false, problems };
+    return { ok: false, problems, warnings };
   }
 
   const { slug, kind, entry, title, goal, status, sources, nodes } = mapData;
+
+  const catalogCourses = Array.isArray(catalogData)
+    ? catalogData
+    : (catalogData?.courses ?? []);
+  const catalogBySlug = new Map(catalogCourses.map((c) => [c.slug, c]));
 
   if (!slug || typeof slug !== "string" || !slug.trim()) {
     add("slug", "thiếu slug hoặc slug rỗng");
@@ -424,9 +458,62 @@ export function lintMapData(mapData, { proposalDocContent = null, pathsDir = nul
       }
     }
 
-    // Kiểm tra coverage
+    // AC-03: Kiểm tra coverage và mối quan hệ với course_slug, covered_lessons
     if (!n?.coverage || !MAP_COVERAGE_STATUSES.has(n.coverage)) {
       add(`${nId}:coverage`, `coverage "${n?.coverage}" không hợp lệ (phải là empty|partial|covered)`);
+    } else if (n.coverage === "empty") {
+      if (n.course_slug != null) {
+        add(`${nId}:coverage`, 'coverage là "empty" thì course_slug phải là null');
+      }
+      if (Array.isArray(n.covered_lessons) && n.covered_lessons.length > 0) {
+        add(`${nId}:coverage`, 'coverage là "empty" thì không được có covered_lessons');
+      }
+    } else {
+      // partial hoặc covered
+      if (!n.course_slug || typeof n.course_slug !== "string" || !n.course_slug.trim()) {
+        add(`${nId}:coverage`, `coverage là "${n.coverage}" bắt buộc phải có course_slug`);
+      }
+      if (!Array.isArray(n.covered_lessons) || n.covered_lessons.length === 0) {
+        add(`${nId}:coverage`, `coverage là "${n.coverage}" bắt buộc phải có covered_lessons (mảng tên bài published không rỗng)`);
+      } else {
+        for (let cIdx = 0; cIdx < n.covered_lessons.length; cIdx++) {
+          const item = n.covered_lessons[cIdx];
+          if (typeof item !== "string" || !item.trim()) {
+            add(`${nId}:covered_lessons`, `covered_lessons[${cIdx}] không phải là chuỗi hợp lệ`);
+          }
+        }
+      }
+
+      // V-09: Kiểm tra course_slug và covered_lessons đối chiếu với catalogData
+      if (catalogBySlug.size > 0 && n.course_slug) {
+        const catCourse = catalogBySlug.get(n.course_slug);
+        if (!catCourse) {
+          add(`${nId}:course_slug`, `course_slug "${n.course_slug}" không tồn tại trong catalog`);
+        } else {
+          if (!Array.isArray(catCourse.published_lessons)) {
+            const warnMsg = `catalog thiếu published_lessons cho khóa "${n.course_slug}"`;
+            addWarn(`${nId}:published_lessons`, warnMsg);
+            console.warn(`[plan-lint] Cảnh báo: ${mapData?.slug || "map"}: ${nId}: ${warnMsg}`);
+          } else {
+            const publishedTitles = new Set(
+              catCourse.published_lessons
+                .map((pl) => (typeof pl === "string" ? pl : pl?.title))
+                .filter(Boolean)
+                .map((t) => t.trim())
+            );
+            for (const item of (n.covered_lessons || [])) {
+              if (typeof item === "string" && item.trim()) {
+                if (!publishedTitles.has(item.trim())) {
+                  add(
+                    `${nId}:covered_lessons`,
+                    `bài học "${item}" trong covered_lessons không nằm trong published_lessons của khóa "${n.course_slug}"`
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
     }
 
     // Kiểm tra required_tools, scope
@@ -555,6 +642,7 @@ export function lintMapData(mapData, { proposalDocContent = null, pathsDir = nul
   return {
     ok: problems.length === 0,
     problems,
+    warnings,
   };
 }
 
@@ -726,7 +814,9 @@ export function lintBacklogData(backlogData, { catalogData = null, proposalDocCo
             }
           }
         } else if (mapsBySlug || pathsDir) {
-          add(slug, "path_node-map", `map "${mapSlug}" không tồn tại`);
+          if (mapSlug !== focusPath) {
+            add(slug, "path_node-map", `map "${mapSlug}" không tồn tại`);
+          }
         }
       }
     }
@@ -826,8 +916,130 @@ export function lintShortlistData(shortlistData, { catalogData = null, proposalD
   };
 }
 
+// AC-02: Lint file evaluation của ứng viên khóa học
+export function lintEvaluationData(evData, { catalogData = null } = {}) {
+  const problems = [];
+  const slug = evData?.slug || "evaluation";
+  const add = (rule, detail) => problems.push(`${slug}: ${rule}: ${detail}`);
+
+  if (!evData || typeof evData !== "object") {
+    problems.push(`${slug}: Dữ liệu evaluation bị null hoặc không phải object`);
+    return { ok: false, problems };
+  }
+
+  if (!evData.slug || typeof evData.slug !== "string" || !evData.slug.trim()) {
+    add("slug", "thiếu slug hoặc slug không phải chuỗi");
+  }
+
+  // 1. Kiểm tra catalog
+  const catalog = evData.catalog;
+  if (!catalog || typeof catalog !== "object") {
+    add("catalog", "thiếu catalog hoặc catalog không phải object");
+  } else {
+    const verdict = catalog.verdict;
+    const validVerdicts = new Set(["new", "covered", "update_existing", "overlap_warning"]);
+    if (!verdict || !validVerdicts.has(verdict)) {
+      add("catalog-verdict", `verdict "${verdict}" không hợp lệ (phải là new|covered|update_existing|overlap_warning)`);
+    } else if (verdict === "covered" || verdict === "update_existing" || verdict === "overlap_warning") {
+      // AC-02: Bắt buộc nêu ít nhất một tên bài đã publish làm căn cứ
+      let publishedLessonTitles = [];
+      if (catalogData && Array.isArray(catalogData.courses)) {
+        for (const c of catalogData.courses) {
+          if (Array.isArray(c.published_lessons)) {
+            for (const pl of c.published_lessons) {
+              if (pl?.title && typeof pl.title === "string") {
+                publishedLessonTitles.push(pl.title.trim().toLowerCase());
+              }
+            }
+          }
+        }
+      }
+
+      const basis = (typeof catalog.basis === "string" ? catalog.basis : "").toLowerCase();
+      const refs = Array.isArray(catalog.refs) ? catalog.refs : [];
+      const refsText = refs.join(" ").toLowerCase();
+      const combinedEvidence = `${basis} ${refsText}`;
+
+      if (catalogData) {
+        if (publishedLessonTitles.length === 0) {
+          add(
+            "catalog-verdict",
+            `verdict "${verdict}" không hợp lệ vì catalog không có bài học published nào làm căn cứ trùng lặp`
+          );
+        } else {
+          const hasMatch = publishedLessonTitles.some((t) => combinedEvidence.includes(t));
+          if (!hasMatch) {
+            add(
+              "catalog-verdict",
+              `verdict "${verdict}" bắt buộc nêu ít nhất một tên bài đã publish trong catalog làm căn cứ (trong refs hoặc basis)`
+            );
+          }
+        }
+      } else {
+        if (refs.length === 0 && !basis.trim()) {
+          add(
+            "catalog-verdict",
+            `verdict "${verdict}" bắt buộc nêu ít nhất một tên bài đã publish làm căn cứ trong refs hoặc basis`
+          );
+        }
+      }
+    }
+  }
+
+  // 2. Kiểm tra feasibility
+  const feas = evData.feasibility;
+  if (!feas || typeof feas !== "object") {
+    add("feasibility", "thiếu feasibility");
+  } else {
+    const validFeas = new Set(["feasible", "feasible_with_limits", "not_feasible"]);
+    if (!validFeas.has(feas.verdict)) {
+      add("feasibility-verdict", `verdict "${feas.verdict}" không hợp lệ (phải là feasible|feasible_with_limits|not_feasible)`);
+    }
+  }
+
+  // 3. Kiểm tra handoff
+  const handoff = evData.handoff;
+  if (!handoff || typeof handoff !== "object") {
+    add("handoff", "thiếu handoff");
+  } else {
+    if (!handoff.title || typeof handoff.title !== "string" || !handoff.title.trim()) {
+      add("handoff-title", "thiếu handoff.title");
+    }
+    if (!handoff.audience || typeof handoff.audience !== "string" || !handoff.audience.trim()) {
+      add("handoff-audience", "thiếu handoff.audience");
+    }
+    if (!handoff.level || typeof handoff.level !== "string" || !handoff.level.trim()) {
+      add("handoff-level", "thiếu handoff.level");
+    }
+    if (!handoff.scope_note || typeof handoff.scope_note !== "string" || !handoff.scope_note.trim()) {
+      add("handoff-scope_note", "thiếu handoff.scope_note");
+    }
+  }
+
+  // 4. AC-02: draft_lessons_ignored và compared_published_counts
+  if (evData.draft_lessons_ignored != null) {
+    if (typeof evData.draft_lessons_ignored !== "number" || evData.draft_lessons_ignored < 0) {
+      add("draft_lessons_ignored", "draft_lessons_ignored phải là số không âm");
+    }
+  }
+
+  if (evData.compared_published_counts != null) {
+    if (typeof evData.compared_published_counts !== "object" || Array.isArray(evData.compared_published_counts)) {
+      add("compared_published_counts", "compared_published_counts phải là object");
+    } else {
+      for (const [cSlug, count] of Object.entries(evData.compared_published_counts)) {
+        if (typeof count !== "number" || count < 0) {
+          add("compared_published_counts", `số lượng bài published của "${cSlug}" phải là số không âm`);
+        }
+      }
+    }
+  }
+
+  return { ok: problems.length === 0, problems };
+}
+
 // AC-08: Cập nhật ô trong map khi đề xuất được sản xuất thành công
-export function updateMapNodeOnProduced({ repoRoot = ".", mapSlug, nodeId, courseSlug }) {
+export function updateMapNodeOnProduced({ repoRoot = ".", mapSlug, nodeId, courseSlug, coveredLessons = null }) {
   const mapFile = path.join(path.resolve(repoRoot), ".course-plan", "paths", `${mapSlug}.json`);
   if (!fs.existsSync(mapFile)) {
     throw new Error(`Map "${mapSlug}" không tồn tại tại ${mapFile}`);
@@ -839,6 +1051,9 @@ export function updateMapNodeOnProduced({ repoRoot = ".", mapSlug, nodeId, cours
   }
   node.course_slug = courseSlug;
   node.coverage = "covered";
+  node.covered_lessons = Array.isArray(coveredLessons) && coveredLessons.length > 0
+    ? coveredLessons
+    : (Array.isArray(node.covered_lessons) && node.covered_lessons.length > 0 ? node.covered_lessons : [courseSlug]);
   fs.writeFileSync(mapFile, JSON.stringify(data, null, 2), "utf8");
   return data;
 }
@@ -892,7 +1107,7 @@ export function lintPlans(repoRoot = ".") {
       if (map.slug !== fileSlug) {
         problems.push(`${f}: slug "${map.slug}" không khớp tên file "${fileSlug}"`);
       }
-      const res = lintMapData(map, { proposalDocContent, pathsDir, allMaps: mapsBySlug });
+      const res = lintMapData(map, { proposalDocContent, pathsDir, allMaps: mapsBySlug, catalogData });
       pathsChecked++;
       for (const p of res.problems) {
         problems.push(`${f}: ${p}`);
@@ -950,6 +1165,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
       const data = JSON.parse(fs.readFileSync(resolved, "utf8"));
       const isBacklog = Array.isArray(data.proposals) || path.basename(resolved) === "backlog.json";
       const isMap = Array.isArray(data.nodes) || data.kind != null;
+      const isEvaluation = data.catalog != null && data.feasibility != null && data.handoff != null;
       let result;
       let label;
       if (isBacklog) {
@@ -961,8 +1177,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
         result = lintBacklogData(data, { catalogData, proposalDocContent, pathsDir: pDir });
         label = "backlog";
       } else if (isMap) {
-        result = lintMapData(data, { proposalDocContent, pathsDir: path.dirname(resolved) });
+        result = lintMapData(data, { proposalDocContent, pathsDir: path.dirname(resolved), catalogData });
         label = "skill map";
+      } else if (isEvaluation) {
+        result = lintEvaluationData(data, { catalogData });
+        label = "evaluation";
       } else {
         result = lintShortlistData(data, { catalogData, proposalDocContent });
         label = "shortlist";

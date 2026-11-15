@@ -18,6 +18,45 @@ FROM (
     'is_updating', COALESCE((c.data->>'is_updating')::boolean, false),
     'goals', COALESCE(c.data->'learning_outcomes', '[]'::jsonb),
     'outcomes', COALESCE(c.data->'learning_outcomes', '[]'::jsonb),
+    'lesson_counts', jsonb_build_object(
+      'total', COALESCE(
+        (
+          SELECT COUNT(*)::int
+          FROM public.course_lessons l
+          WHERE l.course_id = c.id
+            AND l.archived_at IS NULL
+        ),
+        0
+      ),
+      'published', COALESCE(
+        (
+          SELECT COUNT(*)::int
+          FROM public.course_lessons l
+          WHERE l.course_id = c.id
+            AND l.published = true
+            AND l.archived_at IS NULL
+        ),
+        0
+      )
+    ),
+    'published_lessons', COALESCE(
+      (
+        SELECT jsonb_agg(
+          jsonb_build_object(
+            'section_title', COALESCE(s.data->>'title', s.id),
+            'title', COALESCE(l.data->>'title', l.id),
+            'section_order', s.sort_order,
+            'lesson_order', l.sort_order
+          ) ORDER BY s.sort_order, l.sort_order
+        )
+        FROM public.course_sections s
+        JOIN public.course_lessons l ON l.section_id = s.id AND l.course_id = c.id
+        WHERE s.course_id = c.id
+          AND l.published = true
+          AND l.archived_at IS NULL
+      ),
+      '[]'::jsonb
+    ),
     'modules', COALESCE(
       (
         SELECT jsonb_agg(

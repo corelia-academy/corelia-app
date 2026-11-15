@@ -251,3 +251,74 @@ test("catalog-snapshot: AC6 - kiểm tra đúng lessons_total, lessons_published
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test("catalog-snapshot: V-07 - catalog.json lọc modules chỉ giữ bài published === true, section không có bài published giữ lessons: []", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "cat-snap-v07-"));
+  try {
+    const planDir = path.join(tmpDir, ".course-plan");
+    fs.mkdirSync(planDir, { recursive: true });
+
+    const exportData = [
+      {
+        slug: "solana-bootcamp",
+        title: "Solana Bootcamp",
+        modules: [
+          {
+            id: "m1",
+            title: "Chương 1 có bài published",
+            lessons: [
+              { id: "l1", title: "Giới thiệu", published: true },
+              { id: "l2", title: "Rent, Space & Serialization", published: false },
+              { id: "l3", title: "Signer, Writable & Readonly Accounts", published: false },
+            ],
+          },
+          {
+            id: "m2",
+            title: "Chương 2 toàn bài nháp",
+            lessons: [
+              { id: "l4", title: "Advanced CPI Concepts", published: false },
+              { id: "l5", title: "Anchor Macros Deep Dive", published: false },
+            ],
+          },
+        ],
+        published_lessons: [
+          { section_title: "Chương 1 có bài published", title: "Giới thiệu", section_order: 1, lesson_order: 1 },
+        ],
+        lesson_counts: { total: 5, published: 1 },
+      },
+    ];
+
+    fs.writeFileSync(path.join(planDir, "catalog-export.json"), JSON.stringify(exportData, null, 2));
+
+    const result = takeCatalogSnapshot(tmpDir);
+    assert.strictEqual(result.courses.length, 1);
+
+    const bootcamp = result.courses[0];
+    // Thống kê vẫn giữ nguyên từ raw export
+    assert.strictEqual(bootcamp.lessons_total, 5);
+    assert.strictEqual(bootcamp.lessons_published, 1);
+    assert.strictEqual(bootcamp.content_state, "partial");
+    assert.deepStrictEqual(bootcamp.lesson_counts, { total: 5, published: 1 });
+
+    // modules đã được lọc:
+    assert.strictEqual(bootcamp.modules.length, 2);
+    // m1 chỉ có 1 bài published
+    assert.strictEqual(bootcamp.modules[0].lessons.length, 1);
+    assert.strictEqual(bootcamp.modules[0].lessons[0].title, "Giới thiệu");
+    assert.strictEqual(bootcamp.modules[0].lessons[0].published, true);
+    // m2 giữ section nhưng lessons là []
+    assert.strictEqual(bootcamp.modules[1].lessons.length, 0);
+    assert.deepStrictEqual(bootcamp.modules[1].lessons, []);
+
+    // File catalog.json ghi ra không chứa tên bài nháp ở bất kỳ đâu
+    const writtenRaw = fs.readFileSync(path.join(planDir, "catalog.json"), "utf8");
+    assert.strictEqual(writtenRaw.includes("Rent, Space & Serialization"), false);
+    assert.strictEqual(writtenRaw.includes("Signer, Writable & Readonly Accounts"), false);
+    assert.strictEqual(writtenRaw.includes("Advanced CPI Concepts"), false);
+    assert.strictEqual(writtenRaw.includes("Anchor Macros Deep Dive"), false);
+    assert.strictEqual(writtenRaw.includes("Giới thiệu"), true);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+

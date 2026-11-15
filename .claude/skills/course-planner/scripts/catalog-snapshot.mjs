@@ -104,13 +104,39 @@ export function takeCatalogSnapshot(repoRoot = ".", options = {}) {
   }
 
   const coursesMap = new Map();
+  let hasMissingPublishedLessons = false;
 
   // Nạp các khóa từ DB export, áp dụng ánh xạ slug cũ nếu có
   for (const c of dbCourses) {
     if (!c || !c.slug) continue;
     const resolvedSlug = slugAliases[c.slug] || c.slug;
-    const modules = Array.isArray(c.modules) ? c.modules : [];
-    const stats = calculateContentState(modules);
+    const rawModules = Array.isArray(c.modules) ? c.modules : [];
+    const stats = calculateContentState(rawModules);
+
+    let published_lessons = [];
+    if (Array.isArray(c.published_lessons)) {
+      published_lessons = c.published_lessons;
+    } else {
+      hasMissingPublishedLessons = true;
+    }
+
+    const lesson_counts = c.lesson_counts && typeof c.lesson_counts.total === "number" && typeof c.lesson_counts.published === "number"
+      ? { total: c.lesson_counts.total, published: c.lesson_counts.published }
+      : { total: stats.lessons_total, published: stats.lessons_published };
+
+    // V-07: modules trong catalog.json chỉ gồm các bài có published === true.
+    // Các section không có bài published giữ lessons: []
+    const filteredModules = rawModules.map((m) => ({
+      id: m.id || "",
+      title: m.title || "",
+      lessons: (Array.isArray(m.lessons) ? m.lessons : [])
+        .filter((l) => l && l.published === true)
+        .map((l) => ({
+          id: l.id || "",
+          title: l.title || "",
+          published: true,
+        })),
+    }));
 
     coursesMap.set(resolvedSlug, {
       slug: resolvedSlug,
@@ -120,11 +146,13 @@ export function takeCatalogSnapshot(repoRoot = ".", options = {}) {
       source: c.source || "db_export",
       is_updating: Boolean(c.is_updating),
       goals: Array.isArray(c.goals) ? c.goals : [],
-      modules,
+      modules: filteredModules,
       outcomes: Array.isArray(c.outcomes) ? c.outcomes : [],
       lessons_total: stats.lessons_total,
       lessons_published: stats.lessons_published,
-      content_state: stats.content_state
+      content_state: stats.content_state,
+      published_lessons,
+      lesson_counts,
     });
   }
 
@@ -291,7 +319,9 @@ export function takeCatalogSnapshot(repoRoot = ".", options = {}) {
           outcomes: curriculum?.outcomes || [],
           lessons_total: stats.lessons_total,
           lessons_published: stats.lessons_published,
-          content_state: stats.content_state
+          content_state: stats.content_state,
+          published_lessons: [],
+          lesson_counts: { total: stats.lessons_total, published: 0 },
         });
       }
     }
@@ -301,10 +331,18 @@ export function takeCatalogSnapshot(repoRoot = ".", options = {}) {
     a.slug.localeCompare(b.slug)
   );
 
+  const warnings = [];
+  if (staleWarning) warnings.push(staleWarning);
+  if (hasMissingPublishedLessons && dbCourses.length > 0) {
+    const missingMsg = "catalog export thiếu published_lessons (cần chạy export-catalog mới)";
+    warnings.push(missingMsg);
+    console.warn(`[catalog-snapshot] Cảnh báo: ${missingMsg}`);
+  }
+
   const catalog = {
     generated_at: new Date().toISOString(),
     export_metadata: exportMetadata,
-    warnings: staleWarning ? [staleWarning] : [],
+    warnings,
     courses: coursesList
   };
 

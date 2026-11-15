@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { lintMapData, lintPlans, updateMapNodeOnProduced } from "../scripts/plan-lint.mjs";
+import { lintMapData, lintPlans, updateMapNodeOnProduced, lintEvaluationData } from "../scripts/plan-lint.mjs";
 
 const realDoc = fs.readFileSync(path.resolve("docs/learn/learn-proposal.md"), "utf8");
 
@@ -81,8 +81,8 @@ function getBaseValidEcosystemMap() {
         ref: null,
         required_tools: ["node", "anchor"],
         scope: ["Metaplex Core standard"],
-        course_slug: "metaplex-core-nft-collection",
-        coverage: "covered"
+        course_slug: null,
+        coverage: "empty"
       }
     ]
   };
@@ -409,4 +409,158 @@ test("plan-lint: V-06 - lintMapData bắt lỗi required_tools là alias/package
   ecoMap.nodes[0].required_tools = ["solana", "cargo", "rustc"];
   res = lintMapData(ecoMap, { proposalDocContent: realDoc });
   assert.strictEqual(res.ok, true, "Tools hợp lệ phải pass: " + res.problems.join("; "));
+});
+
+test("plan-lint: AC-03 - lintMapData kiểm tra coverage tính từ published_lessons (empty vs partial/covered)", () => {
+  const ecoMap = getBaseValidEcosystemMap();
+
+  // 1. coverage là empty nhưng lại có course_slug -> lỗi
+  ecoMap.nodes[0].coverage = "empty";
+  ecoMap.nodes[0].course_slug = "solana-bootcamp";
+  let res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes('coverage là "empty" thì course_slug phải là null')));
+
+  // 2. coverage là partial nhưng thiếu course_slug -> lỗi
+  ecoMap.nodes[0].coverage = "partial";
+  ecoMap.nodes[0].course_slug = null;
+  ecoMap.nodes[0].covered_lessons = ["Bài 1"];
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes('coverage là "partial" bắt buộc phải có course_slug')));
+
+  // 3. coverage là partial có course_slug nhưng thiếu covered_lessons -> lỗi
+  ecoMap.nodes[0].course_slug = "solana-bootcamp";
+  ecoMap.nodes[0].covered_lessons = [];
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes('bắt buộc phải có covered_lessons')));
+
+  // 4. coverage là covered có đủ course_slug và covered_lessons -> pass
+  ecoMap.nodes[0].coverage = "covered";
+  ecoMap.nodes[0].course_slug = "solana-bootcamp";
+  ecoMap.nodes[0].covered_lessons = ["Hello Solana Setup", "PDA Counter"];
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, true, "Map có covered_lessons hợp lệ phải pass: " + res.problems.join("; "));
+});
+
+test("plan-lint: AC-02 - lintEvaluationData bắt buộc nêu bài published cho verdict overlap_warning / update_existing / covered", () => {
+  const mockCatalog = {
+    courses: [
+      {
+        slug: "solana-bootcamp",
+        published_lessons: [
+          { section_title: "Chương 1", title: "PDA Counter", section_order: 1, lesson_order: 1 },
+          { section_title: "Chương 2", title: "Voting App", section_order: 2, lesson_order: 1 },
+        ],
+      },
+    ],
+  };
+
+  const baseEval = {
+    slug: "solana-pda-course",
+    catalog: {
+      verdict: "overlap_warning",
+      basis: "Trùng lặp khái niệm nhưng không nhắc bài cụ thể nào",
+      refs: [],
+    },
+    feasibility: {
+      verdict: "feasible",
+      basis: "Khả thi theo platform.md",
+    },
+    handoff: {
+      title: "Solana PDA",
+      audience: "Devs",
+      level: "beginner",
+      scope_note: "Phạm vi",
+    },
+  };
+
+  // 1. overlap_warning nhưng không nêu tên bài published nào -> lỗi
+  let res = lintEvaluationData(baseEval, { catalogData: mockCatalog });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('bắt buộc nêu ít nhất một tên bài đã publish trong catalog làm căn cứ')),
+    "Phải bắt lỗi không nêu bài published: " + res.problems.join("; ")
+  );
+
+  // 2. Nêu đúng tên bài published trong basis hoặc refs -> PASS
+  baseEval.catalog.basis = "Trùng lặp với bài PDA Counter đã publish trong solana-bootcamp";
+  res = lintEvaluationData(baseEval, { catalogData: mockCatalog });
+  assert.strictEqual(res.ok, true, "Nêu bài published trong basis phải pass: " + res.problems.join("; "));
+
+  // 3. Verdict new thì không bắt buộc nêu bài published -> PASS
+  baseEval.catalog.verdict = "new";
+  baseEval.catalog.basis = "Khóa hoàn toàn mới, chưa có bài nào dạy";
+  res = lintEvaluationData(baseEval, { catalogData: mockCatalog });
+  assert.strictEqual(res.ok, true, "Verdict new phải pass");
+});
+
+test("plan-lint: V-09 - lintMapData đối chiếu covered_lessons và course_slug với catalogData", () => {
+  const mockCatalog = {
+    courses: [
+      {
+        slug: "solana-bootcamp",
+        published_lessons: [
+          { section_title: "Chương 1", title: "Giới thiệu", section_order: 1, lesson_order: 1 },
+          { section_title: "Chương 1", title: "Hello Solana Setup", section_order: 1, lesson_order: 2 },
+          { section_title: "Chương 2", title: "PDA Counter", section_order: 2, lesson_order: 1 },
+        ],
+      },
+    ],
+  };
+
+  const ecoMap = getBaseValidEcosystemMap();
+
+  // 1. course_slug không có trong catalog -> FAIL
+  ecoMap.nodes[0].coverage = "partial";
+  ecoMap.nodes[0].course_slug = "non-existent-course";
+  ecoMap.nodes[0].covered_lessons = ["Giới thiệu"];
+  let res = lintMapData(ecoMap, { proposalDocContent: realDoc, catalogData: mockCatalog });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('course_slug "non-existent-course" không tồn tại trong catalog')),
+    "Phải bắt lỗi course_slug không có trong catalog: " + res.problems.join("; ")
+  );
+
+  // 2. covered_lessons chứa bài nháp (không nằm trong published_lessons) -> FAIL
+  ecoMap.nodes[0].course_slug = "solana-bootcamp";
+  ecoMap.nodes[0].covered_lessons = ["Rent, Space & Serialization"];
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc, catalogData: mockCatalog });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) =>
+      p.includes('bài học "Rent, Space & Serialization" trong covered_lessons không nằm trong published_lessons của khóa "solana-bootcamp"')
+    ),
+    "Phải bắt lỗi bài học nháp không nằm trong published_lessons: " + res.problems.join("; ")
+  );
+
+  // 3. covered_lessons dùng bài published -> PASS
+  ecoMap.nodes[0].coverage = "covered";
+  ecoMap.nodes[0].covered_lessons = ["Giới thiệu", "Hello Solana Setup"];
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc, catalogData: mockCatalog });
+  assert.strictEqual(res.ok, true, "Bài published phải pass: " + res.problems.join("; "));
+
+  // 4. catalog thiếu published_lessons -> WARN (không fatal error)
+  const catalogWithoutPub = {
+    courses: [
+      {
+        slug: "solana-bootcamp",
+        // thiếu published_lessons
+      },
+    ],
+  };
+  ecoMap.nodes[0].covered_lessons = ["Bất kỳ bài nào"];
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc, catalogData: catalogWithoutPub });
+  assert.strictEqual(res.ok, true, "Thiếu published_lessons trong catalog chỉ warn, không fatal error: " + res.problems.join("; "));
+  assert.ok(
+    res.warnings.some((w) => w.includes('catalog thiếu published_lessons cho khóa "solana-bootcamp"')),
+    "Phải có warning khi catalog thiếu published_lessons: " + res.warnings.join("; ")
+  );
+
+  // 5. Fixture test/fixtures/paths/solana.json đã sửa -> PASS
+  const fixturePath = path.resolve(".claude/skills/course-planner/test/fixtures/paths/solana.json");
+  const fixtureData = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+  res = lintMapData(fixtureData, { proposalDocContent: realDoc, catalogData: mockCatalog });
+  assert.strictEqual(res.ok, true, "Fixture solana.json đã sửa phải pass: " + res.problems.join("; "));
 });

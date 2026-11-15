@@ -23,7 +23,7 @@ Mục tiêu: Đọc trực tiếp bản đồ kỹ năng (Skill Map) đang focus
 4. **Tuân thủ Nguyên tắc Thiết kế Corelia**:
    - **Lời hứa (`promise`)** (Nguyên tắc 1): Đúng một câu, một hành động quan sát được mà người học tự làm được khi học xong. TUYỆT ĐỐI KHÔNG mở đầu bằng các từ cấm: "Hiểu", "Nắm", "Biết", "Tìm hiểu", "Làm quen".
    - **Điểm xuất phát (`starting_point`)** (Nguyên tắc 2): `knowledge` (kiến thức cần có) và `requires` (mảng các slug khóa học trong catalog cung cấp kiến thức đó; để mảng rỗng `[]` khi dành cho người mới bắt đầu).
-   - **Sản phẩm cuối khóa (`final_product`)** (Nguyên tắc 7): Một sản phẩm cụ thể người học nộp ở bài cuối khóa và tình huống thực tế của nó. Phải nộp được bằng các trường bài cuối khóa nêu trong `course-author/references/platform.md` (`github_url`, `contract_address`, `testnet_tx_hash`, `deployed_url`, `notes`).
+   - **Sản phẩm cuối khóa (`final_product`)** (Nguyên tắc 7): Một sản phẩm cụ thể người học nộp ở bài cuối khóa và tình huống thực tế của nó. Phải nộp được bằng các trường bài cuối khóa nêu trong `course-author/references/platform.md` (`github_url`, `deployment_url`, `contract_address`, `transaction_url`, `demo_url`, `notes`). Tuyệt đối không dùng tên trường sai chuẩn như `testnet_tx_hash` hay `deployed_url`.
 5. **Không tự xếp hạng hay tự chốt**:
    Role chỉ thêm đề xuất với `status: "open"`, `decided_on: null`, `reject_reason: null`. Thứ tự rank do script `rank.mjs` tính toán dựa trên layer, độ sâu phụ thuộc và các tiêu chí khách quan.
 

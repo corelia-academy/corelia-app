@@ -328,3 +328,87 @@ test("export-catalog & rank: W-15 - runner lỗi và chưa có export -> snapsho
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test("export-catalog & catalog-snapshot: AC-01 - xuất đúng published_lessons và lesson_counts; cảnh báo khi thiếu", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "export-cat-ac01-"));
+  try {
+    // 1. Giả lập DB export có cả bài published, bài nháp (published: false)
+    const mockDbOutput = JSON.stringify([
+      {
+        slug: "solana-bootcamp",
+        title: "Solana Bootcamp",
+        level: "all",
+        state: "in_catalog",
+        source: "db_export",
+        is_updating: false,
+        goals: [],
+        outcomes: [],
+        lesson_counts: { total: 5, published: 2 },
+        published_lessons: [
+          { section_title: "Chương 1", title: "Bài 1.1", section_order: 1, lesson_order: 1 },
+          { section_title: "Chương 2", title: "Bài 2.1", section_order: 2, lesson_order: 1 },
+        ],
+        modules: [
+          {
+            id: "s1",
+            title: "Chương 1",
+            lessons: [
+              { id: "l1", title: "Bài 1.1", published: true },
+              { id: "l2", title: "Bài 1.2 Nháp", published: false },
+            ],
+          },
+          {
+            id: "s2",
+            title: "Chương 2",
+            lessons: [
+              { id: "l3", title: "Bài 2.1", published: true },
+              { id: "l4", title: "Bài 2.2 Nháp", published: false },
+              { id: "l5", title: "Bài 2.3 Nháp", published: false },
+            ],
+          },
+        ],
+      },
+    ]);
+
+    const res = exportCatalog(tmpDir, {
+      runner: () => mockDbOutput,
+    });
+    assert.strictEqual(res.success, true);
+
+    const snapshot = takeCatalogSnapshot(tmpDir);
+    const course = snapshot.courses.find((c) => c.slug === "solana-bootcamp");
+    assert.ok(course);
+    assert.deepStrictEqual(course.lesson_counts, { total: 5, published: 2 });
+    assert.strictEqual(course.published_lessons.length, 2);
+    assert.strictEqual(course.published_lessons[0].title, "Bài 1.1");
+    assert.strictEqual(course.published_lessons[1].title, "Bài 2.1");
+    // Không chứa tên bài nháp trong published_lessons
+    assert.strictEqual(course.published_lessons.some((l) => l.title.includes("Nháp")), false);
+
+    // 2. Case export cũ thiếu published_lessons -> catalog snapshot phải ghi warning
+    const staleExportPath = path.join(tmpDir, ".course-plan", "catalog-export.json");
+    fs.writeFileSync(
+      staleExportPath,
+      JSON.stringify({
+        exported_at: new Date().toISOString(),
+        source: "local_db",
+        courses: [
+          {
+            slug: "old-course",
+            title: "Old Course",
+            modules: [{ id: "m1", lessons: [{ id: "l1", published: true }] }],
+          },
+        ],
+      }),
+      "utf8"
+    );
+
+    const staleSnapshot = takeCatalogSnapshot(tmpDir);
+    assert.ok(
+      staleSnapshot.warnings.some((w) => w.includes("thiếu published_lessons")),
+      "Catalog snapshot phải có cảnh báo thiếu published_lessons khi đọc export cũ"
+    );
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});

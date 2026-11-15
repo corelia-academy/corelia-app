@@ -256,6 +256,31 @@ export function decideNext({
       }
     }
 
+    // AC-04: So compared_published_counts của evaluation với lesson_counts.published hiện tại trong catalog
+    if (evData.compared_published_counts && typeof evData.compared_published_counts === "object" && !Array.isArray(evData.compared_published_counts)) {
+      const increasedCourses = [];
+      for (const [cSlug, evaluatedCount] of Object.entries(evData.compared_published_counts)) {
+        const catCourse = catalogMap.get(cSlug);
+        if (catCourse) {
+          const currentPublished = typeof catCourse.lesson_counts?.published === "number"
+            ? catCourse.lesson_counts.published
+            : (typeof catCourse.lessons_published === "number" ? catCourse.lessons_published : 0);
+          if (currentPublished > evaluatedCount) {
+            increasedCourses.push(`${cSlug} (${evaluatedCount} -> ${currentPublished})`);
+          }
+        }
+      }
+      if (increasedCourses.length > 0) {
+        needs_research.push({
+          slug: cand.slug,
+          title: cand.title,
+          path_slug: pathNode.path,
+          reason: `Khóa học trong catalog có thêm bài mới publish sau khi đánh giá: ${increasedCourses.join(", ")}`,
+        });
+        continue;
+      }
+    }
+
     // Gate feasibility: verdict khác not_feasible
     const feasVerdict = evData.feasibility?.verdict;
     if (feasVerdict === "not_feasible") {

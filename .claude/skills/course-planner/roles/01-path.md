@@ -29,11 +29,23 @@ Skill Map được chia thành một trong 3 loại (`kind`), khớp đúng 3 tr
   ],
   "nodes": [
     {
+      "id": "dev-environment",
+      "title": "Môi trường Phát triển và CLI",
+      "layer": "foundation",
+      "branch": null,
+      "requires": [],
+      "ref": null,
+      "required_tools": ["solana"],
+      "scope": ["Solana CLI", "Local validator", "Testnet/Devnet airdrop"],
+      "course_slug": null,
+      "coverage": "empty"
+    },
+    {
       "id": "accounts-model",
       "title": "Mô hình Account và State trên Solana",
       "layer": "foundation",
       "branch": null,
-      "requires": [],
+      "requires": ["dev-environment"],
       "ref": null,
       "required_tools": ["solana"],
       "scope": ["Account types", "Rent", "PDA"],
@@ -45,7 +57,11 @@ Skill Map được chia thành một trong 3 loại (`kind`), khớp đúng 3 tr
 ```
 
 > [!IMPORTANT]
-> `required_tools` BẮT BUỘC phải là **tên lệnh CLI thực thi được** (chạy được `<tool> --version`), không phải tên gói cài đặt hay ngôn ngữ tổng quát (ví dụ: `solana`, `anchor`, `cargo`, `rustc`, `spl-token`, `node`; tuyệt đối KHÔNG dùng `solana-cli`, `anchor-cli`, `rust`).
+> - `required_tools` BẮT BUỘC phải là **tên lệnh CLI thực thi được** (chạy được `<tool> --version`), không phải tên gói cài đặt hay ngôn ngữ tổng quát (ví dụ: `solana`, `anchor`, `cargo`, `rustc`, `spl-token`, `node`; tuyệt đối KHÔNG dùng `solana-cli`, `anchor-cli`, `rust`).
+> - **Thứ tự ô công cụ/môi trường:** Ô công cụ/môi trường phát triển mà bài thực hành đầu tiên cần dùng BẮT BUỘC phải đứng trước ô khái niệm đầu tiên trong map.
+> - **Quy tắc tính `coverage` từ `published_lessons`:**
+>   - `empty`: Không có bài published nào dạy; `course_slug` bắt buộc là `null`, không có `covered_lessons`.
+>   - `partial` / `covered`: BẮT BUỘC có `course_slug` và `covered_lessons` (mảng tên các bài published có thật, không rỗng).
 
 ---
 
@@ -83,11 +99,10 @@ Thứ tự layer được sắp xếp từ dưới lên. Ô ở layer sau chỉ 
 ## Quy trình Khởi tạo và Phê duyệt Tự động
 
 1. Map mới sinh ra luôn ở trạng thái `status: "draft"`.
-2. Đối chiếu với `.course-plan/catalog.json` và `.course-plan/backlog.json`:
-   - Nếu ô đã có khóa tương ứng trong catalog hoặc đã `produced`: điền `course_slug` = slug khóa đó, đặt `coverage: "covered"`.
-   - Đối với hệ sinh thái Solana: khóa `metaplex-core-nft-collection` phải vào nhánh `nft` với `coverage: "covered"`.
-   - Nếu khóa trong catalog chỉ mới hoàn thành một phần (ví dụ `solana-bootcamp`): đánh giá `coverage: "partial"`.
-   - Ô chưa có khóa nào đáp ứng: để `course_slug: null` và `coverage: "empty"`.
+2. Đối chiếu với `.course-plan/catalog.json` (CHỈ đối chiếu với mảng `published_lessons` của từng khóa; bài nháp coi như không tồn tại):
+   - Nếu ô đã có các bài published tương ứng: điền `course_slug`, điền `covered_lessons` (danh sách tên các bài published đó). Nếu đã phủ trọn vẹn scope -> đặt `coverage: "covered"`. Nếu chỉ mới phủ một phần -> đặt `coverage: "partial"`.
+   - Nếu catalog export thiếu `published_lessons`: phải ghi `[CHƯA XÁC MINH]` cho phần đối chiếu bài.
+   - Ô chưa có bài published nào đáp ứng: để `course_slug: null`, `coverage: "empty"`, không có `covered_lessons`.
 3. **Coordinator kiểm tra tự động và phê duyệt map (không cần Human duyệt)**:
    - Sau khi dựng xong file `.course-plan/paths/<slug>.json`, coordinator chạy:
      1. `plan-lint.mjs .course-plan/paths/<slug>.json`

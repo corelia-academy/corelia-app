@@ -43,6 +43,20 @@ export const KNOWN_BAD_TOOLS = {
 
 export const TOOL_NAME_REGEX = /^[a-z0-9][a-z0-9_-]*$/;
 
+export const VALID_FINAL_ASSIGNMENT_FIELDS = new Set([
+  "github_url",
+  "deployment_url",
+  "contract_address",
+  "transaction_url",
+  "demo_url",
+  "notes",
+]);
+
+export const KNOWN_BAD_ASSIGNMENT_FIELDS = new Set([
+  "testnet_tx_hash",
+  "deployed_url",
+]);
+
 export const DEFAULT_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 

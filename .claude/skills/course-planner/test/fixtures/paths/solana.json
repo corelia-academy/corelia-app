@@ -70,8 +70,8 @@
       "ref": null,
       "required_tools": ["node", "anchor"],
       "scope": ["Metaplex Core standard", "Collection minting"],
-      "course_slug": "metaplex-core-nft-collection",
-      "coverage": "covered"
+      "course_slug": null,
+      "coverage": "empty"
     }
   ]
 }

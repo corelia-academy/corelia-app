@@ -623,3 +623,93 @@ test("next: prerequisite node covered nhưng catalog thiếu content_state hoặ
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test("next: AC-04 - gate E-04 mở rộng so sánh compared_published_counts; khóa tăng bài published -> needs_research", () => {
+  const { tmpDir, pathsDir, evalsDir, catFile, planDir } = setupFixture();
+  try {
+    makeMap(pathsDir, {
+      slug: "solana",
+      kind: "ecosystem",
+      entry: "Solana",
+      title: "Solana Map",
+      status: "approved",
+      nodes: [
+        { id: "accounts", title: "Accounts", layer: "foundation", requires: [], coverage: "empty" },
+      ],
+    });
+
+    makeBacklog(planDir, [
+      { slug: "c-accounts", title: "Khóa Accounts", status: "chosen", path_node: { path: "solana", node: "accounts" } },
+    ]);
+
+    // 1. Case 1: Số bài published trong catalog (21) khớp với compared_published_counts (21) -> PICK
+    fs.writeFileSync(
+      catFile,
+      JSON.stringify({
+        courses: [
+          {
+            slug: "solana-bootcamp",
+            title: "Solana Bootcamp",
+            state: "in_catalog",
+            lesson_counts: { total: 205, published: 21 },
+          },
+        ],
+      }, null, 2)
+    );
+
+    makeEval(evalsDir, {
+      slug: "c-accounts",
+      catalog_courses: ["solana-bootcamp"],
+      compared_published_counts: {
+        "solana-bootcamp": 21,
+      },
+      catalog: { verdict: "new", basis: "Không trùng" },
+      feasibility: { verdict: "feasible" },
+      handoff: { title: "Accounts", audience: "All", level: "beginner", scope_note: "Phạm vi" },
+    });
+
+    let res = decideNext({ repoRoot: tmpDir });
+    assert.ok(res.pick, "Khóa phải được pick khi compared_published_counts không tăng");
+    assert.strictEqual(res.pick.slug, "c-accounts");
+    assert.strictEqual(res.needs_research.length, 0);
+
+    // 2. Case 2: solana-bootcamp tăng lên 22 bài published -> candidate bị đẩy vào needs_research
+    fs.writeFileSync(
+      catFile,
+      JSON.stringify({
+        courses: [
+          {
+            slug: "solana-bootcamp",
+            title: "Solana Bootcamp",
+            state: "in_catalog",
+            lesson_counts: { total: 205, published: 22 },
+          },
+        ],
+      }, null, 2)
+    );
+
+    res = decideNext({ repoRoot: tmpDir });
+    assert.strictEqual(res.pick, null, "Không được pick khi catalog có khóa tăng bài published");
+    assert.strictEqual(res.needs_research.length, 1);
+    assert.strictEqual(res.needs_research[0].slug, "c-accounts");
+    assert.ok(
+      res.needs_research[0].reason.includes("solana-bootcamp (21 -> 22)"),
+      "Lý do phải nêu rõ solana-bootcamp tăng từ 21 lên 22: " + res.needs_research[0].reason
+    );
+
+    // 3. Case 3: Evaluation cũ không có trường compared_published_counts -> giữ nguyên hành vi, không lỗi
+    makeEval(evalsDir, {
+      slug: "c-accounts",
+      catalog_courses: ["solana-bootcamp"],
+      catalog: { verdict: "new", basis: "Không trùng" },
+      feasibility: { verdict: "feasible" },
+      handoff: { title: "Accounts", audience: "All", level: "beginner", scope_note: "Phạm vi" },
+    });
+
+    res = decideNext({ repoRoot: tmpDir });
+    assert.ok(res.pick, "Evaluation cũ không có compared_published_counts vẫn được pick bình thường");
+    assert.strictEqual(res.pick.slug, "c-accounts");
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});

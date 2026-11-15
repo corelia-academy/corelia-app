@@ -585,10 +585,10 @@ test("rank: AC-03 - Tổng quan map có đủ mọi ô, đúng thứ tự layer/
     assert.strictEqual(rankedSolana.mapOverview[3].layerBranch, "branch (token)");
     assert.strictEqual(rankedSolana.mapOverview[3].status, "chờ anchor-programs");
 
-    // metaplex-nfts (branch nft, depth 3, coverage covered) -> đã phủ
+    // metaplex-nfts (branch nft, depth 3, coverage empty) -> chờ anchor-programs
     assert.strictEqual(rankedSolana.mapOverview[4].id, "metaplex-nfts");
     assert.strictEqual(rankedSolana.mapOverview[4].layerBranch, "branch (nft)");
-    assert.strictEqual(rankedSolana.mapOverview[4].status, "đã phủ");
+    assert.strictEqual(rankedSolana.mapOverview[4].status, "chờ anchor-programs");
 
     const tableSolana = formatShortlistTable(rankedSolana);
     assert.ok(tableSolana.includes("### Tổng quan map"));
@@ -596,7 +596,17 @@ test("rank: AC-03 - Tổng quan map có đủ mọi ô, đúng thứ tự layer/
     assert.ok(tableSolana.includes("Mô hình Account và State trên Solana"));
     assert.ok(tableSolana.includes("sẵn sàng"));
     assert.ok(tableSolana.includes("chờ accounts-model"));
-    assert.ok(tableSolana.includes("đã phủ"));
+    assert.ok(tableSolana.includes("chờ anchor-programs"));
+
+    // Kiểm tra ô có coverage: "covered" -> trạng thái "đã phủ"
+    const coveredSolanaMap = JSON.parse(fs.readFileSync(path.join(pathsDir, "solana.json"), "utf8"));
+    coveredSolanaMap.nodes[0].coverage = "covered";
+    coveredSolanaMap.nodes[0].course_slug = "solana-bootcamp";
+    fs.writeFileSync(path.join(pathsDir, "solana.json"), JSON.stringify(coveredSolanaMap, null, 2));
+    const rankedCovered = rankShortlist(backlogSolana, [], { pathsDir, repoRoot: tmpDir });
+    assert.strictEqual(rankedCovered.mapOverview[0].status, "đã phủ");
+    const tableCovered = formatShortlistTable(rankedCovered);
+    assert.ok(tableCovered.includes("đã phủ"));
 
     // 2. Kiểm tra với backend-engineer.json fixture (4 nodes, kind role)
     const backlogBackend = {
