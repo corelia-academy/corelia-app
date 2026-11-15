@@ -1,0 +1,65 @@
+{
+  "slug": "redis",
+  "kind": "skill",
+  "entry": "Redis",
+  "title": "Lộ trình Làm chủ Redis",
+  "goal": "Đào tạo kỹ sư sử dụng thành thạo Redis trong kiến trúc dữ liệu và caching",
+  "status": "approved",
+  "sources": [
+    {
+      "url": "https://redis.io/docs",
+      "quote": "Redis is an in-memory data store used by millions of developers as a database, cache, streaming engine, and message broker",
+      "observed_on": "2026-11-15"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "redis-fundamentals",
+      "title": "Cơ chế In-memory và Cấu trúc Dữ liệu Redis",
+      "layer": "fundamentals",
+      "branch": null,
+      "requires": [],
+      "ref": null,
+      "required_tools": ["redis-cli"],
+      "scope": ["Strings", "Hashes", "Lists", "Sets"],
+      "course_slug": null,
+      "coverage": "empty"
+    },
+    {
+      "id": "caching",
+      "title": "Chiến lược Caching và Eviction Policies",
+      "layer": "core",
+      "branch": null,
+      "requires": ["redis-fundamentals"],
+      "ref": null,
+      "required_tools": ["redis-cli"],
+      "scope": ["Cache-aside", "Write-through", "TTL", "LRU"],
+      "course_slug": null,
+      "coverage": "empty"
+    },
+    {
+      "id": "redis-cluster",
+      "title": "Scale và High Availability với Redis Sentinel/Cluster",
+      "layer": "production",
+      "branch": null,
+      "requires": ["caching"],
+      "ref": null,
+      "required_tools": ["docker", "redis-cli"],
+      "scope": ["Replication", "Sentinel failover", "Clustering"],
+      "course_slug": null,
+      "coverage": "empty"
+    },
+    {
+      "id": "redis-pubsub-streams",
+      "title": "Tích hợp Message Broker với Redis Streams",
+      "layer": "integration",
+      "branch": null,
+      "requires": ["caching"],
+      "ref": null,
+      "required_tools": ["node", "redis-cli"],
+      "scope": ["Pub/Sub", "Streams consumer groups"],
+      "course_slug": null,
+      "coverage": "empty"
+    }
+  ]
+}

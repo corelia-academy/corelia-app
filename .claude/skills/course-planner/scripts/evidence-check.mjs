@@ -40,7 +40,41 @@ export function extractUrlsFromData(data, filePath = "") {
 
   if (!data || typeof data !== "object") return items;
 
-  // 1. Dạng Shortlist
+  // 1. Dạng Backlog (AC-09: mặc định chỉ kiểm tra đề xuất open và chosen)
+  if (Array.isArray(data.proposals)) {
+    data.proposals.forEach((prop, pIdx) => {
+      if (prop?.status && prop.status !== "open" && prop.status !== "chosen") {
+        return;
+      }
+      const pPrefix = `proposals[${pIdx}](${prop?.slug || ""})`;
+      if (Array.isArray(prop?.alternatives)) {
+        prop.alternatives.forEach((alt, aIdx) => {
+          if (alt?.url) add(alt.url, `${pPrefix}.alternatives[${aIdx}].url`);
+        });
+      }
+      if (Array.isArray(prop?.why_now?.urls)) {
+        prop.why_now.urls.forEach((u, uIdx) => {
+          add(u, `${pPrefix}.why_now.urls[${uIdx}]`, {
+            kind: prop?.why_now?.kind,
+            quote: prop?.why_now?.quote,
+          });
+        });
+      }
+      if (prop?.criteria && typeof prop.criteria === "object") {
+        for (const [cKey, cVal] of Object.entries(prop.criteria)) {
+          if (Array.isArray(cVal?.refs)) {
+            cVal.refs.forEach((r, rIdx) => {
+              if (typeof r === "string" && /^https?:\/\//i.test(r)) {
+                add(r, `${pPrefix}.criteria.${cKey}.refs[${rIdx}]`);
+              }
+            });
+          }
+        }
+      }
+    });
+  }
+
+  // 1b. Dạng Shortlist (legacy/fallback)
   if (Array.isArray(data.shortlist)) {
     data.shortlist.forEach((prop, pIdx) => {
       const pPrefix = `shortlist[${pIdx}](${prop?.slug || ""})`;
@@ -85,10 +119,14 @@ export function extractUrlsFromData(data, filePath = "") {
     });
   }
 
-  // 3. Dạng Candidate Evaluation
+  // 3. Dạng Candidate Evaluation / Skill map
   if (Array.isArray(data.sources)) {
     data.sources.forEach((s, idx) => {
-      if (s?.url) add(s.url, `sources[${idx}].url`);
+      if (s?.url) {
+        add(s.url, `sources[${idx}].url`, {
+          quote: s.quote,
+        });
+      }
     });
   }
   if (Array.isArray(data.why_now?.urls)) {

@@ -4,476 +4,365 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { lintPlans } from "../scripts/plan-lint.mjs";
+import { lintMapData, lintPlans, updateMapNodeOnProduced } from "../scripts/plan-lint.mjs";
 
-test("plan-lint: AC3 - phát hiện chu trình, trả ok: false và ghi lại đúng các cạnh", () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cycle-"));
+const realDoc = fs.readFileSync(path.resolve("docs/learn/learn-proposal.md"), "utf8");
+
+function getBaseValidEcosystemMap() {
+  return {
+    slug: "solana",
+    kind: "ecosystem",
+    entry: "Solana",
+    title: "Lộ trình Phát triển trên Hệ sinh thái Solana",
+    goal: "Đào tạo lập trình viên xây dựng ứng dụng phi tập trung hoàn chỉnh trên Solana",
+    status: "approved",
+    sources: [
+      {
+        url: "https://solana.com/docs",
+        quote: "Solana documentation provides developers with tools and resources",
+        observed_on: "2026-11-15"
+      }
+    ],
+    nodes: [
+      {
+        id: "accounts-model",
+        title: "Mô hình Account và State trên Solana",
+        layer: "foundation",
+        branch: null,
+        requires: [],
+        ref: null,
+        required_tools: ["solana-cli"],
+        scope: ["Account types", "Rent", "PDA"],
+        course_slug: null,
+        coverage: "empty"
+      },
+      {
+        id: "rust-basics",
+        title: "Ngôn ngữ Rust cho Solana",
+        layer: "language",
+        branch: null,
+        requires: ["accounts-model"],
+        ref: null,
+        required_tools: ["cargo", "rustc"],
+        scope: ["Ownership", "Borrowing"],
+        course_slug: null,
+        coverage: "empty"
+      },
+      {
+        id: "anchor-programs",
+        title: "Lập trình Solana Program với Anchor",
+        layer: "core",
+        branch: null,
+        requires: ["rust-basics"],
+        ref: null,
+        required_tools: ["anchor", "cargo"],
+        scope: ["Anchor macros", "CPI"],
+        course_slug: null,
+        coverage: "empty"
+      },
+      {
+        id: "token-program",
+        title: "Phát triển Token SPL trên Solana",
+        layer: "branch",
+        branch: "token",
+        requires: ["anchor-programs"],
+        ref: null,
+        required_tools: ["spl-token", "anchor"],
+        scope: ["SPL Token 2022"],
+        course_slug: null,
+        coverage: "empty"
+      },
+      {
+        id: "metaplex-nfts",
+        title: "Phát hành NFT với Metaplex Core",
+        layer: "branch",
+        branch: "nft",
+        requires: ["anchor-programs"],
+        ref: null,
+        required_tools: ["node", "anchor"],
+        scope: ["Metaplex Core standard"],
+        course_slug: "metaplex-core-nft-collection",
+        coverage: "covered"
+      }
+    ]
+  };
+}
+
+function getBaseValidSkillMap() {
+  return {
+    slug: "redis",
+    kind: "skill",
+    entry: "Redis",
+    title: "Lộ trình Làm chủ Redis",
+    goal: "Đào tạo kỹ sư sử dụng thành thạo Redis trong kiến trúc dữ liệu và caching",
+    status: "approved",
+    sources: [
+      {
+        url: "https://redis.io/docs",
+        quote: "Redis is an in-memory data store used by millions of developers",
+        observed_on: "2026-11-15"
+      }
+    ],
+    nodes: [
+      {
+        id: "redis-fundamentals",
+        title: "Cơ chế In-memory và Cấu trúc Dữ liệu Redis",
+        layer: "fundamentals",
+        branch: null,
+        requires: [],
+        ref: null,
+        required_tools: ["redis-cli"],
+        scope: ["Strings", "Hashes"],
+        course_slug: null,
+        coverage: "empty"
+      },
+      {
+        id: "caching",
+        title: "Chiến lược Caching và Eviction Policies",
+        layer: "core",
+        branch: null,
+        requires: ["redis-fundamentals"],
+        ref: null,
+        required_tools: ["redis-cli"],
+        scope: ["Cache-aside", "TTL"],
+        course_slug: null,
+        coverage: "empty"
+      },
+      {
+        id: "redis-cluster",
+        title: "Scale và High Availability với Redis Sentinel/Cluster",
+        layer: "production",
+        branch: null,
+        requires: ["caching"],
+        ref: null,
+        required_tools: ["docker", "redis-cli"],
+        scope: ["Replication", "Clustering"],
+        course_slug: null,
+        coverage: "empty"
+      },
+      {
+        id: "redis-streams",
+        title: "Tích hợp Message Broker với Redis Streams",
+        layer: "integration",
+        branch: null,
+        requires: ["caching"],
+        ref: null,
+        required_tools: ["node", "redis-cli"],
+        scope: ["Streams"],
+        course_slug: null,
+        coverage: "empty"
+      }
+    ]
+  };
+}
+
+function getBaseValidRoleMap() {
+  return {
+    slug: "backend-engineer",
+    kind: "role",
+    entry: "Backend",
+    title: "Lộ trình Kỹ sư Backend",
+    goal: "Đào tạo kỹ sư backend toàn diện",
+    status: "approved",
+    sources: [
+      {
+        url: "https://roadmap.sh/backend",
+        quote: "Step by step guide to becoming a modern backend developer in 2026",
+        observed_on: "2026-11-15"
+      }
+    ],
+    nodes: [
+      {
+        id: "backend-foundations",
+        title: "Nền tảng Mạng và Giao thức HTTP/HTTPS",
+        layer: "foundation",
+        branch: null,
+        requires: [],
+        ref: null,
+        required_tools: ["curl"],
+        scope: ["OSI", "HTTP/2"],
+        course_slug: null,
+        coverage: "empty"
+      },
+      {
+        id: "api-development",
+        title: "Thiết kế và Xây dựng RESTful API",
+        layer: "competency",
+        branch: null,
+        requires: ["backend-foundations"],
+        ref: null,
+        required_tools: ["node"],
+        scope: ["Routing", "Middleware"],
+        course_slug: null,
+        coverage: "empty"
+      },
+      {
+        id: "system-observability",
+        title: "Giám sát và Vận hành Hệ thống Backend",
+        layer: "production",
+        branch: null,
+        requires: ["api-development"],
+        ref: null,
+        required_tools: ["docker"],
+        scope: ["Metrics", "Tracing"],
+        course_slug: null,
+        coverage: "empty"
+      }
+    ]
+  };
+}
+
+test("plan-lint: AC-04 - chấp nhận map hợp lệ cho cả 3 kind (ecosystem, skill, role)", () => {
+  const ecoRes = lintMapData(getBaseValidEcosystemMap(), { proposalDocContent: realDoc });
+  assert.strictEqual(ecoRes.ok, true, "Ecosystem map hợp lệ phải pass: " + ecoRes.problems.join("; "));
+
+  const skillRes = lintMapData(getBaseValidSkillMap(), { proposalDocContent: realDoc });
+  assert.strictEqual(skillRes.ok, true, "Skill map hợp lệ phải pass: " + skillRes.problems.join("; "));
+
+  const roleRes = lintMapData(getBaseValidRoleMap(), { proposalDocContent: realDoc });
+  assert.strictEqual(roleRes.ok, true, "Role map hợp lệ phải pass: " + roleRes.problems.join("; "));
+});
+
+test("plan-lint: AC-04 - từ chối layer sai cho từng kind", () => {
+  // 1. Ecosystem dùng layer "competency" (thuộc role)
+  const ecoMap = getBaseValidEcosystemMap();
+  ecoMap.nodes[0].layer = "competency";
+  let res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes('layer "competency" không hợp lệ cho kind "ecosystem"')));
+
+  // 2. Skill dùng layer "branch" (thuộc ecosystem)
+  const skillMap = getBaseValidSkillMap();
+  skillMap.nodes[0].layer = "branch";
+  skillMap.nodes[0].branch = "defi";
+  res = lintMapData(skillMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes('layer "branch" không hợp lệ cho kind "skill"')));
+
+  // 3. Role dùng layer "integration" (thuộc skill)
+  const roleMap = getBaseValidRoleMap();
+  roleMap.nodes[0].layer = "integration";
+  res = lintMapData(roleMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes('layer "integration" không hợp lệ cho kind "role"')));
+});
+
+test("plan-lint: AC-04 - từ chối requires ngược lên layer sau", () => {
+  const ecoMap = getBaseValidEcosystemMap();
+  // Ô accounts-model ở layer foundation lại requires anchor-programs ở layer core
+  ecoMap.nodes[0].requires = ["anchor-programs"];
+  const res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes("requires không được trỏ tới ô ở layer sau")),
+    "Phải báo lỗi requires trỏ lên layer sau: " + res.problems.join("; ")
+  );
+});
+
+test("plan-lint: AC-04 - phát hiện chu trình trong requires của map", () => {
+  const ecoMap = getBaseValidEcosystemMap();
+  // accounts-model và rust-basics requires lẫn nhau (cả hai layer hợp lệ nhưng tạo chu trình)
+  ecoMap.nodes[0].requires = ["rust-basics"];
+  ecoMap.nodes[1].requires = ["accounts-model"];
+  const res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes("chu trình phụ thuộc trong requires")),
+    "Phải báo lỗi chu trình: " + res.problems.join("; ")
+  );
+});
+
+test("plan-lint: AC-04 - từ chối ref hỏng (map không tồn tại hoặc ô không tồn tại)", () => {
+  const allMaps = new Map();
+  const redisMap = getBaseValidSkillMap();
+  allMaps.set("redis", redisMap);
+
+  const roleMap = getBaseValidRoleMap();
+
+  // 1. Ref trỏ map không tồn tại
+  roleMap.nodes[1].ref = "nonexistent-map#node1";
+  let res = lintMapData(roleMap, { proposalDocContent: realDoc, allMaps });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes('ref trỏ map "nonexistent-map" không tồn tại')));
+
+  // 2. Ref trỏ ô không tồn tại trong map hợp lệ
+  roleMap.nodes[1].ref = "redis#unknown-node-id";
+  res = lintMapData(roleMap, { proposalDocContent: realDoc, allMaps });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes('ref trỏ ô "unknown-node-id" không tồn tại trong map "redis"')));
+
+  // 3. Ref hợp lệ
+  roleMap.nodes[1].ref = "redis#caching";
+  res = lintMapData(roleMap, { proposalDocContent: realDoc, allMaps });
+  assert.strictEqual(res.ok, true, "Ref hợp lệ phải pass: " + res.problems.join("; "));
+});
+
+test("plan-lint: AC-04 - map ecosystem thiếu layer nền hoặc có < 2 branch", () => {
+  // 1. Thiếu layer core
+  let ecoMap = getBaseValidEcosystemMap();
+  ecoMap.nodes = ecoMap.nodes.filter((n) => n.layer !== "core");
+  let res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes("thiếu: core")));
+
+  // 2. Chỉ có 1 nhánh branch (chỉ có nhánh token)
+  ecoMap = getBaseValidEcosystemMap();
+  ecoMap.nodes = ecoMap.nodes.filter((n) => n.id !== "metaplex-nfts");
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes("ít nhất 2 nhánh branch khác nhau")));
+});
+
+test("plan-lint: AC-04 - kiểm tra trường branch (bắt buộc ở layer branch, cấm ở layer khác)", () => {
+  // 1. Layer branch nhưng branch rỗng / null
+  let ecoMap = getBaseValidEcosystemMap();
+  ecoMap.nodes[3].branch = null;
+  let res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes('ô ở layer "branch" bắt buộc có branch không rỗng')));
+
+  // 2. Layer foundation nhưng lại có branch
+  ecoMap = getBaseValidEcosystemMap();
+  ecoMap.nodes[0].branch = "core-branch";
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes('branch phải là null ở layer "foundation"')));
+});
+
+test("plan-lint: AC-08 - updateMapNodeOnProduced cập nhật đúng course_slug và coverage covered", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "produced-test-"));
   try {
     const pathsDir = path.join(tmpDir, ".course-plan", "paths");
     fs.mkdirSync(pathsDir, { recursive: true });
 
-    // Path có chu trình: A requires B, B requires A
-    const pathContent = {
-      slug: "cycle-path",
-      title: "Lộ trình Chu trình",
-      axis: "role",
-      goal: "Mục tiêu",
-      audience: "Đối tượng",
-      entry_level: "intermediate",
-      scope: ["A"],
-      out_of_scope: ["B"],
-      status: "approved",
-      priority: 1,
-      evidence: [{ claim: "Cần thiết", kind: "direct", urls: ["https://example.com"], observed_on: "2026-11-13" }],
-      missing_evidence: [],
-      courses: [
-        {
-          slug: "course-a",
-          title: "Khóa A",
-          task: "Nhiệm vụ A",
-          level: "intermediate",
-          scope: ["Chủ đề A"],
-          out_of_scope: ["Chủ đề ngoài A"],
-          suggested_order: 1,
-          is_foundation: false,
-          requires: [{ slug: "course-b", reason: "Khóa A cần kiến thức của Khóa B" }]
-        },
-        {
-          slug: "course-b",
-          title: "Khóa B",
-          task: "Nhiệm vụ B",
-          level: "intermediate",
-          scope: ["Chủ đề B"],
-          out_of_scope: ["Chủ đề ngoài B"],
-          suggested_order: 2,
-          is_foundation: false,
-          requires: [{ slug: "course-a", reason: "Khóa B cần kiến thức của Khóa A" }]
-        }
-      ]
-    };
+    const ecoMap = getBaseValidEcosystemMap();
+    fs.writeFileSync(path.join(pathsDir, "solana.json"), JSON.stringify(ecoMap, null, 2));
 
-    fs.writeFileSync(path.join(pathsDir, "cycle-path.json"), JSON.stringify(pathContent, null, 2));
-
-    const result = lintPlans(tmpDir);
-    assert.strictEqual(result.ok, false, "Có chu trình thì lint phải trả về không ok");
-    assert.ok(result.cycleEdges.length >= 2, "Phải ghi nhận ít nhất 2 cạnh của chu trình");
-
-    const edgeAB = result.cycleEdges.find((e) => e.from === "course-a" && e.to === "course-b");
-    const edgeBA = result.cycleEdges.find((e) => e.from === "course-b" && e.to === "course-a");
-    assert.ok(edgeAB, "Phải có cạnh A -> B");
-    assert.ok(edgeBA, "Phải có cạnh B -> A");
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  }
-});
-
-test("plan-lint: edge case requires.slug trỏ tới khóa chỉ có trong catalog", () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cat-req-"));
-  try {
-    const planDir = path.join(tmpDir, ".course-plan");
-    const pathsDir = path.join(planDir, "paths");
-    fs.mkdirSync(pathsDir, { recursive: true });
-
-    // Catalog có sẵn khóa 'rust-basics'
-    fs.writeFileSync(path.join(planDir, "catalog.json"), JSON.stringify({
-      courses: [{ slug: "rust-basics", title: "Cơ bản Rust", state: "produced" }]
-    }));
-
-    const pathContent = {
-      slug: "rust-adv-path",
-      title: "Lộ trình Rust Nâng cao",
-      axis: "skill",
-      goal: "Mục tiêu",
-      audience: "Đối tượng",
-      entry_level: "intermediate",
-      scope: ["Rust"],
-      out_of_scope: [],
-      status: "approved",
-      priority: 2,
-      evidence: [{ claim: "Tuyển dụng nhiều", kind: "direct", urls: ["https://example.com"], observed_on: "2026-11-13" }],
-      missing_evidence: [],
-      courses: [
-        {
-          slug: "rust-async",
-          title: "Rust Async",
-          task: "Nhiệm vụ",
-          level: "intermediate",
-          scope: ["Async/await"],
-          out_of_scope: ["Sync IO"],
-          suggested_order: 1,
-          is_foundation: false,
-          requires: [{ slug: "rust-basics", reason: "Cần nắm vững cú pháp Rust cơ bản" }]
-        }
-      ]
-    };
-
-    fs.writeFileSync(path.join(pathsDir, "rust-adv-path.json"), JSON.stringify(pathContent, null, 2));
-
-    const result = lintPlans(tmpDir);
-    assert.strictEqual(result.ok, true, "Khóa yêu cầu tiên quyết từ catalog hợp lệ");
-    assert.strictEqual(result.problems.length, 0);
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  }
-});
-
-test("plan-lint: báo lỗi khi requires.slug không tồn tại hoặc reason rỗng", () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "lint-invalid-req-"));
-  try {
-    const pathsDir = path.join(tmpDir, ".course-plan", "paths");
-    fs.mkdirSync(pathsDir, { recursive: true });
-
-    const pathContent = {
-      slug: "invalid-req-path",
-      title: "Path Lỗi",
-      axis: "role",
-      goal: "G",
-      audience: "A",
-      entry_level: "intermediate",
-      scope: ["S"],
-      out_of_scope: [],
-      status: "approved",
-      priority: 1,
-      evidence: [{ claim: "C", kind: "direct", urls: ["https://u"], observed_on: "2026-11-13" }],
-      missing_evidence: [],
-      courses: [
-        {
-          slug: "c1",
-          title: "Khóa 1",
-          task: "T",
-          level: "intermediate",
-          scope: ["S1"],
-          out_of_scope: ["O1"],
-          suggested_order: 1,
-          is_foundation: false,
-          requires: [
-            { slug: "non-existent-course", reason: "Lý do" },
-            { slug: "c1", reason: "   " } // reason rỗng
-          ]
-        }
-      ]
-    };
-
-    fs.writeFileSync(path.join(pathsDir, "invalid-req-path.json"), JSON.stringify(pathContent, null, 2));
-
-    const result = lintPlans(tmpDir);
-    assert.strictEqual(result.ok, false);
-    assert.ok(result.problems.some((p) => p.includes("non-existent-course") && p.includes("không tồn tại")));
-    assert.ok(result.problems.some((p) => p.includes("reason rỗng")));
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  }
-});
-
-test("plan-lint: V-07 - an toàn không crash khi evidence hoặc courses chứa phần tử null", () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "lint-null-elem-"));
-  try {
-    const pathsDir = path.join(tmpDir, ".course-plan", "paths");
-    fs.mkdirSync(pathsDir, { recursive: true });
-
-    const pathWithNulls = {
-      slug: "null-path",
-      title: "Path Nulls",
-      axis: "role",
-      goal: "G",
-      audience: "A",
-      entry_level: "beginner",
-      scope: ["S"],
-      out_of_scope: [],
-      status: "approved",
-      priority: 1,
-      evidence: [null, { claim: "C", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-13" }],
-      missing_evidence: [],
-      courses: [null, { slug: "c1", title: "Khóa 1", task: "T", level: "beginner", scope: ["S"], out_of_scope: ["O"], suggested_order: 1, is_foundation: false, requires: [] }]
-    };
-
-    fs.writeFileSync(path.join(pathsDir, "null-path.json"), JSON.stringify(pathWithNulls, null, 2));
-
-    // Không ném TypeError crash
-    assert.doesNotThrow(() => {
-      const res = lintPlans(tmpDir);
-      assert.strictEqual(res.ok, false, "Có phần tử null phải báo lỗi");
-      assert.ok(res.problems.some((p) => p.includes("null") || p.includes("không hợp lệ")));
+    const updated = updateMapNodeOnProduced({
+      repoRoot: tmpDir,
+      mapSlug: "solana",
+      nodeId: "anchor-programs",
+      courseSlug: "solana-anchor-course"
     });
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  }
-});
 
-test("plan-lint: E-02 - path beginner không có ô khởi đầu -> lỗi", () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "lint-e02-starter-"));
-  try {
-    const pathsDir = path.join(tmpDir, ".course-plan", "paths");
-    fs.mkdirSync(pathsDir, { recursive: true });
+    assert.strictEqual(updated.nodes.find((n) => n.id === "anchor-programs").course_slug, "solana-anchor-course");
+    assert.strictEqual(updated.nodes.find((n) => n.id === "anchor-programs").coverage, "covered");
 
-    // Path beginner nhưng khóa duy nhất lại có requires -> treo
-    const pathContent = {
-      slug: "beg-no-starter",
-      title: "Path Beginner Treo",
-      axis: "skill",
-      goal: "G",
-      audience: "A",
-      entry_level: "beginner",
-      scope: ["S"],
-      out_of_scope: [],
-      status: "approved",
-      priority: 1,
-      evidence: [{ claim: "C", kind: "direct", urls: ["https://u"], observed_on: "2026-11-13" }],
-      missing_evidence: [],
-      courses: [
-        {
-          slug: "c1",
-          title: "Khóa 1",
-          task: "T",
-          level: "beginner",
-          scope: ["S1"],
-          out_of_scope: ["O1"],
-          suggested_order: 1,
-          is_foundation: false,
-          requires: [{ slug: "some-other", reason: "cần" }]
-        }
-      ]
-    };
+    // Kiểm tra đã ghi ra file thật
+    const reloaded = JSON.parse(fs.readFileSync(path.join(pathsDir, "solana.json"), "utf8"));
+    const node = reloaded.nodes.find((n) => n.id === "anchor-programs");
+    assert.strictEqual(node.course_slug, "solana-anchor-course");
+    assert.strictEqual(node.coverage, "covered");
 
-    fs.writeFileSync(path.join(pathsDir, "beg-no-starter.json"), JSON.stringify(pathContent, null, 2));
-
-    const result = lintPlans(tmpDir);
-    assert.strictEqual(result.ok, false);
-    assert.ok(result.problems.some((p) => p.includes('không có ô khởi đầu')));
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  }
-});
-
-test("plan-lint: E-02 - ô thiếu task rỗng hoặc thiếu ranh giới (scope/out_of_scope) -> lỗi", () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "lint-e02-boundary-"));
-  try {
-    const pathsDir = path.join(tmpDir, ".course-plan", "paths");
-    fs.mkdirSync(pathsDir, { recursive: true });
-
-    const pathContent = {
-      slug: "missing-boundary",
-      title: "Path Thiếu Ranh Giới",
-      axis: "skill",
-      goal: "G",
-      audience: "A",
-      entry_level: "intermediate",
-      scope: ["S"],
-      out_of_scope: [],
-      status: "approved",
-      priority: 1,
-      evidence: [{ claim: "C", kind: "direct", urls: ["https://u"], observed_on: "2026-11-13" }],
-      missing_evidence: [],
-      courses: [
-        {
-          slug: "c1",
-          title: "Khóa 1",
-          task: "   ", // task rỗng
-          level: "intermediate",
-          scope: [], // scope rỗng
-          out_of_scope: ["O1"],
-          suggested_order: 1,
-          is_foundation: false,
-          requires: []
-        },
-        {
-          slug: "c2",
-          title: "Khóa 2",
-          task: "T2",
-          level: "intermediate",
-          scope: ["S2"],
-          // thiếu out_of_scope
-          suggested_order: 2,
-          is_foundation: false,
-          requires: []
-        }
-      ]
-    };
-
-    fs.writeFileSync(path.join(pathsDir, "missing-boundary.json"), JSON.stringify(pathContent, null, 2));
-
-    const result = lintPlans(tmpDir);
-    assert.strictEqual(result.ok, false);
-    assert.ok(result.problems.some((p) => p.includes("khóa thiếu task hoặc task rỗng")));
-    assert.ok(result.problems.some((p) => p.includes("khóa thiếu scope hoặc scope rỗng")));
-    assert.ok(result.problems.some((p) => p.includes("khóa thiếu out_of_scope hoặc out_of_scope rỗng")));
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  }
-});
-
-test("plan-lint: P-08 - kiểm tra origin của path (pitch_slug không thuộc courses, shortlist không tồn tại, shortlist không có đề xuất)", () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "lint-origin-"));
-  try {
-    const pathsDir = path.join(tmpDir, ".course-plan", "paths");
-    fs.mkdirSync(pathsDir, { recursive: true });
-
-    const slFile = path.join(tmpDir, "my-shortlist.json");
-    // Shortlist có đề xuất 'pitch-valid'
-    fs.writeFileSync(slFile, JSON.stringify({
-      shortlist: [{ slug: "pitch-valid", title: "Valid" }]
-    }, null, 2));
-
-    const baseCourse = {
-      slug: "course-1",
-      title: "K1",
-      task: "T1",
-      level: "intermediate",
-      scope: ["S1"],
-      out_of_scope: ["O1"],
-      suggested_order: 1,
-      is_foundation: false,
-      requires: []
-    };
-
-    // Case 1: origin.pitch_slug không thuộc courses[] của path
-    const pInvalidPitch = {
-      slug: "p-invalid-pitch",
-      title: "Path",
-      axis: "skill",
-      goal: "G",
-      audience: "A",
-      entry_level: "intermediate",
-      scope: ["S"],
-      out_of_scope: ["O"],
-      status: "approved",
-      priority: 1,
-      origin: { shortlist: slFile, pitch_slug: "pitch-not-in-path" },
-      evidence: [{ claim: "C", kind: "direct", urls: ["https://u"], observed_on: "2026-11-13" }],
-      missing_evidence: [],
-      courses: [baseCourse]
-    };
-    fs.writeFileSync(path.join(pathsDir, "p-invalid-pitch.json"), JSON.stringify(pInvalidPitch, null, 2));
-
-    let res = lintPlans(tmpDir);
-    assert.strictEqual(res.ok, false);
-    assert.ok(res.problems.some((p) => p.includes("không thuộc danh sách courses[] của path")));
-
-    // Case 2: origin.shortlist không tồn tại
-    fs.unlinkSync(path.join(pathsDir, "p-invalid-pitch.json"));
-    const pMissingShortlist = {
-      ...pInvalidPitch,
-      slug: "p-missing-sl",
-      origin: { shortlist: path.join(tmpDir, "nonexistent.json"), pitch_slug: "course-1" },
-      courses: [baseCourse]
-    };
-    fs.writeFileSync(path.join(pathsDir, "p-missing-sl.json"), JSON.stringify(pMissingShortlist, null, 2));
-
-    res = lintPlans(tmpDir);
-    assert.strictEqual(res.ok, false);
-    assert.ok(res.problems.some((p) => p.includes("không tồn tại")));
-
-    // Case 3: shortlist không chứa đề xuất có slug đó
-    fs.unlinkSync(path.join(pathsDir, "p-missing-sl.json"));
-    const pPitchNotInSl = {
-      ...pInvalidPitch,
-      slug: "p-pitch-not-in-sl",
-      origin: { shortlist: slFile, pitch_slug: "course-1" },
-      courses: [baseCourse]
-    };
-    fs.writeFileSync(path.join(pathsDir, "p-pitch-not-in-sl.json"), JSON.stringify(pPitchNotInSl, null, 2));
-
-    res = lintPlans(tmpDir);
-    assert.strictEqual(res.ok, false);
-    assert.ok(res.problems.some((p) => p.includes("không chứa đề xuất có slug")));
-
-    // Case 4: Hợp lệ (pitch-valid có trong courses và có trong shortlist)
-    fs.unlinkSync(path.join(pathsDir, "p-pitch-not-in-sl.json"));
-    const pValid = {
-      ...pInvalidPitch,
-      slug: "p-valid",
-      origin: { shortlist: slFile, pitch_slug: "pitch-valid" },
-      courses: [{ ...baseCourse, slug: "pitch-valid" }]
-    };
-    fs.writeFileSync(path.join(pathsDir, "p-valid.json"), JSON.stringify(pValid, null, 2));
-
-    res = lintPlans(tmpDir);
-    assert.strictEqual(res.ok, true, "Path có origin hợp lệ phải pass: " + res.problems.join("; "));
-
-    // Case 5: Path không có origin -> vẫn hợp lệ
-    fs.unlinkSync(path.join(pathsDir, "p-valid.json"));
-    const pNoOrigin = {
-      ...pInvalidPitch,
-      slug: "p-no-origin",
-      courses: [baseCourse]
-    };
-    delete pNoOrigin.origin;
-    fs.writeFileSync(path.join(pathsDir, "p-no-origin.json"), JSON.stringify(pNoOrigin, null, 2));
-
-    res = lintPlans(tmpDir);
-    assert.strictEqual(res.ok, true, "Path không có origin vẫn hợp lệ ở plan-lint: " + res.problems.join("; "));
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  }
-});
-
-test("plan-lint: AC3 - chấp nhận path có origin hợp lệ mà thiếu priority; từ chối khi không origin mà thiếu priority", () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "lint-ac3-priority-"));
-  try {
-    const pathsDir = path.join(tmpDir, ".course-plan", "paths");
-    fs.mkdirSync(pathsDir, { recursive: true });
-
-    const slFile = path.join(tmpDir, "my-shortlist.json");
-    fs.writeFileSync(slFile, JSON.stringify({
-      shortlist: [{ slug: "pitch-ok", title: "Khóa pitch" }]
-    }, null, 2));
-
-    const baseCourse = {
-      slug: "pitch-ok",
-      title: "Khóa Pitch",
-      task: "Task",
-      level: "intermediate",
-      scope: ["S"],
-      out_of_scope: ["O"],
-      suggested_order: 1,
-      is_foundation: false,
-      requires: []
-    };
-
-    // 1. Path có origin hợp lệ NHƯNG thiếu priority -> PHẢI ĐẠT
-    const pWithValidOriginNoPriority = {
-      slug: "p-valid-origin-no-priority",
-      title: "Path có origin không priority",
-      axis: "role",
-      goal: "Goal",
-      audience: "Audience",
-      entry_level: "intermediate",
-      scope: ["S"],
-      out_of_scope: ["O"],
-      status: "approved",
-      // thiếu priority
-      origin: { shortlist: slFile, pitch_slug: "pitch-ok" },
-      evidence: [{ claim: "C", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-14" }],
-      missing_evidence: [],
-      courses: [baseCourse]
-    };
-    fs.writeFileSync(path.join(pathsDir, "p-valid-origin-no-priority.json"), JSON.stringify(pWithValidOriginNoPriority, null, 2));
-
-    let res = lintPlans(tmpDir);
-    assert.strictEqual(res.ok, true, "Path có origin hợp lệ mà thiếu priority phải pass: " + res.problems.join("; "));
-
-    // 2. Path KHÔNG có origin mà thiếu priority -> PHẢI TỪ CHỐI
-    fs.unlinkSync(path.join(pathsDir, "p-valid-origin-no-priority.json"));
-    const pNoOriginNoPriority = {
-      slug: "p-no-origin-no-priority",
-      title: "Path không origin không priority",
-      axis: "role",
-      goal: "Goal",
-      audience: "Audience",
-      entry_level: "intermediate",
-      scope: ["S"],
-      out_of_scope: ["O"],
-      status: "approved",
-      // không có origin và không có priority
-      evidence: [{ claim: "C", kind: "direct", urls: ["https://ex.com"], observed_on: "2026-11-14" }],
-      missing_evidence: [],
-      courses: [baseCourse]
-    };
-    fs.writeFileSync(path.join(pathsDir, "p-no-origin-no-priority.json"), JSON.stringify(pNoOriginNoPriority, null, 2));
-
-    res = lintPlans(tmpDir);
-    assert.strictEqual(res.ok, false, "Path không origin mà thiếu priority phải bị từ chối");
-    assert.ok(res.problems.some((p) => p.includes("priority phải là số nguyên >= 1")), "Phải báo lỗi thiếu priority");
+    // Ném lỗi khi map hoặc node không tồn tại
+    assert.throws(
+      () => updateMapNodeOnProduced({ repoRoot: tmpDir, mapSlug: "solana", nodeId: "invalid-node", courseSlug: "c" }),
+      /không tồn tại trong map/
+    );
+    assert.throws(
+      () => updateMapNodeOnProduced({ repoRoot: tmpDir, mapSlug: "invalid-map", nodeId: "n", courseSlug: "c" }),
+      /không tồn tại/
+    );
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }

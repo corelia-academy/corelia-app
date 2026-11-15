@@ -1,5 +1,5 @@
 // .claude/skills/course-planner/scripts/next.mjs
-// Tính toán khóa nên tạo tiếp theo (pick) và danh sách kế tiếp (queue).
+// Tính toán khóa nên tạo tiếp theo (pick) và danh sách kế tiếp (queue) dựa trên skill map và backlog.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,6 +13,7 @@ export function decideNext({
   const pathsDir = path.join(root, ".course-plan", "paths");
   const catalogFile = path.join(root, ".course-plan", "catalog.json");
   const evaluationsDir = path.join(root, ".course-plan", "evaluations");
+  const backlogFile = path.join(root, ".course-plan", "backlog.json");
 
   // 1. Đọc catalog.json
   const catalogMap = new Map();
@@ -25,14 +26,8 @@ export function decideNext({
           catalogMap.set(c.slug, c);
         }
       }
-    } catch {
-      // Catalog không hợp lệ hoặc chưa có
-    }
+    } catch {}
   }
-
-  // Helper kiểm tra state đã hoàn thành hoặc đang sản xuất
-  const isExcludedState = (state) =>
-    state === "in_production" || state === "produced" || state === "in_catalog";
 
   const isSatisfiedState = (catReq) => {
     if (!catReq) return false;
@@ -42,110 +37,27 @@ export function decideNext({
     return catReq.state === "produced" || catReq.state === "in_catalog";
   };
 
-  // 2. Đọc các path có status === "approved"
-  const approvedPaths = [];
+  // 2. Đọc các skill map từ .course-plan/paths/
+  const allMaps = new Map();
   if (fs.existsSync(pathsDir)) {
     const files = fs.readdirSync(pathsDir).filter((f) => f.endsWith(".json"));
     for (const file of files) {
       try {
-        const p = JSON.parse(fs.readFileSync(path.join(pathsDir, file), "utf8"));
-        if (p.status === "approved") {
-          approvedPaths.push(p);
+        const m = JSON.parse(fs.readFileSync(path.join(pathsDir, file), "utf8"));
+        if (m && m.slug) {
+          allMaps.set(m.slug, m);
         }
-      } catch {
-        // Bỏ qua file lỗi cú pháp (đã có plan-lint kiểm tra)
-      }
+      } catch {}
     }
   }
 
-  // 3. Gom candidate từ các approved path
-  // Candidate: ô khóa có state chưa phải in_production, produced, in_catalog
-  const candidateMap = new Map();
-
-  for (const p of approvedPaths) {
-    const hasDirectEvidence = Array.isArray(p.evidence) &&
-      p.evidence.some((ev) => ev && ev.kind === "direct");
-
-    for (const c of (p.courses || [])) {
-      if (!c || !c.slug) continue;
-      const catEntry = catalogMap.get(c.slug);
-      if (catEntry && isExcludedState(catEntry.state)) {
-        // Đã có trong catalog / production -> không phải candidate
-        continue;
-      }
-
-      if (!candidateMap.has(c.slug)) {
-        candidateMap.set(c.slug, {
-          slug: c.slug,
-          title: c.title || c.slug,
-          task: c.task || "",
-          level: c.level || "all",
-          suggested_order: typeof c.suggested_order === "number" ? c.suggested_order : 9999,
-          is_foundation: Boolean(c.is_foundation),
-          requires: Array.isArray(c.requires) ? c.requires : [],
-          paths: []
-        });
-      }
-
-      const cand = candidateMap.get(c.slug);
-      cand.paths.push({
-        slug: p.slug,
-        title: p.title,
-        priority: typeof p.priority === "number" ? p.priority : 9999,
-        hasDirectEvidence,
-        origin: p.origin || null,
-        pathRaw: p,
-        suggested_order: typeof c.suggested_order === "number" ? c.suggested_order : 9999
-      });
-    }
-  }
-
-  // Helper kiểm tra target_slug có phụ thuộc bắc cầu vào cand_slug không (V-07)
-  function targetTransitivelyRequires(startSlug, targetSlug, allApprovedPaths) {
-    const visited = new Set();
-    const queue = [startSlug];
-    visited.add(startSlug);
-
-    while (queue.length > 0) {
-      const curr = queue.shift();
-      for (const p of allApprovedPaths) {
-        for (const c of (p.courses || [])) {
-          if (c && c.slug === curr && Array.isArray(c.requires)) {
-            for (const req of c.requires) {
-              if (req && req.slug) {
-                if (req.slug === targetSlug) {
-                  return true;
-                }
-                if (!visited.has(req.slug)) {
-                  visited.add(req.slug);
-                  queue.push(req.slug);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    return false;
-  }
-
-  // Helper lấy thứ tự gợi ý của khóa trong một path cụ thể (V-01)
-  function getCourseOrderInPath(cand, pathSlug) {
-    const found = cand.paths?.find((p) => p.slug === pathSlug);
-    return typeof found?.suggested_order === "number" ? found.suggested_order : (cand.suggested_order ?? 9999);
-  }
-
-  // Gán minPriority và primaryPath cho mỗi candidate
-  for (const cand of candidateMap.values()) {
-    cand.paths.sort((a, b) => {
-      const pa = typeof a.priority === "number" ? a.priority : (a.origin ? 1 : 9999);
-      const pb = typeof b.priority === "number" ? b.priority : (b.origin ? 1 : 9999);
-      if (pa !== pb) return pa - pb;
-      return a.slug.localeCompare(b.slug);
-    });
-    cand.minPriority = typeof cand.paths[0].priority === "number" ? cand.paths[0].priority : (cand.paths[0].origin ? 1 : 9999);
-    cand.primaryPath = cand.paths[0];
-    cand.suggested_order = cand.primaryPath.suggested_order;
+  // 3. Đọc backlog.json
+  let proposals = [];
+  if (fs.existsSync(backlogFile)) {
+    try {
+      const blData = JSON.parse(fs.readFileSync(backlogFile, "utf8"));
+      proposals = Array.isArray(blData.proposals) ? blData.proposals : [];
+    } catch {}
   }
 
   const updates = [];
@@ -155,20 +67,132 @@ export function decideNext({
   const readyCandidates = [];
   const allWarnings = [];
 
-  // 4. Kiểm tra điều kiện "Sẵn sàng" TRƯỚC (V-02)
-  // Khóa chưa đủ điều kiện tiên quyết (requires chưa produced / in_catalog) vào blocked ngay,
-  // không bắt buộc phải có evaluation và không bị xếp vào needs_research.
-  const candidateList = Array.from(candidateMap.values()).filter((c) => !onlySlug || c.slug === onlySlug);
+  // 4. Xác định danh sách candidate
+  let candidatesToEvaluate = [];
+  if (onlySlug) {
+    const matched = proposals.find((p) => p.slug === onlySlug);
+    if (!matched) {
+      needs_research.push({
+        slug: onlySlug,
+        title: onlySlug,
+        path_slug: "unknown",
+        reason: `Backlog không chứa đề xuất có slug "${onlySlug}"`,
+      });
+    } else {
+      candidatesToEvaluate.push(matched);
+    }
+  } else {
+    // Không có onlySlug: quét các đề xuất đang ở status "chosen"
+    candidatesToEvaluate = proposals.filter((p) => p.status === "chosen");
+  }
 
-  for (const cand of candidateList) {
+  // 5. Đánh giá từng candidate qua các Gate mới (AC-07)
+  for (const cand of candidatesToEvaluate) {
+    // Điều kiện A: Đề xuất phải có status "chosen"
+    if (cand.status !== "chosen") {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: cand.path_node?.path || "unknown",
+        reason: `Đề xuất trong backlog có status "${cand.status || "không xác định"}" (yêu cầu "chosen")`,
+      });
+      continue;
+    }
+
+    // Điều kiện B: Có path_node hợp lệ
+    const pathNode = cand.path_node;
+    if (!pathNode || typeof pathNode !== "object" || !pathNode.path || !pathNode.node) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: "unknown",
+        reason: "Đề xuất chosen thiếu path_node hợp lệ",
+      });
+      continue;
+    }
+
+    // Điều kiện C: Map tồn tại và có status "approved"
+    const map = allMaps.get(pathNode.path);
+    if (!map) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: pathNode.path,
+        reason: `Map "${pathNode.path}" không tồn tại`,
+      });
+      continue;
+    }
+
+    if (map.status !== "approved") {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: pathNode.path,
+        reason: `Map "${pathNode.path}" có status "${map.status}" (yêu cầu "approved")`,
+      });
+      continue;
+    }
+
+    // Điều kiện D: Ô tồn tại trong map
+    const node = (map.nodes || []).find((n) => n.id === pathNode.node);
+    if (!node) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: pathNode.path,
+        reason: `Ô "${pathNode.node}" không tồn tại trong map "${pathNode.path}"`,
+      });
+      continue;
+    }
+
+    if (node.coverage === "covered") {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: pathNode.path,
+        reason: `Ô "${pathNode.node}" trong map "${pathNode.path}" đã có coverage "covered"`,
+      });
+      continue;
+    }
+
+    if (node.ref != null) {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: pathNode.path,
+        reason: `Ô "${pathNode.node}" trong map "${pathNode.path}" có ref "${node.ref}", không thể tạo khóa trực tiếp`,
+      });
+      continue;
+    }
+
+    // Điều kiện E (AC-02 & AC-07): mọi ô trong requires đã covered hoặc đã có đề xuất chosen/produced
+    const nodeRequires = Array.isArray(node.requires) ? node.requires : [];
     const unmetRequires = [];
-    for (const req of cand.requires) {
-      if (!req || !req.slug) continue;
-      const catReq = catalogMap.get(req.slug);
-      if (!catReq || !isSatisfiedState(catReq)) {
-        unmetRequires.push(req.slug);
-      } else if (!catReq.content_state || catReq.content_state === "unknown") {
-        allWarnings.push(`Khóa tiên quyết "${req.slug}" của "${cand.slug}" ${!catReq.content_state ? "thiếu content_state" : "có content_state unknown"} (cần export catalog mới)`);
+
+    for (const reqId of nodeRequires) {
+      const reqNode = (map.nodes || []).find((n) => n.id === reqId);
+      const isCovered = reqNode?.coverage === "covered";
+      const hasProposalMet = proposals.some(
+        (p) =>
+          p.path_node?.path === pathNode.path &&
+          p.path_node?.node === reqId &&
+          (p.status === "chosen" || p.status === "produced")
+      );
+      const hasCatMet = reqNode?.course_slug && isSatisfiedState(catalogMap.get(reqNode.course_slug));
+
+      if (reqNode?.course_slug) {
+        const catReq = catalogMap.get(reqNode.course_slug);
+        if (catReq && (!catReq.content_state || catReq.content_state === "unknown")) {
+          allWarnings.push(
+            `Khóa tiên quyết "${reqNode.course_slug}" của "${cand.slug}" ${
+              !catReq.content_state ? "thiếu content_state" : "có content_state unknown"
+            } (cần export catalog mới)`
+          );
+        }
+      }
+
+      if (!isCovered && !hasProposalMet && !hasCatMet) {
+        unmetRequires.push(reqId);
       }
     }
 
@@ -176,20 +200,20 @@ export function decideNext({
       blocked.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        blocked_by: unmetRequires.sort()
+        path_slug: pathNode.path,
+        blocked_by: unmetRequires.sort(),
       });
       continue;
     }
 
-    // Đã thỏa mãn tiên quyết (SẴN SÀNG) -> Thẩm định 5 Gate
+    // Điều kiện F: Đánh giá file evaluation (Gate catalog, feasibility, handoff)
     const evalFile = path.join(evaluationsDir, `${cand.slug}.json`);
     if (!fs.existsSync(evalFile)) {
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: "Thiếu file evaluation"
+        path_slug: pathNode.path,
+        reason: "Thiếu file evaluation",
       });
       continue;
     }
@@ -201,70 +225,33 @@ export function decideNext({
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: `File evaluation hỏng: ${err.message}`
+        path_slug: pathNode.path,
+        reason: `File evaluation hỏng: ${err.message}`,
       });
       continue;
     }
 
-    // Gate 3: catalog.verdict
+    // Gate catalog: verdict === "new"
     const catVerdict = evData.catalog?.verdict;
     if (catVerdict === "update_existing") {
       updates.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        basis: evData.catalog?.basis || "",
-        refs: evData.catalog?.refs || []
-      });
-      continue;
-    } else if (catVerdict === "covered") {
-      rejected.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: `Đã được đáp ứng trong catalog: ${evData.catalog?.basis || ""}`
-      });
-      continue;
-    } else if (catVerdict === "overlap_warning") {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: `Cảnh báo trùng lặp với catalog: ${evData.catalog?.basis || ""}`
+        path_slug: pathNode.path,
+        reason: evData.catalog?.basis || "Cần cập nhật khóa có sẵn",
       });
       continue;
     } else if (catVerdict !== "new") {
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: `Catalog verdict không hợp lệ (${catVerdict})`
+        path_slug: pathNode.path,
+        reason: `Catalog verdict không hợp lệ (${catVerdict})`,
       });
       continue;
     }
 
-    // Gate 4: feasibility.verdict khác not_feasible
-    const feasVerdict = evData.feasibility?.verdict;
-    if (feasVerdict === "not_feasible") {
-      rejected.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: `Không khả thi: ${evData.feasibility?.basis || ""}`
-      });
-      continue;
-    } else if (feasVerdict !== "feasible" && feasVerdict !== "feasible_with_limits") {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: `Feasibility verdict không hợp lệ (${feasVerdict})`
-      });
-      continue;
-    }
-
-    // E-04: Kiểm tra evaluation có chứa đầy đủ các khóa produced hoặc in_catalog hiện có trong catalog.json hay không
+    // E-04: Kiểm tra evaluation có đối chiếu đầy đủ các khóa hiện có trong catalog hay không
     const activeCatalogSlugs = Array.from(catalogMap.values())
       .filter((c) => c.state === "produced" || c.state === "in_catalog")
       .map((c) => c.slug);
@@ -276,14 +263,34 @@ export function decideNext({
         needs_research.push({
           slug: cand.slug,
           title: cand.title,
-          path_slug: cand.primaryPath.slug,
-          reason: `Catalog có khóa mới chưa đối chiếu trong evaluation: ${missingFromEval.join(", ")}`
+          path_slug: pathNode.path,
+          reason: `Catalog có khóa mới chưa đối chiếu trong evaluation: ${missingFromEval.join(", ")}`,
         });
         continue;
       }
     }
 
-    // Gate 5: handoff đủ title, audience, level, scope_note (E-03)
+    // Gate feasibility: verdict khác not_feasible
+    const feasVerdict = evData.feasibility?.verdict;
+    if (feasVerdict === "not_feasible") {
+      rejected.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: pathNode.path,
+        reason: `Không khả thi: ${evData.feasibility?.basis || ""}`,
+      });
+      continue;
+    } else if (feasVerdict !== "feasible" && feasVerdict !== "feasible_with_limits") {
+      needs_research.push({
+        slug: cand.slug,
+        title: cand.title,
+        path_slug: pathNode.path,
+        reason: `Feasibility verdict không hợp lệ (${feasVerdict})`,
+      });
+      continue;
+    }
+
+    // Gate handoff: đủ title, audience, level, scope_note
     const handoff = evData.handoff;
     if (
       !handoff ||
@@ -295,354 +302,59 @@ export function decideNext({
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: "Handoff thiếu trường bắt buộc (title, audience, level, scope_note)"
+        path_slug: pathNode.path,
+        reason: "Handoff thiếu trường bắt buộc (title, audience, level, scope_note)",
       });
       continue;
     }
 
-    // Gate 2: Path có ít nhất một direct evidence, HOẶC foundation_basis trỏ tới khóa đích thuộc path có direct evidence (V-07)
-    let passesEvidence = cand.paths.some((p) => p.hasDirectEvidence);
-    if (!passesEvidence && evData.foundation_basis) {
-      const fb = evData.foundation_basis;
-      const targetSlug = fb?.target_slug;
-      const reason = fb?.reason;
-
-      const hasValidReason = typeof reason === "string" && reason.trim().length > 0;
-      const targetDependsOnCand = targetSlug
-        ? targetTransitivelyRequires(targetSlug, cand.slug, approvedPaths)
-        : false;
-
-      if (hasValidReason && targetDependsOnCand) {
-        // Tìm path chứa targetSlug có direct evidence
-        const targetPaths = approvedPaths.filter((ap) =>
-          (ap.courses || []).some((c) => c && c.slug === targetSlug)
-        );
-        const targetHasDirect = targetPaths.some((ap) =>
-          Array.isArray(ap.evidence) && ap.evidence.some((ev) => ev && ev.kind === "direct")
-        );
-        if (targetHasDirect) {
-          passesEvidence = true;
-        }
-      }
-    }
-
-    if (!passesEvidence) {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: evData.foundation_basis
-          ? "foundation_basis trỏ tới path không có evidence direct hoặc target không phụ thuộc vào khóa nền hoặc reason rỗng"
-          : "Path không có evidence direct và không có foundation_basis hợp lệ"
-      });
-      continue;
-    }
-
-    // Gate 6: path của ứng viên có origin trỏ tới một shortlist tồn tại,
-    // trong đó chosen_slug bằng origin.pitch_slug.
-    const pathOrigin = cand.primaryPath?.origin;
-    if (!pathOrigin || typeof pathOrigin !== "object") {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: "Path thiếu origin trỏ tới shortlist"
-      });
-      continue;
-    }
-
-    const shortlistRef = pathOrigin.shortlist;
-    const pitchSlug = pathOrigin.pitch_slug;
-    if (!shortlistRef || !pitchSlug) {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: "Path origin thiếu shortlist hoặc pitch_slug"
-      });
-      continue;
-    }
-
-    // P-08: origin.pitch_slug phải thuộc courses[] của path
-    const pathCourses = cand.primaryPath?.pathRaw?.courses || [];
-    const pathCourseSlugs = new Set(pathCourses.map((c) => c?.slug).filter(Boolean));
-    if (!pathCourseSlugs.has(pitchSlug)) {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: `origin.pitch_slug "${pitchSlug}" không thuộc danh sách courses của path "${cand.primaryPath.slug}"`
-      });
-      continue;
-    }
-
-    let slFilePath = path.isAbsolute(shortlistRef)
-      ? shortlistRef
-      : path.join(root, shortlistRef);
-    if (!fs.existsSync(slFilePath)) {
-      const inDir = path.join(root, ".course-plan", "shortlists", path.basename(shortlistRef));
-      if (fs.existsSync(inDir)) {
-        slFilePath = inDir;
-      }
-    }
-
-    if (!fs.existsSync(slFilePath)) {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: `File shortlist "${shortlistRef}" không tồn tại`
-      });
-      continue;
-    }
-
-    let slData = null;
-    try {
-      slData = JSON.parse(fs.readFileSync(slFilePath, "utf8"));
-    } catch (err) {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: `File shortlist hỏng: ${err.message}`
-      });
-      continue;
-    }
-
-    if (!slData.chosen_slug) {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: "Shortlist chưa có chosen_slug được Human phê duyệt"
-      });
-      continue;
-    }
-
-    if (slData.chosen_slug !== pitchSlug) {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: `chosen_slug "${slData.chosen_slug}" không khớp origin.pitch_slug "${pitchSlug}"`
-      });
-      continue;
-    }
-
-    // P-08: file shortlist phải chứa đề xuất có slug đó
-    const slProposals = Array.isArray(slData.shortlist) ? slData.shortlist : [];
-    const hasPitch = slProposals.some((prop) => prop?.slug === pitchSlug);
-    if (!hasPitch) {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: cand.primaryPath.slug,
-        reason: `shortlist "${shortlistRef}" không chứa đề xuất có slug "${pitchSlug}"`
-      });
-      continue;
-    }
-
-    // Đã thỏa mãn tiên quyết và qua cả 6 Gate -> Sẵn sàng
     readyCandidates.push({
-      ...cand,
-      evaluation: evData
+      slug: cand.slug,
+      title: cand.title,
+      path_slug: pathNode.path,
+      path_title: map.title,
+      node_id: pathNode.node,
+      layer: node.layer,
+      level: cand.level || "all",
+      requires: nodeRequires,
     });
   }
 
-  // 5. Chọn pick và xử lý tie
-  let pick = null;
-  let tie = null;
-  let queue = [];
+  // 6. Xếp thứ tự readyCandidates và chọn pick
+  readyCandidates.sort((a, b) => a.slug.localeCompare(b.slug));
 
-  if (readyCandidates.length > 0) {
-    // Tìm minPriority nhỏ nhất
-    const bestPriority = Math.min(...readyCandidates.map((c) => c.minPriority));
-    const topReady = readyCandidates.filter((c) => c.minPriority === bestPriority);
-
-    // Gom top ready candidate theo từng path có priority == bestPriority
-    const pathsWithBestPriority = new Map();
-    for (const c of topReady) {
-      for (const p of c.paths) {
-        if (p.priority === bestPriority) {
-          if (!pathsWithBestPriority.has(p.slug)) {
-            pathsWithBestPriority.set(p.slug, []);
-          }
-          pathsWithBestPriority.get(p.slug).push(c);
-        }
-      }
-    }
-
-    // Với mỗi path, chọn khóa đứng đầu theo topo -> suggested_order trong path đó -> slug (V-01)
-    const pathWinners = [];
-    for (const [pathSlug, cands] of pathsWithBestPriority.entries()) {
-      cands.sort((a, b) => {
-        const orderA = getCourseOrderInPath(a, pathSlug);
-        const orderB = getCourseOrderInPath(b, pathSlug);
-        if (orderA !== orderB) return orderA - orderB;
-        return a.slug.localeCompare(b.slug);
-      });
-      pathWinners.push({
-        pathSlug,
-        winner: cands[0]
-      });
-    }
-
-    // Kiểm tra xem các path có chọn cùng một khóa không
-    const distinctWinnersMap = new Map();
-    for (const pw of pathWinners) {
-      if (!distinctWinnersMap.has(pw.winner.slug)) {
-        distinctWinnersMap.set(pw.winner.slug, pw.winner);
-      }
-    }
-
-    if (distinctWinnersMap.size > 1) {
-      // Hai path cùng priority có khóa sẵn sàng đứng đầu khác nhau -> tie
-      pick = null;
-      tie = Array.from(distinctWinnersMap.values())
-        .sort((a, b) => a.slug.localeCompare(b.slug))
-        .map((c) => ({
-          slug: c.slug,
-          title: c.title,
-          path_slug: c.primaryPath.slug,
-          priority: c.minPriority
-        }));
-    } else {
-      // Có 1 winner duy nhất
-      pick = Array.from(distinctWinnersMap.values())[0];
-    }
-  }
-
-  // 6. Xây dựng queue nếu có pick
-  // queue: các khóa kế tiếp cùng path với pick, theo cùng quy tắc, kể cả khóa đang bị chặn bởi chính pick
-  if (pick) {
-    const chosenPathSlug = pick.primaryPath.slug;
-    const targetPath = approvedPaths.find((p) => p.slug === chosenPathSlug);
-
-    if (targetPath && Array.isArray(targetPath.courses)) {
-      // Lấy tất cả các khóa khác trong targetPath chưa in_production, in_catalog, produced
-      // Loại trừ các khóa nằm trong updates hoặc rejected
-      const excludedSlugs = new Set([
-        pick.slug,
-        ...updates.map((u) => u.slug),
-        ...rejected.map((r) => r.slug)
-      ]);
-
-      const queueCandidates = [];
-      for (const c of targetPath.courses) {
-        if (excludedSlugs.has(c.slug)) continue;
-        const cat = catalogMap.get(c.slug);
-        if (cat && isExcludedState(cat.state)) continue;
-
-        queueCandidates.push({
-          slug: c.slug,
-          title: c.title || c.slug,
-          task: c.task || "",
-          level: c.level || "all",
-          suggested_order: typeof c.suggested_order === "number" ? c.suggested_order : 9999,
-          is_foundation: Boolean(c.is_foundation),
-          requires: Array.isArray(c.requires) ? c.requires : []
-        });
-      }
-
-      // Sắp xếp topo bằng Kahn's algorithm
-      // Node u -> v: v requires u (u must come before v)
-      const qSlugs = new Set(queueCandidates.map((c) => c.slug));
-      const inDegree = new Map();
-      const graph = new Map(); // u -> set of v
-
-      for (const c of queueCandidates) {
-        inDegree.set(c.slug, 0);
-        graph.set(c.slug, new Set());
-      }
-
-      for (const c of queueCandidates) {
-        for (const req of c.requires) {
-          if (qSlugs.has(req.slug)) {
-            graph.get(req.slug).add(c.slug);
-            inDegree.set(c.slug, (inDegree.get(c.slug) || 0) + 1);
-          }
-        }
-      }
-
-      // Priority queue cho Kahn's: inDegree == 0
-      const candBySlug = new Map(queueCandidates.map((c) => [c.slug, c]));
-      const available = queueCandidates
-        .filter((c) => inDegree.get(c.slug) === 0)
-        .map((c) => c.slug);
-
-      const sortedQueue = [];
-
-      while (available.length > 0) {
-        available.sort((slugA, slugB) => {
-          const a = candBySlug.get(slugA);
-          const b = candBySlug.get(slugB);
-          if (a.suggested_order !== b.suggested_order) return a.suggested_order - b.suggested_order;
-          return a.slug.localeCompare(b.slug);
-        });
-
-        const nextSlug = available.shift();
-        const nextCand = candBySlug.get(nextSlug);
-        sortedQueue.push(nextCand);
-
-        for (const dependent of graph.get(nextSlug)) {
-          const newDeg = inDegree.get(dependent) - 1;
-          inDegree.set(dependent, newDeg);
-          if (newDeg === 0) {
-            available.push(dependent);
-          }
-        }
-      }
-
-      // Nếu còn sót do dependency ngoài queue, thêm nốt
-      if (sortedQueue.length < queueCandidates.length) {
-        const handled = new Set(sortedQueue.map((c) => c.slug));
-        const remaining = queueCandidates.filter((c) => !handled.has(c.slug));
-        remaining.sort((a, b) => {
-          if (a.suggested_order !== b.suggested_order) return a.suggested_order - b.suggested_order;
-          return a.slug.localeCompare(b.slug);
-        });
-        sortedQueue.push(...remaining);
-      }
-
-      queue = sortedQueue;
-    }
-  }
-
-  // Sắp xếp các danh sách khác theo slug để đảm bảo tính tất định (AC1)
-  updates.sort((a, b) => a.slug.localeCompare(b.slug));
-  rejected.sort((a, b) => a.slug.localeCompare(b.slug));
-  needs_research.sort((a, b) => a.slug.localeCompare(b.slug));
-  blocked.sort((a, b) => a.slug.localeCompare(b.slug));
+  const pick = readyCandidates.length > 0 ? readyCandidates[0] : null;
+  const queue = readyCandidates.slice(1);
 
   const decision = {
     pick: pick
       ? {
           slug: pick.slug,
           title: pick.title,
-          path_slug: pick.primaryPath.slug,
-          path_title: pick.primaryPath.title,
-          priority: pick.minPriority,
+          path_slug: pick.path_slug,
+          path_title: pick.path_title,
+          node_id: pick.node_id,
+          layer: pick.layer,
           level: pick.level,
-          is_foundation: pick.is_foundation,
-          evaluation_ref: `.course-plan/evaluations/${pick.slug}.json`
+          evaluation_ref: `.course-plan/evaluations/${pick.slug}.json`,
         }
       : null,
-    tie: tie || null,
+    tie: null,
     queue: queue.map((q) => ({
       slug: q.slug,
       title: q.title,
       level: q.level,
-      suggested_order: q.suggested_order,
+      path_slug: q.path_slug,
+      node_id: q.node_id,
+      layer: q.layer,
       requires: q.requires,
-      is_foundation: q.is_foundation
     })),
     updates,
     blocked,
     needs_research,
     rejected,
     warnings: allWarnings,
-    user_decision: null
+    user_decision: null,
   };
 
   return decision;
@@ -658,7 +370,6 @@ export function saveDecision(decision, repoRoot = ".", customDate = null) {
   const d = customDate ? new Date(customDate) : new Date();
   const dateStr = d.toISOString().slice(0, 10); // YYYY-MM-DD
 
-  // Tìm index n kế tiếp
   const existingFiles = fs.readdirSync(decisionsDir);
   const regex = new RegExp(`^${dateStr}-(\\d+)\\.json$`);
   let maxN = 0;

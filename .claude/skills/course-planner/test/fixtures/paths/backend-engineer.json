@@ -1,0 +1,65 @@
+{
+  "slug": "backend-engineer",
+  "kind": "role",
+  "entry": "Backend",
+  "title": "Lộ trình Kỹ sư Backend",
+  "goal": "Đào tạo kỹ sư backend toàn diện từ thiết kế API đến kiến trúc microservices",
+  "status": "approved",
+  "sources": [
+    {
+      "url": "https://roadmap.sh/backend",
+      "quote": "Step by step guide to becoming a modern backend developer in 2026",
+      "observed_on": "2026-11-15"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "backend-foundations",
+      "title": "Nền tảng Mạng và Giao thức HTTP/HTTPS",
+      "layer": "foundation",
+      "branch": null,
+      "requires": [],
+      "ref": null,
+      "required_tools": ["curl"],
+      "scope": ["OSI model", "HTTP/2", "DNS", "TLS"],
+      "course_slug": null,
+      "coverage": "empty"
+    },
+    {
+      "id": "api-development",
+      "title": "Thiết kế và Xây dựng RESTful API",
+      "layer": "competency",
+      "branch": null,
+      "requires": ["backend-foundations"],
+      "ref": null,
+      "required_tools": ["node", "postman"],
+      "scope": ["Routing", "Middleware", "Authentication"],
+      "course_slug": null,
+      "coverage": "empty"
+    },
+    {
+      "id": "backend-caching",
+      "title": "Tối ưu Hiệu năng với Caching",
+      "layer": "competency",
+      "branch": null,
+      "requires": ["api-development"],
+      "ref": "redis#caching",
+      "required_tools": ["redis-cli"],
+      "scope": ["Caching patterns", "Redis integration"],
+      "course_slug": null,
+      "coverage": "empty"
+    },
+    {
+      "id": "system-observability",
+      "title": "Giám sát và Vận hành Hệ thống Backend",
+      "layer": "production",
+      "branch": null,
+      "requires": ["api-development"],
+      "ref": null,
+      "required_tools": ["docker"],
+      "scope": ["Logging", "Metrics", "Tracing"],
+      "course_slug": null,
+      "coverage": "empty"
+    }
+  ]
+}

@@ -5,13 +5,13 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { spawnSync } from "node:child_process";
-import { checkUrls } from "../scripts/evidence-check.mjs";
+import { checkUrls, extractUrlsFromData } from "../scripts/evidence-check.mjs";
 
 test("evidence-check: AC5 - kiểm tra 200 pass, redirect tới 200 pass, 404 và 403 bị báo kèm file và trường", async () => {
   const items = [
-    { url: "https://example.com/ok", file: "shortlists/sl.json", field: "shortlist[0].why_now.urls[0]" },
-    { url: "https://example.com/redirect-to-200", file: "shortlists/sl.json", field: "shortlist[0].alternatives[0].url" },
-    { url: "https://example.com/not-found", file: "shortlists/sl.json", field: "shortlist[1].alternatives[0].url" },
+    { url: "https://example.com/ok", file: "backlog/bl.json", field: "proposals[0].why_now.urls[0]" },
+    { url: "https://example.com/redirect-to-200", file: "backlog/bl.json", field: "proposals[0].alternatives[0].url" },
+    { url: "https://example.com/not-found", file: "backlog/bl.json", field: "proposals[1].alternatives[0].url" },
     { url: "https://example.com/forbidden", file: "evaluations/ev.json", field: "sources[0].url" }
   ];
 
@@ -41,8 +41,8 @@ test("evidence-check: AC5 - kiểm tra 200 pass, redirect tới 200 pass, 404 v�
   const err404 = errors.find((e) => e.status === 404);
   assert.ok(err404);
   assert.strictEqual(err404.url, "https://example.com/not-found");
-  assert.strictEqual(err404.file, "shortlists/sl.json");
-  assert.strictEqual(err404.field, "shortlist[1].alternatives[0].url");
+  assert.strictEqual(err404.file, "backlog/bl.json");
+  assert.strictEqual(err404.field, "proposals[1].alternatives[0].url");
 
   const err403 = errors.find((e) => e.status === 403);
   assert.ok(err403);
@@ -217,4 +217,50 @@ test("evidence-check: W3 - kiểm tra quote trong trang, khoảng trắng, dấu
   ];
   const res6 = await checkUrls(item6, { fetchFn: mockFetch });
   assert.strictEqual(res6.ok, true, "inferred không có quote phải đạt");
+});
+
+test("evidence-check: AC-09 - trích xuất URL từ backlog.json chỉ kiểm tra đề xuất open và chosen", () => {
+  const backlogData = {
+    focus: [],
+    proposals: [
+      {
+        slug: "prop-open",
+        status: "open",
+        why_now: { kind: "direct", urls: ["https://example.com/open-why"], quote: "Leaderboard of the biggest hacks in DeFi with detailed post-mortems" },
+        alternatives: [{ name: "Alt", url: "https://example.com/open-alt", gap: "gap" }],
+        criteria: { fills_direction: { met: true, refs: ["https://example.com/open-ref"] } }
+      },
+      {
+        slug: "prop-chosen",
+        status: "chosen",
+        why_now: { kind: "direct", urls: ["https://example.com/chosen-why"], quote: "Leaderboard of the biggest hacks in DeFi with detailed post-mortems" },
+        alternatives: [{ name: "Alt", url: "https://example.com/chosen-alt", gap: "gap" }]
+      },
+      {
+        slug: "prop-rejected",
+        status: "rejected",
+        why_now: { kind: "direct", urls: ["https://example.com/rejected-why"] },
+        alternatives: [{ name: "Alt", url: "https://example.com/rejected-alt", gap: "gap" }]
+      },
+      {
+        slug: "prop-produced",
+        status: "produced",
+        why_now: { kind: "direct", urls: ["https://example.com/produced-why"] },
+        alternatives: [{ name: "Alt", url: "https://example.com/produced-alt", gap: "gap" }]
+      }
+    ]
+  };
+
+  const extracted = extractUrlsFromData(backlogData, "backlog.json");
+  const urls = extracted.map((e) => e.url);
+  assert.ok(urls.includes("https://example.com/open-why"));
+  assert.ok(urls.includes("https://example.com/open-alt"));
+  assert.ok(urls.includes("https://example.com/open-ref"));
+  assert.ok(urls.includes("https://example.com/chosen-why"));
+  assert.ok(urls.includes("https://example.com/chosen-alt"));
+
+  assert.strictEqual(urls.includes("https://example.com/rejected-why"), false, "Không kiểm tra rejected why_now");
+  assert.strictEqual(urls.includes("https://example.com/rejected-alt"), false, "Không kiểm tra rejected alternatives");
+  assert.strictEqual(urls.includes("https://example.com/produced-why"), false, "Không kiểm tra produced why_now");
+  assert.strictEqual(urls.includes("https://example.com/produced-alt"), false, "Không kiểm tra produced alternatives");
 });

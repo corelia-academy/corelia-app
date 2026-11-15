@@ -1,9 +1,6 @@
 {
-  "date": "2026-11-13",
-  "round": 1,
-  "chosen_slug": "pitch-1",
-  "rejected": [],
-  "shortlist": [
+  "focus": [],
+  "proposals": [
     {
       "slug": "pitch-1",
       "title": "Smart Contract Security Defense",
@@ -81,7 +78,11 @@
       "risks": [
         "Học viên cần máy tính cài sẵn Node.js"
       ],
-      "missing_evidence": []
+      "missing_evidence": [],
+      "status": "open",
+      "added_on": "2026-11-13",
+      "decided_on": null,
+      "reject_reason": null
     },
     {
       "slug": "pitch-2",
@@ -158,7 +159,11 @@
         }
       },
       "risks": [],
-      "missing_evidence": []
+      "missing_evidence": [],
+      "status": "open",
+      "added_on": "2026-11-13",
+      "decided_on": null,
+      "reject_reason": null
     },
     {
       "slug": "pitch-3",
@@ -235,7 +240,11 @@
         }
       },
       "risks": [],
-      "missing_evidence": []
+      "missing_evidence": [],
+      "status": "open",
+      "added_on": "2026-11-13",
+      "decided_on": null,
+      "reject_reason": null
     },
     {
       "slug": "c-partial",
@@ -312,7 +321,11 @@
         }
       },
       "risks": [],
-      "missing_evidence": []
+      "missing_evidence": [],
+      "status": "open",
+      "added_on": "2026-11-13",
+      "decided_on": null,
+      "reject_reason": null
     }
   ]
 }

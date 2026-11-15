@@ -1,0 +1,77 @@
+{
+  "slug": "solana",
+  "kind": "ecosystem",
+  "entry": "Solana",
+  "title": "Lộ trình Phát triển trên Hệ sinh thái Solana",
+  "goal": "Đào tạo lập trình viên xây dựng ứng dụng phi tập trung hoàn chỉnh trên Solana",
+  "status": "approved",
+  "sources": [
+    {
+      "url": "https://solana.com/docs",
+      "quote": "Solana documentation provides developers with tools and resources to build decentralized applications",
+      "observed_on": "2026-11-15"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "accounts-model",
+      "title": "Mô hình Account và State trên Solana",
+      "layer": "foundation",
+      "branch": null,
+      "requires": [],
+      "ref": null,
+      "required_tools": ["solana-cli"],
+      "scope": ["Account types", "Rent", "PDA cơ bản"],
+      "course_slug": null,
+      "coverage": "empty"
+    },
+    {
+      "id": "rust-basics",
+      "title": "Ngôn ngữ Rust cho Solana",
+      "layer": "language",
+      "branch": null,
+      "requires": ["accounts-model"],
+      "ref": null,
+      "required_tools": ["cargo", "rustc"],
+      "scope": ["Ownership", "Borrowing", "Data types"],
+      "course_slug": null,
+      "coverage": "empty"
+    },
+    {
+      "id": "anchor-programs",
+      "title": "Lập trình Solana Program với Anchor",
+      "layer": "core",
+      "branch": null,
+      "requires": ["rust-basics"],
+      "ref": null,
+      "required_tools": ["anchor", "cargo"],
+      "scope": ["Anchor macros", "Cross-Program Invocations", "Testing"],
+      "course_slug": null,
+      "coverage": "empty"
+    },
+    {
+      "id": "token-program",
+      "title": "Phát triển Token SPL trên Solana",
+      "layer": "branch",
+      "branch": "token",
+      "requires": ["anchor-programs"],
+      "ref": null,
+      "required_tools": ["spl-token", "anchor"],
+      "scope": ["SPL Token 2022", "Minting", "Transfers"],
+      "course_slug": null,
+      "coverage": "empty"
+    },
+    {
+      "id": "metaplex-nfts",
+      "title": "Phát hành NFT với Metaplex Core",
+      "layer": "branch",
+      "branch": "nft",
+      "requires": ["anchor-programs"],
+      "ref": null,
+      "required_tools": ["node", "anchor"],
+      "scope": ["Metaplex Core standard", "Collection minting"],
+      "course_slug": "metaplex-core-nft-collection",
+      "coverage": "covered"
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import { rankShortlist, formatShortlistTable } from "../scripts/rank.mjs";
 
 const mockCatalog = [
@@ -14,7 +15,6 @@ const mockCatalog = [
 test("rank: AC3 - xếp hạng đúng 4 bậc, ghi đè continues_catalog, tất định qua 2 lần chạy", () => {
   const shortlistData = {
     date: "2026-11-13",
-    round: 1,
     shortlist: [
       // 1. Đủ điều kiện, 4 tiêu chí đạt, 2 direct urls, slug: "course-b"
       {
@@ -220,7 +220,6 @@ test("rank: AC4 - rank.mjs --table in đúng 5 cột, mọi tiêu chí đạt �
 test("rank: W5 - đề xuất thiếu công cụ thành Rank — và các dòng khác dồn hạng; thiếu yt-dlp sinh đúng một cảnh báo", () => {
   const shortlistData = {
     date: "2026-11-14",
-    round: 1,
     shortlist: [
       {
         slug: "course-1",
@@ -330,4 +329,216 @@ test("rank: W5 - đề xuất thiếu công cụ thành Rank — và các dòng 
   assert.ok(tableMissing.includes("Thiếu công cụ: forge, slither"));
   assert.ok(tableMissing.includes("⚠️ Cảnh báo: Thiếu công cụ nền yt-dlp: khóa sẽ không có bài video."));
   assert.doesNotMatch(tableMissing, /luồng sẽ dừng trước bước nhập/);
+});
+
+test("rank: AC-03 & AC-04 - chỉ xếp hạng đề xuất open từ backlog, không có round, dòng không nhắc tới giữ open", () => {
+  const backlogData = {
+    focus: [],
+    proposals: [
+      {
+        slug: "course-open-1",
+        title: "Khóa Open 1",
+        direction: { axis: "role", entry: "Smart Contract Developer" },
+        level: "intermediate",
+        kind: "new",
+        promise: "Vá lỗi smart contract",
+        starting_point: { knowledge: "Cơ bản", requires: [] },
+        final_product: "Báo cáo audit",
+        feasibility: "feasible",
+        why_now: { kind: "direct", urls: ["https://d1.com"] },
+        criteria: {
+          continues_catalog: { met: false, basis: "Người mới", refs: [] },
+          fills_direction: { met: true, basis: "Chưa có", refs: ["ref1"] },
+          timely: { met: true, basis: "2026", refs: ["ref2"] },
+          differentiated: { met: true, basis: "Khác biệt", refs: ["ref3"] },
+          showable_product: { met: true, basis: "Nộp bài", refs: ["ref4"] }
+        },
+        status: "open",
+        added_on: "2026-11-15",
+        decided_on: null,
+        reject_reason: null
+      },
+      {
+        slug: "course-chosen",
+        title: "Khóa Chosen",
+        direction: { axis: "skill", entry: "AI Agents" },
+        level: "intermediate",
+        kind: "new",
+        promise: "Xây dựng MCP Server",
+        starting_point: { knowledge: "TS", requires: [] },
+        final_product: "Repo MCP Server",
+        feasibility: "feasible",
+        why_now: { kind: "direct", urls: ["https://d1.com"] },
+        criteria: {
+          continues_catalog: { met: false, basis: "Người mới", refs: [] },
+          fills_direction: { met: true, basis: "Chưa có", refs: ["ref1"] },
+          timely: { met: true, basis: "2026", refs: ["ref2"] },
+          differentiated: { met: true, basis: "Khác biệt", refs: ["ref3"] },
+          showable_product: { met: true, basis: "Nộp bài", refs: ["ref4"] }
+        },
+        status: "chosen",
+        added_on: "2026-11-15",
+        decided_on: "2026-11-15",
+        reject_reason: null
+      },
+      {
+        slug: "course-rejected",
+        title: "Khóa Bị Loại",
+        direction: { axis: "role", entry: "Frontend" },
+        level: "beginner",
+        kind: "new",
+        promise: "Lập trình web cơ bản",
+        starting_point: { knowledge: "HTML", requires: [] },
+        final_product: "Web",
+        feasibility: "feasible",
+        why_now: { kind: "direct", urls: ["https://d1.com"] },
+        criteria: {
+          continues_catalog: { met: false, basis: "Người mới", refs: [] },
+          fills_direction: { met: true, basis: "Chưa có", refs: ["ref1"] },
+          timely: { met: true, basis: "2026", refs: ["ref2"] },
+          differentiated: { met: true, basis: "Khác biệt", refs: ["ref3"] },
+          showable_product: { met: true, basis: "Nộp bài", refs: ["ref4"] }
+        },
+        status: "rejected",
+        added_on: "2026-11-14",
+        decided_on: "2026-11-14",
+        reject_reason: "Không phù hợp định hướng"
+      }
+    ]
+  };
+
+  const ranked = rankShortlist(backlogData, mockCatalog);
+  assert.strictEqual(ranked.round, undefined, "Kết quả xếp hạng không còn trường round");
+  assert.strictEqual(ranked.total, 1, "Chỉ xếp hạng đúng 1 đề xuất open, bỏ qua chosen và rejected");
+  assert.strictEqual(ranked.rows[0].slug, "course-open-1");
+
+  const table = formatShortlistTable(ranked);
+  assert.strictEqual(table.includes("Khóa Chosen"), false, "Bảng không được chứa khóa chosen");
+  assert.strictEqual(table.includes("Khóa Bị Loại"), false, "Bảng không được chứa khóa rejected");
+  assert.ok(table.includes("Khóa Open 1"), "Bảng phải chứa khóa open");
+
+  // AC-04: Dòng không nhắc tới giữ open (dòng course-open-1 không bị loại hàng loạt)
+  assert.strictEqual(backlogData.proposals[0].status, "open");
+});
+
+test("rank: AC-05 - xử lý focus map: báo cần dựng map khi chưa có, xếp theo layer/depth và ẩn đề xuất ngoài focus", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "rank-focus-test-"));
+  try {
+    const pathsDir = path.join(tmpDir, ".course-plan", "paths");
+    fs.mkdirSync(pathsDir, { recursive: true });
+
+    // 1. Chưa có map solana -> báo cần dựng map, không crash
+    const backlogNoMap = {
+      focus: { path: "solana" },
+      proposals: [
+        {
+          slug: "c1",
+          title: "Khóa 1",
+          status: "open",
+          path_node: { path: "solana", node: "n1" }
+        }
+      ]
+    };
+    const resNoMap = rankShortlist(backlogNoMap, mockCatalog, { pathsDir, repoRoot: tmpDir });
+    assert.strictEqual(resNoMap.needs_map, true);
+    assert.strictEqual(resNoMap.focus_map, "solana");
+    const tableNoMap = formatShortlistTable(resNoMap);
+    assert.ok(tableNoMap.includes('Cần dựng map "solana" trước khi xếp hạng đề xuất'));
+
+    // 2. Tạo map solana trong pathsDir
+    const solanaMap = {
+      slug: "solana",
+      kind: "ecosystem",
+      entry: "Solana",
+      title: "Lộ trình Solana",
+      nodes: [
+        { id: "accounts", title: "Accounts", layer: "foundation", requires: [], coverage: "empty" },
+        { id: "rust", title: "Rust", layer: "language", requires: ["accounts"], coverage: "empty" },
+        { id: "anchor", title: "Anchor", layer: "core", requires: ["rust"], coverage: "empty" },
+        { id: "token", title: "Token", layer: "branch", branch: "token", requires: ["anchor"], coverage: "empty" }
+      ]
+    };
+    fs.writeFileSync(path.join(pathsDir, "solana.json"), JSON.stringify(solanaMap, null, 2));
+
+    // Backlog có 3 đề xuất thuộc solana (ở các layer khác nhau) và 1 đề xuất ngoài focus (thuộc redis)
+    const baseProp = {
+      level: "beginner",
+      kind: "new",
+      promise: "Học và thực hành đầy đủ nội dung bài tập",
+      starting_point: { knowledge: "Cơ bản", requires: [] },
+      final_product: "Kho GitHub mã nguồn và test kiểm thử",
+      feasibility: "feasible",
+      why_now: { kind: "direct", urls: ["https://d1.com"] },
+      criteria: {
+        continues_catalog: { met: false, basis: "Người mới", refs: [] },
+        fills_direction: { met: true, basis: "Chưa có", refs: ["ref1"] },
+        timely: { met: true, basis: "2026", refs: ["ref2"] },
+        differentiated: { met: true, basis: "Khác biệt", refs: ["ref3"] },
+        showable_product: { met: true, basis: "Nộp bài", refs: ["ref4"] }
+      },
+      status: "open",
+      added_on: "2026-11-15",
+      decided_on: null,
+      reject_reason: null
+    };
+
+    const backlogWithMap = {
+      focus: { path: "solana" },
+      proposals: [
+        // Proposal ở layer branch
+        {
+          ...baseProp,
+          slug: "c-token",
+          title: "Khóa Token SPL",
+          direction: { axis: "ecosystem", entry: "Solana" },
+          path_node: { path: "solana", node: "token" }
+        },
+        // Proposal ở layer foundation (phải đứng trước layer branch!)
+        {
+          ...baseProp,
+          slug: "c-accounts",
+          title: "Khóa Accounts Model",
+          direction: { axis: "ecosystem", entry: "Solana" },
+          path_node: { path: "solana", node: "accounts" }
+        },
+        // Proposal ở layer core
+        {
+          ...baseProp,
+          slug: "c-anchor",
+          title: "Khóa Anchor Framework",
+          direction: { axis: "ecosystem", entry: "Solana" },
+          path_node: { path: "solana", node: "anchor" }
+        },
+        // Proposal ngoài focus (thuộc redis) -> PHẢI BỊ ẨN KHỎI BẢNG XẾP HẠNG
+        {
+          ...baseProp,
+          slug: "c-redis-outside",
+          title: "Khóa Redis Ngoài Focus",
+          direction: { axis: "skill", entry: "Redis" },
+          path_node: { path: "redis", node: "caching" }
+        }
+      ]
+    };
+
+    const ranked = rankShortlist(backlogWithMap, mockCatalog, { pathsDir, repoRoot: tmpDir });
+    // Chỉ có 3 đề xuất thuộc solana được đưa vào bảng xếp hạng
+    assert.strictEqual(ranked.total, 3, "Chỉ hiển thị 3 đề xuất thuộc map solana; đề xuất redis ngoài focus bị ẩn");
+    assert.strictEqual(ranked.hasMap, true);
+
+    // Thứ tự sắp xếp theo layer: foundation -> core -> branch
+    assert.strictEqual(ranked.rows[0].slug, "c-accounts", "Layer foundation phải đứng đầu (Rank 1)");
+    assert.strictEqual(ranked.rows[1].slug, "c-anchor", "Layer core phải đứng thứ 2 (Rank 2)");
+    assert.strictEqual(ranked.rows[2].slug, "c-token", "Layer branch phải đứng thứ 3 (Rank 3)");
+
+    const table = formatShortlistTable(ranked);
+    // Bảng có cột Layer / Nhánh
+    assert.ok(table.includes("Layer / Nhánh"), "Bảng phải có cột Layer / Nhánh");
+    assert.ok(table.includes("branch (token)"), "Bảng hiển thị đúng nhánh của layer branch");
+    assert.strictEqual(table.includes("Khóa Redis Ngoài Focus"), false, "Không hiển thị đề xuất ngoài focus");
+
+    // Đề xuất ngoài focus trong backlog vẫn giữ status open
+    assert.strictEqual(backlogWithMap.proposals[3].status, "open", "Đề xuất ngoài focus vẫn giữ status open trong backlog");
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 });

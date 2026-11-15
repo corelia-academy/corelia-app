@@ -1,5 +1,5 @@
 // .claude/skills/course-planner/scripts/plan-lint.mjs
-// Kiểm schema path; requires.slug tồn tại; reason không rỗng; không có chu trình trên toàn bộ path.
+// Kiểm schema skill map (ecosystem/role/skill), layer, requires, ref, sources, và backlog proposals.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,13 +9,17 @@ import {
   SHORTLIST_MIN_DIRECTIONS,
   SHORTLIST_MIN_ALTERNATIVES,
   SHORTLIST_CRITERIA_KEYS,
+  BACKLOG_MIN_OPEN_PROPOSALS,
+  BACKLOG_MAX_OPEN_PROPOSALS,
+  BACKLOG_MIN_DIRECTIONS,
+  VALID_PROPOSAL_STATUSES,
   PROMISE_FORBIDDEN_PREFIX,
   VALID_AXES,
+  MAP_KINDS,
+  MAP_LAYERS,
+  MAP_STATUSES,
+  MAP_COVERAGE_STATUSES,
 } from "./constants.mjs";
-
-const VALID_ENTRY_LEVELS = new Set(["beginner", "intermediate", "advanced"]);
-const VALID_STATUSES = new Set(["draft", "approved"]);
-const VALID_EVIDENCE_KINDS = new Set(["direct", "inferred"]);
 
 export {
   SHORTLIST_MIN_PROPOSALS,
@@ -23,6 +27,14 @@ export {
   SHORTLIST_MIN_DIRECTIONS,
   SHORTLIST_MIN_ALTERNATIVES,
   SHORTLIST_CRITERIA_KEYS,
+  BACKLOG_MIN_OPEN_PROPOSALS,
+  BACKLOG_MAX_OPEN_PROPOSALS,
+  BACKLOG_MIN_DIRECTIONS,
+  VALID_PROPOSAL_STATUSES,
+  MAP_KINDS,
+  MAP_LAYERS,
+  MAP_STATUSES,
+  MAP_COVERAGE_STATUSES,
 };
 
 export function parseCommaSeparatedList(text) {
@@ -126,6 +138,609 @@ export function extractProposalEntries(docContent) {
   return result;
 }
 
+export function validateProposalFields(prop, idx, { catalogBySlug, entriesByAxis, add }) {
+  const slug = prop?.slug || `proposal_${idx + 1}`;
+
+  if (!prop?.slug || typeof prop.slug !== "string") {
+    add(slug, "slug", "thiếu slug hoặc slug không phải chuỗi");
+  }
+
+  if (!prop?.title || typeof prop.title !== "string" || !prop.title.trim()) {
+    add(slug, "title", "thiếu title hoặc title rỗng");
+  }
+
+  const direction = prop?.direction;
+  if (!direction || typeof direction !== "object") {
+    add(slug, "direction", "thiếu direction hoặc direction không phải object");
+  } else {
+    const axis = direction.axis;
+    const entry = direction.entry;
+
+    if (!VALID_AXES.has(axis)) {
+      add(slug, "direction-axis", `axis "${axis}" không hợp lệ (phải là role|skill|ecosystem)`);
+    }
+
+    if (!entry || typeof entry !== "string" || !entry.trim()) {
+      add(slug, "direction-entry", "entry không được để trống");
+    } else {
+      const cleanEntry = entry.trim();
+
+      // So khớp trọn mục (exact match) trong danh sách tách được từ learn-proposal.md
+      if (entriesByAxis) {
+        const axisEntries = entriesByAxis[axis];
+        if (!axisEntries || !axisEntries.has(cleanEntry)) {
+          const inOtherAxis = Object.keys(entriesByAxis).find(
+            (other) => other !== axis && entriesByAxis[other].has(cleanEntry)
+          );
+          if (inOtherAxis) {
+            add(
+              slug,
+              "direction-entry",
+              `entry "${cleanEntry}" xuất hiện trong tài liệu nhưng sai axis "${axis}" (thuộc axis "${inOtherAxis}")`
+            );
+          } else {
+            add(
+              slug,
+              "direction-entry",
+              `entry "${cleanEntry}" không phải là một mục hợp lệ trong tài liệu learn-proposal.md`
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // Kiểm tra promise
+  const promise = prop?.promise;
+  if (!promise || typeof promise !== "string" || !promise.trim()) {
+    add(slug, "promise", "thiếu promise hoặc promise rỗng");
+  } else if (PROMISE_FORBIDDEN_PREFIX.test(promise.trim())) {
+    add(slug, "promise", `promise "${promise}" mở đầu bằng từ cấm (không được mở bằng hiểu, nắm, biết, tìm hiểu, làm quen)`);
+  }
+
+  // Kiểm tra alternatives >= 2 và mọi alternative có url
+  const alts = prop?.alternatives;
+  if (!Array.isArray(alts) || alts.length < SHORTLIST_MIN_ALTERNATIVES) {
+    add(slug, "alternatives", `cần ít nhất ${SHORTLIST_MIN_ALTERNATIVES} nguồn thay thế (hiện có ${Array.isArray(alts) ? alts.length : 0})`);
+  } else {
+    alts.forEach((alt, aIdx) => {
+      if (!alt?.url || typeof alt.url !== "string" || !alt.url.trim()) {
+        add(slug, "alternatives", `nguồn thay thế thứ ${aIdx + 1} thiếu url`);
+      }
+    });
+  }
+
+  // Kiểm tra why_now
+  const whyNow = prop?.why_now;
+  if (!whyNow || typeof whyNow !== "object") {
+    add(slug, "why_now", "thiếu why_now");
+  } else {
+    if (!Array.isArray(whyNow.urls) || whyNow.urls.length < 1) {
+      add(slug, "why_now-urls", "cần ít nhất 1 URL bằng chứng trong why_now.urls");
+    }
+    if (whyNow.kind !== "direct" && whyNow.kind !== "inferred") {
+      add(slug, "why_now-kind", `kind "${whyNow.kind}" không hợp lệ (phải là direct|inferred)`);
+    }
+    if (whyNow.kind === "direct") {
+      if (!whyNow.quote || typeof whyNow.quote !== "string" || whyNow.quote.trim().length < 20 || whyNow.quote.trim().length > 300) {
+        add(slug, "why_now-quote", 'why_now có kind: "direct" bắt buộc có quote từ 20 đến 300 ký tự');
+      }
+    }
+  }
+
+  // Kiểm tra criteria
+  const criteria = prop?.criteria;
+  if (!criteria || typeof criteria !== "object") {
+    add(slug, "criteria", "thiếu criteria");
+  } else {
+    for (const cKey of SHORTLIST_CRITERIA_KEYS) {
+      if (!(cKey in criteria)) {
+        add(slug, "criteria-keys", `thiếu tiêu chí "${cKey}" trong criteria`);
+        continue;
+      }
+      const cVal = criteria[cKey];
+      if (cVal && cVal.met === true) {
+        if (!cVal.basis || typeof cVal.basis !== "string" || !cVal.basis.trim()) {
+          add(slug, "criteria-basis", `tiêu chí "${cKey}" có met: true nhưng basis rỗng`);
+        }
+        if (!Array.isArray(cVal.refs) || cVal.refs.length === 0) {
+          add(slug, "criteria-refs", `tiêu chí "${cKey}" có met: true nhưng thiếu refs`);
+        }
+      }
+    }
+
+    // timely.met: true đòi hỏi why_now.kind === "direct" và có quote
+    if (criteria.timely?.met === true) {
+      if (whyNow?.kind !== "direct") {
+        add(slug, "timely-direct", 'tiêu chí "timely" có met: true đòi hỏi why_now.kind phải là "direct"');
+      } else if (!whyNow?.quote || typeof whyNow.quote !== "string" || whyNow.quote.trim().length < 20 || whyNow.quote.trim().length > 300) {
+        add(slug, "timely-quote", 'tiêu chí "timely" có met: true đòi hỏi why_now có quote từ 20 đến 300 ký tự');
+      }
+    }
+  }
+
+  // Kiểm tra kind vs slug vs catalog
+  const kind = prop?.kind;
+  if (kind === "new") {
+    if (catalogBySlug.has(slug)) {
+      add(slug, "kind-new", `kind là "new" nhưng slug "${slug}" đã tồn tại trong catalog`);
+    }
+  } else if (kind === "complete_existing") {
+    const catEntry = catalogBySlug.get(slug);
+    if (!catEntry) {
+      add(slug, "kind-complete_existing", `kind là "complete_existing" nhưng slug "${slug}" không tồn tại trong catalog`);
+    } else {
+      const cState = catEntry.content_state;
+      if (cState !== "empty" && cState !== "partial") {
+        add(slug, "kind-complete_existing", `kind là "complete_existing" đòi hỏi catalog content_state phải là "empty" hoặc "partial" (thực tế là "${cState || "không xác định"}")`);
+      }
+    }
+  } else {
+    add(slug, "kind", `kind "${kind}" không hợp lệ (phải là new|complete_existing)`);
+  }
+}
+
+// AC-04: Lint skill map
+export function lintMapData(mapData, { proposalDocContent = null, pathsDir = null, allMaps = null } = {}) {
+  const problems = [];
+  const add = (rule, detail) => problems.push(`${mapData?.slug || "map"}: ${rule}: ${detail}`);
+
+  if (!mapData || typeof mapData !== "object") {
+    problems.push("map: Dữ liệu map bị null hoặc không phải object");
+    return { ok: false, problems };
+  }
+
+  const { slug, kind, entry, title, goal, status, sources, nodes } = mapData;
+
+  if (!slug || typeof slug !== "string" || !slug.trim()) {
+    add("slug", "thiếu slug hoặc slug rỗng");
+  }
+
+  if (!kind || !MAP_KINDS.has(kind)) {
+    add("kind", `kind "${kind}" không hợp lệ (phải là ecosystem|role|skill)`);
+  }
+
+  if (!title || typeof title !== "string" || !title.trim()) {
+    add("title", "thiếu title hoặc title rỗng");
+  }
+
+  if (typeof goal !== "string") {
+    add("goal", "goal phải là chuỗi");
+  }
+
+  if (!status || !MAP_STATUSES.has(status)) {
+    add("status", `status "${status}" không hợp lệ (phải là draft|approved)`);
+  }
+
+  // Kiểm tra entry so với learn-proposal.md
+  if (proposalDocContent && typeof proposalDocContent === "string" && kind && MAP_KINDS.has(kind)) {
+    const entriesByAxis = extractProposalEntries(proposalDocContent);
+    const validEntries = entriesByAxis[kind];
+    const cleanEntry = typeof entry === "string" ? entry.trim() : "";
+    if (!cleanEntry || !validEntries || !validEntries.has(cleanEntry)) {
+      add("entry", `entry "${entry}" không phải là mục hợp lệ trong learn-proposal.md (mục ${kind})`);
+    }
+  } else if (!entry || typeof entry !== "string" || !entry.trim()) {
+    add("entry", "thiếu entry hoặc entry rỗng");
+  }
+
+  // Kiểm tra sources
+  if (!Array.isArray(sources) || sources.length === 0) {
+    add("sources", "sources phải là mảng không rỗng");
+  } else {
+    sources.forEach((src, sIdx) => {
+      if (!src || typeof src !== "object") {
+        add("sources", `sources[${sIdx}] không phải object`);
+        return;
+      }
+      if (!src.url || typeof src.url !== "string" || !/^https?:\/\//i.test(src.url.trim())) {
+        add("sources", `sources[${sIdx}].url không hợp lệ`);
+      }
+      if (!src.observed_on || typeof src.observed_on !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(src.observed_on)) {
+        add("sources", `sources[${sIdx}].observed_on phải có định dạng YYYY-MM-DD`);
+      }
+    });
+  }
+
+  // Kiểm tra nodes
+  if (!Array.isArray(nodes) || nodes.length === 0) {
+    add("nodes", "nodes phải là mảng không rỗng");
+    return { ok: problems.length === 0, problems };
+  }
+
+  const validLayers = kind && MAP_LAYERS[kind] ? MAP_LAYERS[kind] : [];
+  const validLayersSet = new Set(validLayers);
+  const nodeIds = new Set();
+  const nodeMap = new Map();
+
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    const nId = n?.id || `node_${i + 1}`;
+
+    if (!n?.id || typeof n.id !== "string" || !n.id.trim()) {
+      add("node-id", `nodes[${i}] thiếu id hoặc id rỗng`);
+    } else if (nodeIds.has(n.id)) {
+      add("node-id", `id "${n.id}" bị trùng lặp trong map`);
+    } else {
+      nodeIds.add(n.id);
+      nodeMap.set(n.id, n);
+    }
+
+    if (!n?.title || typeof n.title !== "string" || !n.title.trim()) {
+      add(`${nId}:title`, "thiếu title hoặc title rỗng");
+    }
+
+    if (!n?.layer || !validLayersSet.has(n.layer)) {
+      add(`${nId}:layer`, `layer "${n?.layer}" không hợp lệ cho kind "${kind}" (phải là ${validLayers.join("|")})`);
+    }
+
+    // Kiểm tra branch
+    if (n?.layer === "branch") {
+      if (!n.branch || typeof n.branch !== "string" || !n.branch.trim()) {
+        add(`${nId}:branch`, 'ô ở layer "branch" bắt buộc có branch không rỗng');
+      }
+    } else {
+      if (n?.branch != null) {
+        add(`${nId}:branch`, `branch phải là null ở layer "${n?.layer}" (chỉ dùng ở layer "branch")`);
+      }
+    }
+
+    // Kiểm tra coverage
+    if (!n?.coverage || !MAP_COVERAGE_STATUSES.has(n.coverage)) {
+      add(`${nId}:coverage`, `coverage "${n?.coverage}" không hợp lệ (phải là empty|partial|covered)`);
+    }
+
+    // Kiểm tra required_tools, scope
+    if (!Array.isArray(n?.required_tools)) {
+      add(`${nId}:required_tools`, "required_tools phải là mảng chuỗi");
+    }
+    if (!Array.isArray(n?.scope)) {
+      add(`${nId}:scope`, "scope phải là mảng chuỗi");
+    }
+
+    // Kiểm tra ref
+    if (n?.ref != null) {
+      if (typeof n.ref !== "string" || !/^[^#]+#[^#]+$/.test(n.ref)) {
+        add(`${nId}:ref`, 'ref phải có định dạng "<map slug>#<node id>"');
+      } else {
+        const [targetMapSlug, targetNodeId] = n.ref.split("#");
+        let targetMap = allMaps?.get(targetMapSlug);
+        if (!targetMap && pathsDir) {
+          const targetPath = path.join(pathsDir, `${targetMapSlug}.json`);
+          if (fs.existsSync(targetPath)) {
+            try {
+              targetMap = JSON.parse(fs.readFileSync(targetPath, "utf8"));
+            } catch {}
+          }
+        }
+        if (!targetMap) {
+          add(`${nId}:ref`, `ref trỏ map "${targetMapSlug}" không tồn tại`);
+        } else {
+          const targetNode = (targetMap.nodes || []).find((x) => x.id === targetNodeId);
+          if (!targetNode) {
+            add(`${nId}:ref`, `ref trỏ ô "${targetNodeId}" không tồn tại trong map "${targetMapSlug}"`);
+          }
+        }
+      }
+    }
+  }
+
+  // Kiểm tra requires: không trỏ id không tồn tại, không trỏ layer sau, không có chu trình
+  const adj = new Map();
+  for (const n of nodes) {
+    if (!n?.id) continue;
+    adj.set(n.id, []);
+
+    if (!Array.isArray(n.requires)) {
+      add(`${n.id}:requires`, "requires phải là mảng");
+      continue;
+    }
+
+    const currLayerIdx = validLayers.indexOf(n.layer);
+
+    for (const reqId of n.requires) {
+      if (typeof reqId !== "string" || !reqId.trim()) {
+        add(`${n.id}:requires`, "phần tử trong requires phải là chuỗi id");
+        continue;
+      }
+
+      if (!nodeIds.has(reqId)) {
+        add(`${n.id}:requires`, `requires trỏ id "${reqId}" không tồn tại trong map`);
+        continue;
+      }
+
+      const reqNode = nodeMap.get(reqId);
+      if (reqNode && currLayerIdx >= 0) {
+        const reqLayerIdx = validLayers.indexOf(reqNode.layer);
+        if (reqLayerIdx > currLayerIdx) {
+          add(
+            `${n.id}:requires`,
+            `requires không được trỏ tới ô ở layer sau ("${reqNode.layer}" sau "${n.layer}")`
+          );
+        }
+      }
+
+      adj.get(n.id).push(reqId);
+    }
+  }
+
+  // DFS phát hiện chu trình trong map requires
+  const visited = new Map();
+  let hasCycle = false;
+  function dfs(u) {
+    visited.set(u, 1);
+    for (const v of adj.get(u) || []) {
+      if (visited.get(v) === 1) {
+        hasCycle = true;
+      } else if (!visited.has(v)) {
+        dfs(v);
+      }
+    }
+    visited.set(u, 2);
+  }
+
+  for (const id of adj.keys()) {
+    if (!visited.has(id)) {
+      dfs(id);
+    }
+  }
+
+  if (hasCycle) {
+    add("requires", "phát hiện chu trình phụ thuộc trong requires của map");
+  }
+
+  // Quy tắc tổng thể theo kind
+  if (kind === "ecosystem") {
+    const presentLayers = new Set(nodes.map((n) => n?.layer).filter(Boolean));
+    const requiredFoundationLayers = ["foundation", "language", "core"];
+    const missingLayers = requiredFoundationLayers.filter((l) => !presentLayers.has(l));
+    if (missingLayers.length > 0) {
+      add("ecosystem-layers", `map ecosystem phải có đủ 3 layer nền (foundation, language, core), thiếu: ${missingLayers.join(", ")}`);
+    }
+
+    const branchNodes = nodes.filter((n) => n?.layer === "branch");
+    const distinctBranches = new Set(branchNodes.map((n) => n?.branch).filter(Boolean));
+    if (distinctBranches.size < 2) {
+      add("ecosystem-branches", `map ecosystem phải có ít nhất 2 nhánh branch khác nhau (hiện có ${distinctBranches.size})`);
+    }
+  }
+
+  return {
+    ok: problems.length === 0,
+    problems,
+  };
+}
+
+export function lintBacklogData(backlogData, { catalogData = null, proposalDocContent = null, pathsDir = null, mapsBySlug = null } = {}) {
+  const problems = [];
+  const add = (propId, rule, detail) => problems.push(`${propId}: ${rule}: ${detail}`);
+
+  if (!backlogData || typeof backlogData !== "object") {
+    problems.push("backlog: Dữ liệu backlog bị null hoặc không phải object");
+    return { ok: false, problems };
+  }
+
+  const proposals = backlogData.proposals;
+  if (!Array.isArray(proposals)) {
+    problems.push("backlog: Thiếu trường proposals hoặc proposals không phải mảng");
+    return { ok: false, problems };
+  }
+
+  const focusPath = typeof backlogData.focus === "object" && !Array.isArray(backlogData.focus)
+    ? backlogData.focus?.path
+    : null;
+
+  if (!proposalDocContent || typeof proposalDocContent !== "string") {
+    problems.push("backlog: Thiếu nội dung tài liệu docs/learn/learn-proposal.md để kiểm tra direction.entry");
+  }
+
+  const entriesByAxis = proposalDocContent ? extractProposalEntries(proposalDocContent) : null;
+
+  const catalogCourses = Array.isArray(catalogData)
+    ? catalogData
+    : (catalogData?.courses ?? []);
+  const catalogBySlug = new Map(catalogCourses.map((c) => [c.slug, c]));
+
+  const seenSlugs = new Set();
+  const chosenSlugs = [];
+  const openProposals = [];
+
+  for (let idx = 0; idx < proposals.length; idx++) {
+    const prop = proposals[idx];
+    const slug = prop?.slug || `proposal_${idx + 1}`;
+
+    // Kiểm tra slug trùng lặp
+    if (seenSlugs.has(slug)) {
+      add(slug, "slug", `slug "${slug}" bị trùng lặp trong backlog`);
+    } else {
+      seenSlugs.add(slug);
+    }
+
+    // Kiểm tra status
+    const status = prop?.status;
+    if (!VALID_PROPOSAL_STATUSES.has(status)) {
+      add(slug, "status", `status "${status}" không hợp lệ (phải là open|chosen|rejected|produced)`);
+    }
+
+    // Kiểm tra added_on
+    if (!prop?.added_on || typeof prop.added_on !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(prop.added_on)) {
+      add(slug, "added_on", "thiếu added_on hoặc added_on không đúng định dạng YYYY-MM-DD");
+    }
+
+    // Kiểm tra status-specific fields
+    if (status === "chosen") {
+      chosenSlugs.push(slug);
+      if (!prop?.decided_on || typeof prop.decided_on !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(prop.decided_on)) {
+        add(slug, "decided_on", 'status là "chosen" bắt buộc có decided_on định dạng YYYY-MM-DD');
+      }
+    } else if (status === "rejected") {
+      if (!prop?.decided_on || typeof prop.decided_on !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(prop.decided_on)) {
+        add(slug, "decided_on", 'status là "rejected" bắt buộc có decided_on định dạng YYYY-MM-DD');
+      }
+      if (!prop?.reject_reason || typeof prop.reject_reason !== "string" || !prop.reject_reason.trim()) {
+        add(slug, "reject_reason", 'status là "rejected" bắt buộc có reject_reason không rỗng');
+      }
+    } else if (status === "produced") {
+      if (!prop?.decided_on || typeof prop.decided_on !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(prop.decided_on)) {
+        add(slug, "decided_on", 'status là "produced" bắt buộc có decided_on định dạng YYYY-MM-DD');
+      }
+    } else if (status === "open") {
+      openProposals.push(prop);
+      if (prop?.decided_on != null) {
+        add(slug, "decided_on", 'status là "open" thì decided_on phải là null');
+      }
+      if (prop?.reject_reason != null) {
+        add(slug, "reject_reason", 'status là "open" thì reject_reason phải là null');
+      }
+    }
+
+    // AC-03: Kiểm tra path_node nếu có
+    if (prop?.path_node) {
+      if (typeof prop.path_node !== "object" || !prop.path_node.path || !prop.path_node.node) {
+        add(slug, "path_node", 'path_node phải là object có dạng { path: "<map slug>", node: "<node id>" }');
+      } else {
+        const { path: mapSlug, node: nodeId } = prop.path_node;
+        let mapData = mapsBySlug?.get(mapSlug);
+        if (!mapData && pathsDir) {
+          const mapPath = path.join(pathsDir, `${mapSlug}.json`);
+          if (fs.existsSync(mapPath)) {
+            try {
+              mapData = JSON.parse(fs.readFileSync(mapPath, "utf8"));
+            } catch {}
+          }
+        }
+        if (mapData) {
+          const matchedNode = (mapData.nodes || []).find((n) => n.id === nodeId);
+          if (!matchedNode) {
+            add(slug, "path_node-node", `ô "${nodeId}" không tồn tại trong map "${mapSlug}"`);
+          } else {
+            // AC-03: tools phải chứa toàn bộ required_tools của ô
+            if (Array.isArray(matchedNode.required_tools)) {
+              const propTools = new Set(Array.isArray(prop.tools) ? prop.tools : []);
+              const missingTools = matchedNode.required_tools.filter((t) => !propTools.has(t));
+              if (missingTools.length > 0) {
+                add(slug, "required_tools", `tools thiếu required_tools của ô "${nodeId}" (${missingTools.join(", ")})`);
+              }
+            }
+
+            // AC-03: final_product tự viết chạy bằng các tool đó, không chỉ gọi SDK cấp cao
+            // Ô ecosystem ở layer language/core: final_product phải có code on-chain do người học tự viết (program/contract) và test chạy được
+            if (mapData.kind === "ecosystem" && (matchedNode.layer === "language" || matchedNode.layer === "core")) {
+              const fp = typeof prop.final_product === "string" ? prop.final_product.toLowerCase() : "";
+              const hasOnchainCode = /contract|program|h\u1EE3p \u0111\u1ED3ng|on-chain/i.test(fp);
+              const hasTest = /test|ki\u1EC3m th\u1EED/i.test(fp);
+              if (!hasOnchainCode || !hasTest) {
+                add(
+                  slug,
+                  "final_product-onchain",
+                  `ô "${nodeId}" thuộc map ecosystem ở layer "${matchedNode.layer}" bắt buộc final_product phải có code on-chain (program/contract) và test chạy được`
+                );
+              }
+            }
+
+            // V-03 (AC-02): Điều kiện sẵn sàng của ô đích và tiên quyết đối với open và chosen
+            if (status === "open" || status === "chosen") {
+              // 1. Ô đích đã covered -> không đề xuất thêm
+              if (matchedNode.coverage === "covered") {
+                add(
+                  slug,
+                  "node-coverage",
+                  `ô "${nodeId}" trong map "${mapSlug}" đã có coverage: "covered", không thể đề xuất thêm khóa mới`
+                );
+              }
+
+              // 2. Ô đích có ref khác null -> không đề xuất trực tiếp
+              if (matchedNode.ref != null) {
+                add(
+                  slug,
+                  "node-ref",
+                  `ô "${nodeId}" trong map "${mapSlug}" có ref "${matchedNode.ref}", không thể tạo khóa trực tiếp`
+                );
+              }
+
+              // 3. Toàn bộ ô trong requires phải đã covered hoặc có đề xuất chosen/produced
+              if (Array.isArray(matchedNode.requires) && matchedNode.requires.length > 0) {
+                const unmetRequires = [];
+                for (const reqId of matchedNode.requires) {
+                  const reqNode = (mapData.nodes || []).find((n) => n.id === reqId);
+                  const isReqCovered = reqNode?.coverage === "covered";
+                  const hasProposalMet = proposals.some(
+                    (p) =>
+                      p.path_node?.path === mapSlug &&
+                      p.path_node?.node === reqId &&
+                      (p.status === "chosen" || p.status === "produced")
+                  );
+                  const hasCatMet = Boolean(
+                    reqNode?.course_slug &&
+                    catalogBySlug.has(reqNode.course_slug) &&
+                    catalogBySlug.get(reqNode.course_slug)?.content_state !== "empty"
+                  );
+                  if (!isReqCovered && !hasProposalMet && !hasCatMet) {
+                    unmetRequires.push(reqId);
+                  }
+                }
+                if (unmetRequires.length > 0) {
+                  add(
+                    slug,
+                    "node-readiness",
+                    `ô "${nodeId}" chưa sẵn sàng vì các ô tiên quyết chưa hoàn thành (${unmetRequires.join(", ")})`
+                  );
+                }
+              }
+            }
+          }
+        } else if (mapsBySlug || pathsDir) {
+          add(slug, "path_node-map", `map "${mapSlug}" không tồn tại`);
+        }
+      }
+    }
+
+    // Validate các trường nội dung đề xuất (bắt buộc đầy đủ cho open và chosen)
+    if (status === "open" || status === "chosen") {
+      validateProposalFields(prop, idx, { catalogBySlug, entriesByAxis, add });
+    } else {
+      if (!prop?.title || typeof prop.title !== "string" || !prop.title.trim()) {
+        add(slug, "title", "thiếu title hoặc title rỗng");
+      }
+      if (!prop?.direction || typeof prop.direction !== "object") {
+        add(slug, "direction", "thiếu direction hoặc direction không phải object");
+      }
+    }
+  }
+
+  // Tối đa 1 đề xuất chosen cùng lúc trong backlog
+  if (chosenSlugs.length > 1) {
+    problems.push(`backlog: Có nhiều hơn 1 đề xuất đang ở status "chosen": ${chosenSlugs.join(", ")}`);
+  }
+
+  // AC-02: Kiểm tra số lượng và đa dạng hướng trên tập open
+  if (focusPath) {
+    const openInFocus = openProposals.filter((p) => p.path_node?.path === focusPath);
+    if (openInFocus.length > 4) {
+      problems.push(`backlog: Số lượng đề xuất open trong focus "${focusPath}" là ${openInFocus.length} (tối đa 4 đề xuất)`);
+    }
+  } else {
+    if (openProposals.length < BACKLOG_MIN_OPEN_PROPOSALS || openProposals.length > BACKLOG_MAX_OPEN_PROPOSALS) {
+      problems.push(`backlog: Số lượng đề xuất open là ${openProposals.length} (phải từ ${BACKLOG_MIN_OPEN_PROPOSALS} đến ${BACKLOG_MAX_OPEN_PROPOSALS} đề xuất)`);
+    }
+
+    const distinctOpenEntries = new Set();
+    for (const op of openProposals) {
+      const entry = op?.direction?.entry?.trim();
+      if (entry) distinctOpenEntries.add(entry);
+    }
+
+    if (distinctOpenEntries.size < BACKLOG_MIN_DIRECTIONS) {
+      problems.push(`backlog: Đề xuất open chỉ thuộc ${distinctOpenEntries.size} direction.entry khác nhau (yêu cầu ít nhất ${BACKLOG_MIN_DIRECTIONS})`);
+    }
+  }
+
+  return {
+    ok: problems.length === 0,
+    problems,
+  };
+}
+
 export function lintShortlistData(shortlistData, { catalogData = null, proposalDocContent = null } = {}) {
   const problems = [];
   const add = (propId, rule, detail) => problems.push(`${propId}: ${rule}: ${detail}`);
@@ -149,10 +764,8 @@ export function lintShortlistData(shortlistData, { catalogData = null, proposalD
     problems.push("shortlist: Thiếu nội dung tài liệu docs/learn/learn-proposal.md để kiểm tra direction.entry");
   }
 
-  // Tách các entry từ learn-proposal.md nếu có
   const entriesByAxis = proposalDocContent ? extractProposalEntries(proposalDocContent) : null;
 
-  // Catalog Map
   const catalogCourses = Array.isArray(catalogData)
     ? catalogData
     : (catalogData?.courses ?? []);
@@ -161,146 +774,10 @@ export function lintShortlistData(shortlistData, { catalogData = null, proposalD
   const distinctEntries = new Set();
 
   proposals.forEach((prop, idx) => {
-    const slug = prop?.slug || `proposal_${idx + 1}`;
-
-    if (!prop?.slug || typeof prop.slug !== "string") {
-      add(slug, "slug", "thiếu slug hoặc slug không phải chuỗi");
+    if (prop?.direction?.entry && typeof prop.direction.entry === "string") {
+      distinctEntries.add(prop.direction.entry.trim());
     }
-
-    if (!prop?.title || typeof prop.title !== "string" || !prop.title.trim()) {
-      add(slug, "title", "thiếu title hoặc title rỗng");
-    }
-
-    const direction = prop?.direction;
-    if (!direction || typeof direction !== "object") {
-      add(slug, "direction", "thiếu direction hoặc direction không phải object");
-    } else {
-      const axis = direction.axis;
-      const entry = direction.entry;
-
-      if (!VALID_AXES.has(axis)) {
-        add(slug, "direction-axis", `axis "${axis}" không hợp lệ (phải là role|skill|ecosystem)`);
-      }
-
-      if (!entry || typeof entry !== "string" || !entry.trim()) {
-        add(slug, "direction-entry", "entry không được để trống");
-      } else {
-        const cleanEntry = entry.trim();
-        distinctEntries.add(cleanEntry);
-
-        // So khớp trọn mục (exact match) trong danh sách tách được từ learn-proposal.md
-        if (entriesByAxis) {
-          const axisEntries = entriesByAxis[axis];
-          if (!axisEntries || !axisEntries.has(cleanEntry)) {
-            const inOtherAxis = Object.keys(entriesByAxis).find(
-              (other) => other !== axis && entriesByAxis[other].has(cleanEntry)
-            );
-            if (inOtherAxis) {
-              add(
-                slug,
-                "direction-entry",
-                `entry "${cleanEntry}" xuất hiện trong tài liệu nhưng sai axis "${axis}" (thuộc axis "${inOtherAxis}")`
-              );
-            } else {
-              add(
-                slug,
-                "direction-entry",
-                `entry "${cleanEntry}" không phải là một mục hợp lệ trong tài liệu learn-proposal.md`
-              );
-            }
-          }
-        }
-      }
-    }
-
-    // Kiểm tra promise
-    const promise = prop?.promise;
-    if (!promise || typeof promise !== "string" || !promise.trim()) {
-      add(slug, "promise", "thiếu promise hoặc promise rỗng");
-    } else if (PROMISE_FORBIDDEN_PREFIX.test(promise.trim())) {
-      add(slug, "promise", `promise "${promise}" mở đầu bằng từ cấm (không được mở bằng hiểu, nắm, biết, tìm hiểu, làm quen)`);
-    }
-
-    // Kiểm tra alternatives >= 2 và mọi alternative có url
-    const alts = prop?.alternatives;
-    if (!Array.isArray(alts) || alts.length < SHORTLIST_MIN_ALTERNATIVES) {
-      add(slug, "alternatives", `cần ít nhất ${SHORTLIST_MIN_ALTERNATIVES} nguồn thay thế (hiện có ${Array.isArray(alts) ? alts.length : 0})`);
-    } else {
-      alts.forEach((alt, aIdx) => {
-        if (!alt?.url || typeof alt.url !== "string" || !alt.url.trim()) {
-          add(slug, "alternatives", `nguồn thay thế thứ ${aIdx + 1} thiếu url`);
-        }
-      });
-    }
-
-    // Kiểm tra why_now
-    const whyNow = prop?.why_now;
-    if (!whyNow || typeof whyNow !== "object") {
-      add(slug, "why_now", "thiếu why_now");
-    } else {
-      if (!Array.isArray(whyNow.urls) || whyNow.urls.length < 1) {
-        add(slug, "why_now-urls", "cần ít nhất 1 URL bằng chứng trong why_now.urls");
-      }
-      if (whyNow.kind !== "direct" && whyNow.kind !== "inferred") {
-        add(slug, "why_now-kind", `kind "${whyNow.kind}" không hợp lệ (phải là direct|inferred)`);
-      }
-      if (whyNow.kind === "direct") {
-        if (!whyNow.quote || typeof whyNow.quote !== "string" || whyNow.quote.trim().length < 20 || whyNow.quote.trim().length > 300) {
-          add(slug, "why_now-quote", 'why_now có kind: "direct" bắt buộc có quote từ 20 đến 300 ký tự');
-        }
-      }
-    }
-
-    // Kiểm tra criteria
-    const criteria = prop?.criteria;
-    if (!criteria || typeof criteria !== "object") {
-      add(slug, "criteria", "thiếu criteria");
-    } else {
-      for (const cKey of SHORTLIST_CRITERIA_KEYS) {
-        if (!(cKey in criteria)) {
-          add(slug, "criteria-keys", `thiếu tiêu chí "${cKey}" trong criteria`);
-          continue;
-        }
-        const cVal = criteria[cKey];
-        if (cVal && cVal.met === true) {
-          if (!cVal.basis || typeof cVal.basis !== "string" || !cVal.basis.trim()) {
-            add(slug, "criteria-basis", `tiêu chí "${cKey}" có met: true nhưng basis rỗng`);
-          }
-          if (!Array.isArray(cVal.refs) || cVal.refs.length === 0) {
-            add(slug, "criteria-refs", `tiêu chí "${cKey}" có met: true nhưng thiếu refs`);
-          }
-        }
-      }
-
-      // timely.met: true đòi hỏi why_now.kind === "direct" và có quote
-      if (criteria.timely?.met === true) {
-        if (whyNow?.kind !== "direct") {
-          add(slug, "timely-direct", 'tiêu chí "timely" có met: true đòi hỏi why_now.kind phải là "direct"');
-        } else if (!whyNow?.quote || typeof whyNow.quote !== "string" || whyNow.quote.trim().length < 20 || whyNow.quote.trim().length > 300) {
-          add(slug, "timely-quote", 'tiêu chí "timely" có met: true đòi hỏi why_now có quote từ 20 đến 300 ký tự');
-        }
-      }
-    }
-
-    // Kiểm tra kind vs slug vs catalog
-    const kind = prop?.kind;
-    if (kind === "new") {
-      if (catalogBySlug.has(slug)) {
-        add(slug, "kind-new", `kind là "new" nhưng slug "${slug}" đã tồn tại trong catalog`);
-      }
-    } else if (kind === "complete_existing") {
-      const catEntry = catalogBySlug.get(slug);
-      if (!catEntry) {
-        add(slug, "kind-complete_existing", `kind là "complete_existing" nhưng slug "${slug}" không tồn tại trong catalog`);
-      } else {
-        const cState = catEntry.content_state;
-        if (cState !== "empty" && cState !== "partial") {
-          add(slug, "kind-complete_existing", `kind là "complete_existing" đòi hỏi catalog content_state phải là "empty" hoặc "partial" (thực tế là "${cState || "không xác định"}")`);
-        }
-      }
-    } else {
-      add(slug, "kind", `kind "${kind}" không hợp lệ (phải là new|complete_existing)`);
-    }
+    validateProposalFields(prop, idx, { catalogBySlug, entriesByAxis, add });
   });
 
   if (distinctEntries.size < SHORTLIST_MIN_DIRECTIONS) {
@@ -313,376 +790,100 @@ export function lintShortlistData(shortlistData, { catalogData = null, proposalD
   };
 }
 
+// AC-08: Cập nhật ô trong map khi đề xuất được sản xuất thành công
+export function updateMapNodeOnProduced({ repoRoot = ".", mapSlug, nodeId, courseSlug }) {
+  const mapFile = path.join(path.resolve(repoRoot), ".course-plan", "paths", `${mapSlug}.json`);
+  if (!fs.existsSync(mapFile)) {
+    throw new Error(`Map "${mapSlug}" không tồn tại tại ${mapFile}`);
+  }
+  const data = JSON.parse(fs.readFileSync(mapFile, "utf8"));
+  const node = (data.nodes || []).find((n) => n.id === nodeId);
+  if (!node) {
+    throw new Error(`Ô "${nodeId}" không tồn tại trong map "${mapSlug}"`);
+  }
+  node.course_slug = courseSlug;
+  node.coverage = "covered";
+  fs.writeFileSync(mapFile, JSON.stringify(data, null, 2), "utf8");
+  return data;
+}
+
 export function lintPlans(repoRoot = ".") {
   const root = path.resolve(repoRoot);
   const pathsDir = path.join(root, ".course-plan", "paths");
   const catalogFile = path.join(root, ".course-plan", "catalog.json");
+  const backlogFile = path.join(root, ".course-plan", "backlog.json");
 
   const problems = [];
-  const cycleEdges = [];
+  let pathsChecked = 0;
+  let backlogChecked = 0;
 
-  // Đọc catalog nếu có để lấy danh sách slug hợp lệ ngoài path
-  const catalogSlugs = new Set();
+  let proposalDocContent = null;
+  let docPath = path.join(root, "docs", "learn", "learn-proposal.md");
+  if (!fs.existsSync(docPath)) {
+    const fallback = path.resolve("docs/learn/learn-proposal.md");
+    if (fs.existsSync(fallback)) docPath = fallback;
+  }
+  if (fs.existsSync(docPath)) {
+    try {
+      proposalDocContent = fs.readFileSync(docPath, "utf8");
+    } catch {}
+  }
+
+  let catalogData = null;
   if (fs.existsSync(catalogFile)) {
     try {
-      const parsed = JSON.parse(fs.readFileSync(catalogFile, "utf8"));
-      const list = Array.isArray(parsed) ? parsed : (parsed.courses ?? []);
-      for (const c of list) {
-        if (c && c.slug) catalogSlugs.add(c.slug);
+      catalogData = JSON.parse(fs.readFileSync(catalogFile, "utf8"));
+    } catch {}
+  }
+
+  // 1. Quét toàn bộ map trong pathsDir
+  const mapsBySlug = new Map();
+  if (fs.existsSync(pathsDir)) {
+    const files = fs.readdirSync(pathsDir).filter((f) => f.endsWith(".json"));
+    for (const f of files) {
+      try {
+        const m = JSON.parse(fs.readFileSync(path.join(pathsDir, f), "utf8"));
+        if (m && m.slug) mapsBySlug.set(m.slug, m);
+      } catch (err) {
+        problems.push(`${f}: Lỗi đọc JSON: ${err.message}`);
       }
-    } catch {
-      // Bỏ qua lỗi catalog ở bước lint path
+    }
+
+    for (const f of files) {
+      const fileSlug = f.replace(/\.json$/, "");
+      const map = mapsBySlug.get(fileSlug);
+      if (!map) continue;
+      if (map.slug !== fileSlug) {
+        problems.push(`${f}: slug "${map.slug}" không khớp tên file "${fileSlug}"`);
+      }
+      const res = lintMapData(map, { proposalDocContent, pathsDir, allMaps: mapsBySlug });
+      pathsChecked++;
+      for (const p of res.problems) {
+        problems.push(`${f}: ${p}`);
+      }
     }
   }
 
-  if (!fs.existsSync(pathsDir)) {
-    return { ok: true, problems: [], cycleEdges: [], pathsChecked: 0 };
-  }
-
-  const files = fs.readdirSync(pathsDir).filter((f) => f.endsWith(".json"));
-  if (files.length === 0) {
-    return { ok: true, problems: [], cycleEdges: [], pathsChecked: 0 };
-  }
-
-  const paths = [];
-  const allPathCourseSlugs = new Set();
-
-  for (const file of files) {
-    const fullPath = path.join(pathsDir, file);
-    let p = null;
+  // 2. Kiểm tra backlog
+  if (fs.existsSync(backlogFile)) {
     try {
-      p = JSON.parse(fs.readFileSync(fullPath, "utf8"));
+      const blData = JSON.parse(fs.readFileSync(backlogFile, "utf8"));
+      const blRes = lintBacklogData(blData, { catalogData, proposalDocContent, pathsDir, mapsBySlug });
+      backlogChecked++;
+      for (const p of blRes.problems) {
+        problems.push(`backlog.json: ${p}`);
+      }
     } catch (err) {
-      problems.push(`${file}: JSON không hợp lệ: ${err.message}`);
-      continue;
-    }
-
-    const fileSlug = file.replace(/\.json$/, "");
-    if (!p.slug || typeof p.slug !== "string") {
-      problems.push(`${file}: slug không được để trống`);
-    } else if (p.slug !== fileSlug) {
-      problems.push(`${file}: slug "${p.slug}" không khớp tên file "${fileSlug}"`);
-    }
-
-    if (!p.title || typeof p.title !== "string" || !p.title.trim()) {
-      problems.push(`${file}: title không được để trống`);
-    }
-
-    if (typeof p.goal !== "string") {
-      problems.push(`${file}: goal phải là chuỗi`);
-    }
-
-    if (typeof p.audience !== "string") {
-      problems.push(`${file}: audience phải là chuỗi`);
-    }
-
-    if (!VALID_AXES.has(p.axis)) {
-      problems.push(`${file}: axis "${p.axis}" không hợp lệ (phải là role|skill|ecosystem)`);
-    }
-
-    if (!VALID_ENTRY_LEVELS.has(p.entry_level)) {
-      problems.push(`${file}: entry_level "${p.entry_level}" không hợp lệ (phải là beginner|intermediate|advanced)`);
-    }
-
-    if (!VALID_STATUSES.has(p.status)) {
-      problems.push(`${file}: status "${p.status}" không hợp lệ (phải là draft|approved)`);
-    }
-
-    // P-08 & AC3: Kiểm tra origin trước để xác định tính hợp lệ của origin
-    let hasValidOrigin = false;
-    if (p.origin) {
-      if (typeof p.origin !== "object") {
-        problems.push(`${file}: origin phải là object`);
-      } else {
-        const pitchSlug = p.origin.pitch_slug;
-        const shortlistRef = p.origin.shortlist;
-        const pathCourseSlugs = new Set((p.courses || []).map((c) => c?.slug).filter(Boolean));
-
-        let originErr = false;
-        if (!pitchSlug || typeof pitchSlug !== "string") {
-          problems.push(`${file}: origin.pitch_slug không được để trống`);
-          originErr = true;
-        } else if (!pathCourseSlugs.has(pitchSlug)) {
-          problems.push(`${file}: origin.pitch_slug "${pitchSlug}" không thuộc danh sách courses[] của path`);
-          originErr = true;
-        }
-
-        if (!shortlistRef || typeof shortlistRef !== "string") {
-          problems.push(`${file}: origin.shortlist không được để trống`);
-          originErr = true;
-        } else {
-          let slPath = path.isAbsolute(shortlistRef)
-            ? shortlistRef
-            : path.join(root, shortlistRef);
-          if (!fs.existsSync(slPath)) {
-            const inShortlistsDir = path.join(root, ".course-plan", "shortlists", path.basename(shortlistRef));
-            if (fs.existsSync(inShortlistsDir)) {
-              slPath = inShortlistsDir;
-            }
-          }
-
-          if (!fs.existsSync(slPath)) {
-            problems.push(`${file}: file shortlist "${shortlistRef}" không tồn tại`);
-            originErr = true;
-          } else {
-            try {
-              const slData = JSON.parse(fs.readFileSync(slPath, "utf8"));
-              const slProposals = Array.isArray(slData.shortlist) ? slData.shortlist : [];
-              const hasPitch = slProposals.some((prop) => prop?.slug === pitchSlug);
-              if (!hasPitch) {
-                problems.push(`${file}: shortlist "${shortlistRef}" không chứa đề xuất có slug "${pitchSlug}"`);
-                originErr = true;
-              }
-            } catch (err) {
-              problems.push(`${file}: file shortlist "${shortlistRef}" hỏng: ${err.message}`);
-              originErr = true;
-            }
-          }
-        }
-        if (!originErr) {
-          hasValidOrigin = true;
-        }
-      }
-    }
-
-    // AC3: Path có origin hợp lệ thì không bắt buộc priority; path không origin hoặc origin lỗi bắt buộc priority >= 1
-    if (p.priority != null) {
-      if (typeof p.priority !== "number" || !Number.isInteger(p.priority) || p.priority < 1) {
-        problems.push(`${file}: priority phải là số nguyên >= 1`);
-      }
-    } else {
-      if (!hasValidOrigin) {
-        problems.push(`${file}: priority phải là số nguyên >= 1`);
-      }
-    }
-
-    if (!Array.isArray(p.scope)) {
-      problems.push(`${file}: scope phải là mảng chuỗi`);
-    }
-    if (!Array.isArray(p.out_of_scope)) {
-      problems.push(`${file}: out_of_scope phải là mảng chuỗi`);
-    }
-    if (!Array.isArray(p.missing_evidence)) {
-      problems.push(`${file}: missing_evidence phải là mảng chuỗi`);
-    }
-
-    if (!Array.isArray(p.evidence)) {
-      problems.push(`${file}: evidence phải là mảng`);
-    } else {
-      p.evidence.forEach((ev, idx) => {
-        if (!ev || typeof ev !== "object") {
-          problems.push(`${file}: evidence[${idx}] bị null hoặc không phải object`);
-          return;
-        }
-        if (typeof ev.claim !== "string") {
-          problems.push(`${file}: evidence[${idx}].claim không hợp lệ`);
-        }
-        if (!VALID_EVIDENCE_KINDS.has(ev.kind)) {
-          problems.push(`${file}: evidence[${idx}].kind "${ev.kind}" không hợp lệ (phải là direct|inferred)`);
-        }
-        if (!Array.isArray(ev.urls)) {
-          problems.push(`${file}: evidence[${idx}].urls phải là mảng chuỗi`);
-        }
-        if (!ev.observed_on || typeof ev.observed_on !== "string") {
-          problems.push(`${file}: evidence[${idx}].observed_on phải là chuỗi YYYY-MM-DD`);
-        }
-      });
-    }
-
-    if (!Array.isArray(p.courses)) {
-      problems.push(`${file}: courses phải là mảng`);
-    } else {
-      for (const c of p.courses) {
-        if (c && typeof c === "object" && c.slug) {
-          allPathCourseSlugs.add(c.slug);
-        }
-      }
-
-      // E-02: Path có entry_level: "beginner" phải có ít nhất một ô khởi đầu (level: "beginner" và requires rỗng)
-      if (p.entry_level === "beginner" && p.courses.length > 0) {
-        const hasBeginnerStarter = p.courses.some(
-          (c) => c && c.level === "beginner" && (!Array.isArray(c.requires) || c.requires.length === 0)
-        );
-        if (!hasBeginnerStarter) {
-          problems.push(
-            `${file}: path có entry_level "beginner" nhưng không có ô khởi đầu (cần ít nhất một khóa level "beginner" và không có requires)`
-          );
-        }
-      }
-    }
-
-
-
-    paths.push({ file, data: p });
-  }
-
-  // Tập slug hợp lệ: từ các path + từ catalog.json
-  const validSlugs = new Set([...allPathCourseSlugs, ...catalogSlugs]);
-
-  // Kiểm tra từng khóa và requires
-  // Xây dựng đồ thị phụ thuộc để tìm chu trình
-  // Cạnh u -> v: khóa u yêu cầu khóa v (u requires v)
-  const adj = new Map(); // slug -> Set of required slugs
-  const edgeDetails = new Map(); // `${u}->${v}` -> reason
-
-  for (const { file, data: p } of paths) {
-    if (!Array.isArray(p.courses)) continue;
-    for (const c of p.courses) {
-      if (!c || typeof c !== "object") {
-        problems.push(`${file}: phần tử trong courses bị null hoặc không phải object`);
-        continue;
-      }
-      if (!c.slug || typeof c.slug !== "string") {
-        problems.push(`${file}: khóa thiếu slug`);
-        continue;
-      }
-      if (!c.title || typeof c.title !== "string" || !c.title.trim()) {
-        problems.push(`${file} (${c.slug}): khóa thiếu title`);
-      }
-      if (!c.task || typeof c.task !== "string" || !c.task.trim()) {
-        problems.push(`${file} (${c.slug}): khóa thiếu task hoặc task rỗng`);
-      }
-      if (!Array.isArray(c.scope) || c.scope.length === 0 || !c.scope.every((s) => typeof s === "string" && s.trim())) {
-        problems.push(`${file} (${c.slug}): khóa thiếu scope hoặc scope rỗng (cần mảng chuỗi)`);
-      }
-      if (!Array.isArray(c.out_of_scope) || c.out_of_scope.length === 0 || !c.out_of_scope.every((s) => typeof s === "string" && s.trim())) {
-        problems.push(`${file} (${c.slug}): khóa thiếu out_of_scope hoặc out_of_scope rỗng (cần mảng chuỗi nêu ranh giới)`);
-      }
-      if (typeof c.level !== "string") {
-        problems.push(`${file} (${c.slug}): khóa thiếu level hoặc level không phải chuỗi`);
-      }
-      if (typeof c.suggested_order !== "number") {
-        problems.push(`${file} (${c.slug}): khóa thiếu suggested_order hoặc suggested_order không phải số`);
-      }
-      if (typeof c.is_foundation !== "boolean") {
-        problems.push(`${file} (${c.slug}): khóa thiếu is_foundation hoặc is_foundation không phải boolean`);
-      }
-
-      if (!adj.has(c.slug)) {
-        adj.set(c.slug, new Set());
-      }
-
-      if (!Array.isArray(c.requires)) {
-        problems.push(`${file} (${c.slug}): requires phải là mảng`);
-        continue;
-      }
-
-      for (const req of c.requires) {
-        if (!req || typeof req !== "object" || typeof req.slug !== "string") {
-          problems.push(`${file} (${c.slug}): requires có phần tử thiếu slug hoặc không phải object`);
-          continue;
-        }
-
-        if (!validSlugs.has(req.slug)) {
-          problems.push(`${file} (${c.slug}): requires.slug "${req.slug}" không tồn tại trong path nào hoặc catalog`);
-        }
-
-        if (!req.reason || typeof req.reason !== "string" || !req.reason.trim()) {
-          problems.push(`${file} (${c.slug}): requires "${req.slug}" có reason rỗng hoặc không phải chuỗi`);
-        }
-
-        adj.get(c.slug).add(req.slug);
-        edgeDetails.set(`${c.slug}->${req.slug}`, req.reason || "");
-      }
-    }
-  }
-
-  // Tìm chu trình bằng DFS 3 trạng thái: 0: unvisited, 1: visiting, 2: visited
-  const visited = new Map();
-  const parent = new Map();
-  const allNodes = Array.from(adj.keys());
-
-  function dfs(u) {
-    visited.set(u, 1);
-    const neighbors = adj.get(u) || new Set();
-    for (const v of neighbors) {
-      if (!adj.has(v)) {
-        // v là khóa ngoài chỉ có trong catalog, không có outgoing requires
-        continue;
-      }
-      if (visited.get(v) === 1) {
-        // Phát hiện chu trình: trace ngược từ u về v
-        const cycle = [v, u];
-        let curr = u;
-        while (curr !== v && parent.has(curr)) {
-          curr = parent.get(curr);
-          cycle.push(curr);
-        }
-        cycle.reverse();
-
-        // Ghi lại các cạnh trong chu trình
-        for (let i = 0; i < cycle.length - 1; i++) {
-          const from = cycle[i];
-          const to = cycle[i + 1];
-          const edgeKey = `${from}->${to}`;
-          cycleEdges.push({
-            from,
-            to,
-            reason: edgeDetails.get(edgeKey) || ""
-          });
-        }
-      } else if (!visited.has(v)) {
-        parent.set(v, u);
-        dfs(v);
-      }
-    }
-    visited.set(u, 2);
-  }
-
-  for (const node of allNodes) {
-    if (!visited.has(node)) {
-      dfs(node);
-    }
-  }
-
-  if (cycleEdges.length > 0) {
-    problems.push(`Phát hiện chu trình phụ thuộc (${cycleEdges.length} cạnh)`);
-  }
-
-  // Kiểm tra shortlists nếu có trong .course-plan/shortlists/
-  const shortlistsDir = path.join(root, ".course-plan", "shortlists");
-  let shortlistsChecked = 0;
-  if (fs.existsSync(shortlistsDir)) {
-    const sFiles = fs.readdirSync(shortlistsDir).filter((f) => f.endsWith(".json"));
-    let proposalDocContent = null;
-    const docPath = path.join(root, "docs", "learn", "learn-proposal.md");
-    if (!fs.existsSync(docPath)) {
-      problems.push(`[shortlist] Không tìm thấy tài liệu định hướng tại ${docPath}`);
-    } else {
-      try {
-        proposalDocContent = fs.readFileSync(docPath, "utf8");
-      } catch (err) {
-        problems.push(`[shortlist] Lỗi đọc tài liệu ${docPath}: ${err.message}`);
-      }
-    }
-
-    let catalogData = null;
-    if (fs.existsSync(catalogFile)) {
-      try {
-        catalogData = JSON.parse(fs.readFileSync(catalogFile, "utf8"));
-      } catch {}
-    }
-
-    for (const sf of sFiles) {
-      try {
-        const sData = JSON.parse(fs.readFileSync(path.join(shortlistsDir, sf), "utf8"));
-        const sRes = lintShortlistData(sData, { catalogData, proposalDocContent });
-        shortlistsChecked++;
-        for (const p of sRes.problems) {
-          problems.push(`shortlist/${sf}: ${p}`);
-        }
-      } catch (err) {
-        problems.push(`shortlist/${sf}: Lỗi đọc JSON: ${err.message}`);
-      }
+      problems.push(`backlog.json: Lỗi đọc JSON: ${err.message}`);
     }
   }
 
   return {
     ok: problems.length === 0,
     problems,
-    cycleEdges,
-    pathsChecked: paths.length,
-    shortlistsChecked
+    cycleEdges: [],
+    pathsChecked,
+    backlogChecked,
   };
 }
 
@@ -695,15 +896,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
     const root = path.resolve(".");
     let proposalDocContent = null;
     const docPath = path.join(root, "docs", "learn", "learn-proposal.md");
-    if (!fs.existsSync(docPath)) {
-      console.error(`[plan-lint] Lỗi: Không tìm thấy tài liệu định hướng tại ${docPath}`);
-      process.exit(1);
-    }
-    try {
-      proposalDocContent = fs.readFileSync(docPath, "utf8");
-    } catch (err) {
-      console.error(`[plan-lint] Lỗi đọc tài liệu ${docPath}: ${err.message}`);
-      process.exit(1);
+    if (fs.existsSync(docPath)) {
+      try {
+        proposalDocContent = fs.readFileSync(docPath, "utf8");
+      } catch {}
     }
 
     let catalogData = null;
@@ -716,13 +912,32 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
 
     try {
       const data = JSON.parse(fs.readFileSync(resolved, "utf8"));
-      const result = lintShortlistData(data, { catalogData, proposalDocContent });
+      const isBacklog = Array.isArray(data.proposals) || path.basename(resolved) === "backlog.json";
+      const isMap = Array.isArray(data.nodes) || data.kind != null;
+      let result;
+      let label;
+      if (isBacklog) {
+        let pDir = null;
+        const candidatePDir = path.join(path.dirname(resolved), "paths");
+        if (fs.existsSync(candidatePDir)) {
+          pDir = candidatePDir;
+        }
+        result = lintBacklogData(data, { catalogData, proposalDocContent, pathsDir: pDir });
+        label = "backlog";
+      } else if (isMap) {
+        result = lintMapData(data, { proposalDocContent, pathsDir: path.dirname(resolved) });
+        label = "skill map";
+      } else {
+        result = lintShortlistData(data, { catalogData, proposalDocContent });
+        label = "shortlist";
+      }
+
       if (!result.ok) {
-        console.error(`[plan-lint] LỖI shortlist (${path.basename(resolved)}): ${result.problems.length} vấn đề:`);
+        console.error(`[plan-lint] LỖI ${label} (${path.basename(resolved)}): ${result.problems.length} vấn đề:`);
         for (const prob of result.problems) console.error(`  - ${prob}`);
         process.exit(1);
       } else {
-        console.log(`[plan-lint] Đạt: shortlist (${path.basename(resolved)}) hợp lệ.`);
+        console.log(`[plan-lint] Đạt: ${label} (${path.basename(resolved)}) hợp lệ.`);
         process.exit(0);
       }
     } catch (err) {
@@ -737,15 +952,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
     for (const prob of result.problems) {
       console.error(`  - ${prob}`);
     }
-    if (result.cycleEdges.length > 0) {
-      console.error("[plan-lint] Các cạnh tạo thành chu trình:");
-      for (const e of result.cycleEdges) {
-        console.error(`  ${e.from} -> ${e.to}${e.reason ? ` (lý do: ${e.reason})` : ""}`);
-      }
-    }
     process.exit(1);
   } else {
-    console.log(`[plan-lint] Đạt: ${result.pathsChecked} path, ${result.shortlistsChecked || 0} shortlist kiểm tra thành công, không có lỗi chu trình hay schema.`);
+    console.log(`[plan-lint] Đạt: ${result.pathsChecked} map, ${result.backlogChecked || 0} backlog kiểm tra thành công.`);
     process.exit(0);
   }
 }
