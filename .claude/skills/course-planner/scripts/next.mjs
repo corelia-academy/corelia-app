@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { isNodeSatisfied } from "./plan-lint.mjs";
 
 export function decideNext({
   repoRoot = ".",
@@ -28,14 +29,6 @@ export function decideNext({
       }
     } catch {}
   }
-
-  const isSatisfiedState = (catReq) => {
-    if (!catReq) return false;
-    if (catReq.content_state) {
-      return catReq.content_state !== "empty";
-    }
-    return catReq.state === "produced" || catReq.state === "in_catalog";
-  };
 
   // 2. Đọc các skill map từ .course-plan/paths/
   const allMaps = new Map();
@@ -171,14 +164,6 @@ export function decideNext({
 
     for (const reqId of nodeRequires) {
       const reqNode = (map.nodes || []).find((n) => n.id === reqId);
-      const isCovered = reqNode?.coverage === "covered";
-      const hasProposalMet = proposals.some(
-        (p) =>
-          p.path_node?.path === pathNode.path &&
-          p.path_node?.node === reqId &&
-          (p.status === "chosen" || p.status === "produced")
-      );
-      const hasCatMet = reqNode?.course_slug && isSatisfiedState(catalogMap.get(reqNode.course_slug));
 
       if (reqNode?.course_slug) {
         const catReq = catalogMap.get(reqNode.course_slug);
@@ -191,7 +176,8 @@ export function decideNext({
         }
       }
 
-      if (!isCovered && !hasProposalMet && !hasCatMet) {
+      // V-05: requires chỉ thỏa khi ô tiên quyết covered hoặc có đề xuất chosen/produced
+      if (!isNodeSatisfied(reqNode, proposals, pathNode.path)) {
         unmetRequires.push(reqId);
       }
     }

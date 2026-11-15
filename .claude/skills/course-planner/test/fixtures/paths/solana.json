@@ -20,7 +20,7 @@
       "branch": null,
       "requires": [],
       "ref": null,
-      "required_tools": ["solana-cli"],
+      "required_tools": ["solana"],
       "scope": ["Account types", "Rent", "PDA cơ bản"],
       "course_slug": null,
       "coverage": "empty"

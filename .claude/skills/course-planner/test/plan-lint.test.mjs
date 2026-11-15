@@ -31,7 +31,7 @@ function getBaseValidEcosystemMap() {
         branch: null,
         requires: [],
         ref: null,
-        required_tools: ["solana-cli"],
+        required_tools: ["solana"],
         scope: ["Account types", "Rent", "PDA"],
         course_slug: null,
         coverage: "empty"
@@ -366,4 +366,47 @@ test("plan-lint: AC-08 - updateMapNodeOnProduced cập nhật đúng course_slug
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
+});
+
+test("plan-lint: V-06 - lintMapData bắt lỗi required_tools là alias/package hoặc sai định dạng", () => {
+  const ecoMap = getBaseValidEcosystemMap();
+
+  // 1. Tool nằm trong KNOWN_BAD_TOOLS (solana-cli, anchor-cli, rust)
+  ecoMap.nodes[0].required_tools = ["solana-cli"];
+  let res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('tên tool "solana-cli" là tên gói/alias, hãy đổi thành "solana"')),
+    "Phải bắt lỗi tên gói solana-cli: " + res.problems.join("; ")
+  );
+
+  ecoMap.nodes[0].required_tools = ["anchor-cli"];
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('tên tool "anchor-cli" là tên gói/alias, hãy đổi thành "anchor"')),
+    "Phải bắt lỗi tên gói anchor-cli"
+  );
+
+  ecoMap.nodes[0].required_tools = ["rust"];
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('tên tool "rust" là tên gói/alias, hãy đổi thành "rustc"')),
+    "Phải bắt lỗi tên gói rust"
+  );
+
+  // 2. Tool có ký tự không hợp lệ
+  ecoMap.nodes[0].required_tools = ["solana cli"];
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('tên tool "solana cli" không hợp lệ')),
+    "Phải bắt lỗi tool có khoảng trắng"
+  );
+
+  // 3. Tool hợp lệ -> pass
+  ecoMap.nodes[0].required_tools = ["solana", "cargo", "rustc"];
+  res = lintMapData(ecoMap, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, true, "Tools hợp lệ phải pass: " + res.problems.join("; "));
 });

@@ -500,7 +500,7 @@ test("next: E-04 - evaluation bị vô hiệu hóa khi catalog có thêm khóa m
   }
 });
 
-test("next: prerequisite có content_state empty -> blocked", () => {
+test("next: V-05 - prerequisite có course trong catalog nhưng node coverage khác covered -> vẫn blocked (không có catalog bypass)", () => {
   const { tmpDir, pathsDir, evalsDir, catFile, planDir } = setupFixture();
   try {
     makeMap(pathsDir, {
@@ -510,15 +510,15 @@ test("next: prerequisite có content_state empty -> blocked", () => {
       title: "Solana Map",
       status: "approved",
       nodes: [
-        { id: "accounts", title: "Accounts", layer: "foundation", requires: [], course_slug: "solana-accounts", coverage: "empty" },
+        { id: "accounts", title: "Accounts", layer: "foundation", requires: [], course_slug: "solana-accounts", coverage: "partial" },
         { id: "anchor", title: "Anchor", layer: "core", requires: ["accounts"], coverage: "empty" }
       ]
     });
 
-    // Catalog có khóa accounts nhưng content_state là empty
+    // Catalog có khóa accounts với content_state complete
     fs.writeFileSync(catFile, JSON.stringify({
       courses: [
-        { slug: "solana-accounts", title: "Accounts Course", state: "in_catalog", content_state: "empty" }
+        { slug: "solana-accounts", title: "Accounts Course", state: "produced", content_state: "complete" }
       ]
     }, null, 2));
 
@@ -533,17 +533,36 @@ test("next: prerequisite có content_state empty -> blocked", () => {
       handoff: { title: "Anchor", audience: "All", level: "beginner", scope_note: "Phạm vi" }
     });
 
-    const res = decideNext({ repoRoot: tmpDir });
-    assert.strictEqual(res.pick, null, "Không được pick khi prerequisite có content_state empty");
+    // Case 1: Node accounts coverage: "partial" -> c-anchor bị blocked (V-05)
+    let res = decideNext({ repoRoot: tmpDir });
+    assert.strictEqual(res.pick, null, "Không được pick khi prerequisite node chưa covered và chưa có proposal chosen/produced");
     assert.strictEqual(res.blocked.length, 1);
     assert.strictEqual(res.blocked[0].slug, "c-anchor");
     assert.deepStrictEqual(res.blocked[0].blocked_by, ["accounts"]);
+
+    // Case 2: Node accounts được cập nhật coverage: "covered" -> c-anchor được pick
+    makeMap(pathsDir, {
+      slug: "solana",
+      kind: "ecosystem",
+      entry: "Solana",
+      title: "Solana Map",
+      status: "approved",
+      nodes: [
+        { id: "accounts", title: "Accounts", layer: "foundation", requires: [], course_slug: "solana-accounts", coverage: "covered" },
+        { id: "anchor", title: "Anchor", layer: "core", requires: ["accounts"], coverage: "empty" }
+      ]
+    });
+
+    res = decideNext({ repoRoot: tmpDir });
+    assert.ok(res.pick, "Khóa c-anchor phải được pick khi prerequisite node đã covered");
+    assert.strictEqual(res.pick.slug, "c-anchor");
+    assert.strictEqual(res.blocked.length, 0);
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
 
-test("next: prerequisite có content_state unknown hoặc thiếu content_state -> sẵn sàng kèm warning", () => {
+test("next: prerequisite node covered nhưng catalog thiếu content_state hoặc có content_state unknown -> sẵn sàng kèm warning", () => {
   const { tmpDir, pathsDir, evalsDir, catFile, planDir } = setupFixture();
   try {
     makeMap(pathsDir, {
@@ -553,7 +572,7 @@ test("next: prerequisite có content_state unknown hoặc thiếu content_state 
       title: "Solana Map",
       status: "approved",
       nodes: [
-        { id: "accounts", title: "Accounts", layer: "foundation", requires: [], course_slug: "solana-accounts", coverage: "empty" },
+        { id: "accounts", title: "Accounts", layer: "foundation", requires: [], course_slug: "solana-accounts", coverage: "covered" },
         { id: "anchor", title: "Anchor", layer: "core", requires: ["accounts"], coverage: "empty" }
       ]
     });
@@ -577,7 +596,7 @@ test("next: prerequisite có content_state unknown hoặc thiếu content_state 
     }, null, 2));
 
     let res = decideNext({ repoRoot: tmpDir });
-    assert.ok(res.pick, "Khóa phải được pick khi prerequisite có content_state unknown");
+    assert.ok(res.pick, "Khóa phải được pick khi prerequisite node đã covered");
     assert.strictEqual(res.pick.slug, "c-anchor");
     assert.strictEqual(res.blocked.length, 0);
     assert.ok(
@@ -593,7 +612,7 @@ test("next: prerequisite có content_state unknown hoặc thiếu content_state 
     }, null, 2));
 
     res = decideNext({ repoRoot: tmpDir });
-    assert.ok(res.pick, "Khóa phải được pick khi prerequisite thiếu content_state");
+    assert.ok(res.pick, "Khóa phải được pick khi prerequisite node đã covered");
     assert.strictEqual(res.pick.slug, "c-anchor");
     assert.strictEqual(res.blocked.length, 0);
     assert.ok(

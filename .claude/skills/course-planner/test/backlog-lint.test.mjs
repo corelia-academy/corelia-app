@@ -32,7 +32,7 @@ function getMockSolanaMap() {
         branch: null,
         requires: [],
         ref: null,
-        required_tools: ["solana-cli"],
+        required_tools: ["solana"],
         coverage: "empty"
       },
       {
@@ -235,17 +235,17 @@ test("backlog-lint: AC-03 - kiểm tra required_tools của ô", () => {
   data.focus = { path: "solana" };
   data.proposals[0].path_node = { path: "solana", node: "accounts-model" };
 
-  // Ô accounts-model yêu cầu ["solana-cli"], nhưng proposals[0].tools chỉ có ["node"]
+  // Ô accounts-model yêu cầu ["solana"], nhưng proposals[0].tools chỉ có ["node"]
   data.proposals[0].tools = ["node"];
   let res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc, mapsBySlug });
   assert.strictEqual(res.ok, false);
   assert.ok(
-    res.problems.some((p) => p.includes("tools thiếu required_tools của ô \"accounts-model\" (solana-cli)")),
-    "Phải báo lỗi thiếu solana-cli: " + res.problems.join("; ")
+    res.problems.some((p) => p.includes("tools thiếu required_tools của ô \"accounts-model\" (solana)")),
+    "Phải báo lỗi thiếu solana: " + res.problems.join("; ")
   );
 
-  // Bổ sung solana-cli -> pass
-  data.proposals[0].tools = ["node", "solana-cli"];
+  // Bổ sung solana -> pass
+  data.proposals[0].tools = ["node", "solana"];
   res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc, mapsBySlug });
   assert.strictEqual(res.ok, true, "Có đủ required_tools phải pass: " + res.problems.join("; "));
 });
@@ -353,4 +353,114 @@ test("backlog-lint: kiểm tra các ràng buộc nội dung đề xuất (promis
   res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
   assert.strictEqual(res.ok, false);
   assert.ok(res.problems.some((p) => p.includes("đã tồn tại trong catalog")));
+});
+
+test("backlog-lint: V-06 - lintBacklogData bắt lỗi tools trong proposal là alias/package hoặc sai định dạng", () => {
+  const data = getBaseValidBacklog();
+
+  // 1. Tool solana-cli
+  data.proposals[0].tools = ["node", "solana-cli"];
+  let res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('tên tool "solana-cli" là tên gói/alias, hãy đổi thành "solana"')),
+    "Phải bắt lỗi tên gói solana-cli"
+  );
+
+  // 2. Tool anchor-cli
+  data.proposals[0].tools = ["node", "anchor-cli"];
+  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('tên tool "anchor-cli" là tên gói/alias, hãy đổi thành "anchor"')),
+    "Phải bắt lỗi tên gói anchor-cli"
+  );
+
+  // 3. Tool rust
+  data.proposals[0].tools = ["node", "rust"];
+  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('tên tool "rust" là tên gói/alias, hãy đổi thành "rustc"')),
+    "Phải bắt lỗi tên gói rust"
+  );
+
+  // 4. Tool sai định dạng
+  data.proposals[0].tools = ["node", "bad tool!"];
+  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes('tên tool "bad tool!" không hợp lệ')),
+    "Phải bắt lỗi tool sai format"
+  );
+
+  // 5. Tools hợp lệ -> pass
+  data.proposals[0].tools = ["node", "solana", "cargo", "rustc", "spl-token"];
+  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, true, "Tools hợp lệ phải pass: " + res.problems.join("; "));
+});
+
+test("backlog-lint: V-05 - ô tiên quyết chỉ partial qua catalog KHÔNG thỏa mãn requires (không có catalog bypass)", () => {
+  const mapsBySlug = new Map();
+  const mockMap = getMockSolanaMap();
+
+  // Node 0 (accounts-model): coverage: "partial", course_slug: "c-complete" (có trong mockCatalog với content_state: "complete")
+  mockMap.nodes[0].coverage = "partial";
+  mockMap.nodes[0].course_slug = "c-complete";
+  mapsBySlug.set("solana", mockMap);
+
+  const data = getBaseValidBacklog();
+  data.focus = { path: "solana" };
+
+  // Đề xuất cho anchor-programs (requires accounts-model)
+  data.proposals[0].path_node = { path: "solana", node: "anchor-programs" };
+  data.proposals[0].final_product = "Program on-chain bằng Anchor và test tự động";
+  data.proposals[0].tools = ["anchor", "cargo"];
+
+  // Case 1: Tiên quyết partial qua catalog -> VẪN BỊ BÁO LỖI node-readiness (V-05)
+  let res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc, mapsBySlug });
+  assert.strictEqual(res.ok, false, "Tiên quyết partial qua catalog không được thỏa mãn");
+  assert.ok(
+    res.problems.some((p) => p.includes('chưa sẵn sàng vì các ô tiên quyết chưa hoàn thành (accounts-model)')),
+    "Phải bắt lỗi node-readiness: " + res.problems.join("; ")
+  );
+
+  // Case 2: Đặt accounts-model thành covered trong map -> PASS
+  mockMap.nodes[0].coverage = "covered";
+  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc, mapsBySlug });
+  assert.strictEqual(res.ok, true, "Tiên quyết covered phải pass: " + res.problems.join("; "));
+
+  // Case 3: accounts-model quay lại partial, nhưng có 1 đề xuất chosen cho accounts-model trong backlog -> PASS
+  mockMap.nodes[0].coverage = "partial";
+  data.proposals.push({
+    slug: "solana-accounts-intro",
+    title: "Khóa học nền tảng Accounts",
+    path_node: { path: "solana", node: "accounts-model" },
+    direction: { axis: "ecosystem", entry: "Solana" },
+    level: "beginner",
+    kind: "new",
+    promise: "Thực hiện tạo account trên Solana",
+    starting_point: { knowledge: "Cơ bản", requires: [] },
+    final_product: "Script CLI tạo account",
+    tools: ["solana"],
+    alternatives: [
+      { name: "A1", url: "https://example.com/1" },
+      { name: "A2", url: "https://example.com/2" }
+    ],
+    why_now: { kind: "direct", urls: ["https://example.com"], quote: "Accounts are fundamental to Solana architecture." },
+    criteria: {
+      continues_catalog: { met: false, basis: "Nền", refs: [] },
+      fills_direction: { met: true, basis: "Đạt", refs: ["r1"] },
+      timely: { met: true, basis: "Đạt", refs: ["r2"] },
+      differentiated: { met: true, basis: "Đạt", refs: ["r3"] },
+      showable_product: { met: true, basis: "Đạt", refs: ["r4"] }
+    },
+    status: "chosen",
+    added_on: "2026-11-15",
+    decided_on: "2026-11-15",
+    reject_reason: null
+  });
+
+  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc, mapsBySlug });
+  assert.strictEqual(res.ok, true, "Có đề xuất chosen cho tiên quyết phải pass: " + res.problems.join("; "));
 });

@@ -542,3 +542,153 @@ test("rank: AC-05 - xử lý focus map: báo cần dựng map khi chưa có, x�
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test("rank: AC-03 - Tổng quan map có đủ mọi ô, đúng thứ tự layer/requires, đúng trạng thái với fixture solana.json và backend-engineer.json", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "rank-overview-test-"));
+  const pathsDir = path.join(tmpDir, ".course-plan", "paths");
+  fs.mkdirSync(pathsDir, { recursive: true });
+
+  try {
+    // Copy 2 fixture map vào pathsDir
+    const fixturesDir = path.resolve(".claude/skills/course-planner/test/fixtures/paths");
+    fs.copyFileSync(path.join(fixturesDir, "solana.json"), path.join(pathsDir, "solana.json"));
+    fs.copyFileSync(path.join(fixturesDir, "backend-engineer.json"), path.join(pathsDir, "backend-engineer.json"));
+
+    // 1. Kiểm tra với solana.json fixture (5 nodes)
+    const backlogSolana = {
+      focus: { path: "solana" },
+      proposals: []
+    };
+    const rankedSolana = rankShortlist(backlogSolana, [], { pathsDir, repoRoot: tmpDir });
+    assert.strictEqual(rankedSolana.hasMap, true);
+    assert.ok(Array.isArray(rankedSolana.mapOverview));
+    assert.strictEqual(rankedSolana.mapOverview.length, 5, "Bảng tổng quan solana phải có đủ 5 ô");
+
+    // Kiểm tra thứ tự và trạng thái của từng ô trong solana.json
+    // accounts-model (foundation, depth 0) -> sẵn sàng
+    assert.strictEqual(rankedSolana.mapOverview[0].id, "accounts-model");
+    assert.strictEqual(rankedSolana.mapOverview[0].layer, "foundation");
+    assert.strictEqual(rankedSolana.mapOverview[0].status, "sẵn sàng");
+
+    // rust-basics (language, depth 1) -> chờ accounts-model
+    assert.strictEqual(rankedSolana.mapOverview[1].id, "rust-basics");
+    assert.strictEqual(rankedSolana.mapOverview[1].layer, "language");
+    assert.strictEqual(rankedSolana.mapOverview[1].status, "chờ accounts-model");
+
+    // anchor-programs (core, depth 2) -> chờ rust-basics
+    assert.strictEqual(rankedSolana.mapOverview[2].id, "anchor-programs");
+    assert.strictEqual(rankedSolana.mapOverview[2].layer, "core");
+    assert.strictEqual(rankedSolana.mapOverview[2].status, "chờ rust-basics");
+
+    // token-program (branch token, depth 3) -> chờ anchor-programs
+    assert.strictEqual(rankedSolana.mapOverview[3].id, "token-program");
+    assert.strictEqual(rankedSolana.mapOverview[3].layerBranch, "branch (token)");
+    assert.strictEqual(rankedSolana.mapOverview[3].status, "chờ anchor-programs");
+
+    // metaplex-nfts (branch nft, depth 3, coverage covered) -> đã phủ
+    assert.strictEqual(rankedSolana.mapOverview[4].id, "metaplex-nfts");
+    assert.strictEqual(rankedSolana.mapOverview[4].layerBranch, "branch (nft)");
+    assert.strictEqual(rankedSolana.mapOverview[4].status, "đã phủ");
+
+    const tableSolana = formatShortlistTable(rankedSolana);
+    assert.ok(tableSolana.includes("### Tổng quan map"));
+    assert.ok(tableSolana.includes("| Layer / Nhánh | Ô (title) | Coverage | Khóa hiện có | Trạng thái |"));
+    assert.ok(tableSolana.includes("Mô hình Account và State trên Solana"));
+    assert.ok(tableSolana.includes("sẵn sàng"));
+    assert.ok(tableSolana.includes("chờ accounts-model"));
+    assert.ok(tableSolana.includes("đã phủ"));
+
+    // 2. Kiểm tra với backend-engineer.json fixture (4 nodes, kind role)
+    const backlogBackend = {
+      focus: { path: "backend-engineer" },
+      proposals: []
+    };
+    const rankedBackend = rankShortlist(backlogBackend, [], { pathsDir, repoRoot: tmpDir });
+    assert.strictEqual(rankedBackend.hasMap, true);
+    assert.strictEqual(rankedBackend.mapOverview.length, 4, "Bảng tổng quan backend-engineer phải có đủ 4 ô");
+
+    // backend-foundations (foundation) -> sẵn sàng
+    assert.strictEqual(rankedBackend.mapOverview[0].id, "backend-foundations");
+    assert.strictEqual(rankedBackend.mapOverview[0].status, "sẵn sàng");
+
+    // api-development (competency) -> chờ backend-foundations
+    assert.strictEqual(rankedBackend.mapOverview[1].id, "api-development");
+    assert.strictEqual(rankedBackend.mapOverview[1].status, "chờ backend-foundations");
+
+    // backend-caching (competency, ref: redis#caching) -> ref
+    assert.strictEqual(rankedBackend.mapOverview[2].id, "backend-caching");
+    assert.strictEqual(rankedBackend.mapOverview[2].status, "ref");
+
+    // system-observability (production) -> chờ api-development
+    assert.strictEqual(rankedBackend.mapOverview[3].id, "system-observability");
+    assert.strictEqual(rankedBackend.mapOverview[3].status, "chờ api-development");
+
+    const tableBackend = formatShortlistTable(rankedBackend);
+    assert.ok(tableBackend.includes("### Tổng quan map"));
+    assert.ok(tableBackend.includes("ref"));
+    assert.ok(tableBackend.includes("chờ backend-foundations"));
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("rank: AC-03 & AC-05 - không focus thì không in tổng quan; bảng rank rỗng vẫn in tổng quan", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "rank-nofocus-test-"));
+  const pathsDir = path.join(tmpDir, ".course-plan", "paths");
+  fs.mkdirSync(pathsDir, { recursive: true });
+
+  try {
+    const fixturesDir = path.resolve(".claude/skills/course-planner/test/fixtures/paths");
+    fs.copyFileSync(path.join(fixturesDir, "solana.json"), path.join(pathsDir, "solana.json"));
+
+    // Case 1: Không có focus -> KHÔNG in tổng quan map
+    const backlogNoFocus = {
+      focus: null,
+      proposals: [
+        {
+          slug: "c-general",
+          title: "Khóa học chung",
+          direction: { axis: "skill", entry: "Rust" },
+          level: "beginner",
+          kind: "new",
+          promise: "Lập trình Rust cơ bản",
+          starting_point: { knowledge: "Cơ bản", requires: [] },
+          final_product: "Chương trình Rust",
+          feasibility: "feasible",
+          why_now: { kind: "direct", urls: ["https://d1.com"] },
+          criteria: {
+            continues_catalog: { met: false, basis: "Mới", refs: [] },
+            fills_direction: { met: true, basis: "Đạt", refs: ["r1"] },
+            timely: { met: true, basis: "Đạt", refs: ["r2"] },
+            differentiated: { met: true, basis: "Đạt", refs: ["r3"] },
+            showable_product: { met: true, basis: "Đạt", refs: ["r4"] }
+          },
+          status: "open"
+        }
+      ]
+    };
+    const rankedNoFocus = rankShortlist(backlogNoFocus, [], { pathsDir, repoRoot: tmpDir });
+    assert.strictEqual(rankedNoFocus.hasMap, false);
+    assert.strictEqual(rankedNoFocus.mapOverview, null);
+    const tableNoFocus = formatShortlistTable(rankedNoFocus);
+    assert.strictEqual(tableNoFocus.includes("Tổng quan map"), false, "Không có focus thì không được in bảng tổng quan map");
+    assert.strictEqual(tableNoFocus.includes("### Bảng xếp hạng đề xuất"), false, "Không có map thì in bảng rank trực tiếp không có tiêu đề h3");
+
+    // Case 2: Focus có map nhưng bảng rank rỗng (không có đề xuất) -> VẪN in tổng quan map
+    const backlogEmptyRank = {
+      focus: { path: "solana" },
+      proposals: [] // Bảng rank rỗng
+    };
+    const rankedEmptyRank = rankShortlist(backlogEmptyRank, [], { pathsDir, repoRoot: tmpDir });
+    assert.strictEqual(rankedEmptyRank.hasMap, true);
+    assert.strictEqual(rankedEmptyRank.total, 0, "Bảng rank có 0 đề xuất");
+    assert.ok(rankedEmptyRank.mapOverview && rankedEmptyRank.mapOverview.length > 0);
+
+    const tableEmptyRank = formatShortlistTable(rankedEmptyRank);
+    assert.ok(tableEmptyRank.includes("### Tổng quan map"), "Bảng rank rỗng vẫn phải in bảng tổng quan map");
+    assert.ok(tableEmptyRank.includes("Mô hình Account và State trên Solana"), "Vẫn có các ô của map trong bảng tổng quan");
+    assert.ok(tableEmptyRank.includes("Bảng xếp hạng rỗng"), "Thông báo bảng rank rỗng");
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});

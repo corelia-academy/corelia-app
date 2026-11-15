@@ -15,6 +15,7 @@ Mục tiêu: Đọc trực tiếp bản đồ kỹ năng (Skill Map) đang focus
    - Ô đó chưa có đề xuất nào đang ở trạng thái `open` hoặc `chosen` trong backlog.
 2. **Ràng buộc công cụ và sản phẩm cuối khóa**:
    - `tools` của đề xuất BẮT BUỘC chứa toàn bộ `required_tools` của ô.
+   - `tools` BẮT BUỘC phải là **tên lệnh CLI thực thi được** (chạy được `<tool> --version`), không phải tên gói cài đặt hay ngôn ngữ tổng quát (ví dụ: `solana`, `anchor`, `cargo`, `rustc`, `spl-token`, `node`; tuyệt đối KHÔNG dùng `solana-cli`, `anchor-cli`, `rust`).
    - `final_product` phải là sản phẩm người học tự viết mã nguồn và thực thi được bằng các công cụ đó, KHÔNG chỉ gọi SDK cấp cao hay thư viện đóng gói sẵn.
    - Đối với ô thuộc map `ecosystem` ở layer `language` hoặc `core`: `final_product` BẮT BUỘC phải có code on-chain do người học tự viết (program/smart contract) và bộ kiểm thử (test) chạy được.
 3. **Bằng chứng khách quan và kiểm chứng được**:
@@ -51,7 +52,7 @@ File duy nhất `.course-plan/backlog.json` lưu trữ toàn bộ đề xuất (
       },
       "level": "beginner|intermediate|advanced",
       "kind": "new|complete_existing",
-      "tools": ["solana-cli", "cargo"],
+      "tools": ["solana", "cargo"],
       "promise": "Xây dựng và triển khai một chương trình Solana localnet thao tác với PDA và Account State.",
       "starting_point": {
         "knowledge": "Kiến thức nền tảng cần có",

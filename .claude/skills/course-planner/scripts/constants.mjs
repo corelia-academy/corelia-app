@@ -35,6 +35,14 @@ export const MAP_STATUSES = new Set(["draft", "approved"]);
 
 export const MAP_COVERAGE_STATUSES = new Set(["empty", "partial", "covered"]);
 
+export const KNOWN_BAD_TOOLS = {
+  "solana-cli": "solana",
+  "anchor-cli": "anchor",
+  "rust": "rustc",
+};
+
+export const TOOL_NAME_REGEX = /^[a-z0-9][a-z0-9_-]*$/;
+
 export const DEFAULT_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 

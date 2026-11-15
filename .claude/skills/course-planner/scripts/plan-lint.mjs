@@ -19,6 +19,8 @@ import {
   MAP_LAYERS,
   MAP_STATUSES,
   MAP_COVERAGE_STATUSES,
+  KNOWN_BAD_TOOLS,
+  TOOL_NAME_REGEX,
 } from "./constants.mjs";
 
 export {
@@ -35,7 +37,29 @@ export {
   MAP_LAYERS,
   MAP_STATUSES,
   MAP_COVERAGE_STATUSES,
+  KNOWN_BAD_TOOLS,
+  TOOL_NAME_REGEX,
 };
+
+// V-05: Tiên quyết requires chỉ được coi là thỏa khi:
+// 1. Ô tiên quyết có coverage === "covered", HOẶC
+// 2. Backlog có đề xuất cho ô đó với status ∈ {"chosen", "produced"}.
+// Không có nhánh suy diễn từ catalog partial.
+export function isNodeSatisfied(reqNode, proposals = [], mapSlug = null) {
+  if (!reqNode) return false;
+  if (reqNode.coverage === "covered") return true;
+  if (Array.isArray(proposals)) {
+    return proposals.some((p) => {
+      const matchMap = mapSlug ? p?.path_node?.path === mapSlug : true;
+      return (
+        matchMap &&
+        p?.path_node?.node === reqNode.id &&
+        (p?.status === "chosen" || p?.status === "produced")
+      );
+    });
+  }
+  return false;
+}
 
 export function parseCommaSeparatedList(text) {
   if (!text || typeof text !== "string") return [];
@@ -278,6 +302,21 @@ export function validateProposalFields(prop, idx, { catalogBySlug, entriesByAxis
   } else {
     add(slug, "kind", `kind "${kind}" không hợp lệ (phải là new|complete_existing)`);
   }
+
+  // V-06: Kiểm tra tools phải là tên lệnh CLI thực thi được
+  if (prop?.tools != null) {
+    if (!Array.isArray(prop.tools)) {
+      add(slug, "tools", "tools phải là mảng chuỗi");
+    } else {
+      for (const t of prop.tools) {
+        if (typeof t !== "string" || !TOOL_NAME_REGEX.test(t)) {
+          add(slug, "tools", `tên tool "${t}" không hợp lệ (phải khớp ${TOOL_NAME_REGEX})`);
+        } else if (KNOWN_BAD_TOOLS[t]) {
+          add(slug, "tools", `tên tool "${t}" là tên gói/alias, hãy đổi thành "${KNOWN_BAD_TOOLS[t]}"`);
+        }
+      }
+    }
+  }
 }
 
 // AC-04: Lint skill map
@@ -393,6 +432,14 @@ export function lintMapData(mapData, { proposalDocContent = null, pathsDir = nul
     // Kiểm tra required_tools, scope
     if (!Array.isArray(n?.required_tools)) {
       add(`${nId}:required_tools`, "required_tools phải là mảng chuỗi");
+    } else {
+      for (const t of n.required_tools) {
+        if (typeof t !== "string" || !TOOL_NAME_REGEX.test(t)) {
+          add(`${nId}:required_tools`, `tên tool "${t}" không hợp lệ (phải khớp ${TOOL_NAME_REGEX})`);
+        } else if (KNOWN_BAD_TOOLS[t]) {
+          add(`${nId}:required_tools`, `tên tool "${t}" là tên gói/alias, hãy đổi thành "${KNOWN_BAD_TOOLS[t]}"`);
+        }
+      }
     }
     if (!Array.isArray(n?.scope)) {
       add(`${nId}:scope`, "scope phải là mảng chuỗi");
@@ -659,23 +706,12 @@ export function lintBacklogData(backlogData, { catalogData = null, proposalDocCo
               }
 
               // 3. Toàn bộ ô trong requires phải đã covered hoặc có đề xuất chosen/produced
+              // V-05: Dùng helper isNodeSatisfied (không còn nhánh catalog partial)
               if (Array.isArray(matchedNode.requires) && matchedNode.requires.length > 0) {
                 const unmetRequires = [];
                 for (const reqId of matchedNode.requires) {
                   const reqNode = (mapData.nodes || []).find((n) => n.id === reqId);
-                  const isReqCovered = reqNode?.coverage === "covered";
-                  const hasProposalMet = proposals.some(
-                    (p) =>
-                      p.path_node?.path === mapSlug &&
-                      p.path_node?.node === reqId &&
-                      (p.status === "chosen" || p.status === "produced")
-                  );
-                  const hasCatMet = Boolean(
-                    reqNode?.course_slug &&
-                    catalogBySlug.has(reqNode.course_slug) &&
-                    catalogBySlug.get(reqNode.course_slug)?.content_state !== "empty"
-                  );
-                  if (!isReqCovered && !hasProposalMet && !hasCatMet) {
+                  if (!isNodeSatisfied(reqNode, proposals, mapSlug)) {
                     unmetRequires.push(reqId);
                   }
                 }

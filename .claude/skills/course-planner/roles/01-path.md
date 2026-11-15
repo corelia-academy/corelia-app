@@ -35,7 +35,7 @@ Skill Map được chia thành một trong 3 loại (`kind`), khớp đúng 3 tr
       "branch": null,
       "requires": [],
       "ref": null,
-      "required_tools": ["solana-cli"],
+      "required_tools": ["solana"],
       "scope": ["Account types", "Rent", "PDA"],
       "course_slug": null,
       "coverage": "empty"
@@ -43,6 +43,9 @@ Skill Map được chia thành một trong 3 loại (`kind`), khớp đúng 3 tr
   ]
 }
 ```
+
+> [!IMPORTANT]
+> `required_tools` BẮT BUỘC phải là **tên lệnh CLI thực thi được** (chạy được `<tool> --version`), không phải tên gói cài đặt hay ngôn ngữ tổng quát (ví dụ: `solana`, `anchor`, `cargo`, `rustc`, `spl-token`, `node`; tuyệt đối KHÔNG dùng `solana-cli`, `anchor-cli`, `rust`).
 
 ---
 
@@ -77,7 +80,7 @@ Thứ tự layer được sắp xếp từ dưới lên. Ô ở layer sau chỉ 
 
 ---
 
-## Quy trình Khởi tạo và Phê duyệt
+## Quy trình Khởi tạo và Phê duyệt Tự động
 
 1. Map mới sinh ra luôn ở trạng thái `status: "draft"`.
 2. Đối chiếu với `.course-plan/catalog.json` và `.course-plan/backlog.json`:
@@ -85,7 +88,10 @@ Thứ tự layer được sắp xếp từ dưới lên. Ô ở layer sau chỉ 
    - Đối với hệ sinh thái Solana: khóa `metaplex-core-nft-collection` phải vào nhánh `nft` với `coverage: "covered"`.
    - Nếu khóa trong catalog chỉ mới hoàn thành một phần (ví dụ `solana-bootcamp`): đánh giá `coverage: "partial"`.
    - Ô chưa có khóa nào đáp ứng: để `course_slug: null` và `coverage: "empty"`.
-3. **Coordinator trình map cho Human rồi DỪNG**:
-   - Đây là điểm dừng Human của phiên chạy khi map chưa được duyệt.
-   - Khi Human duyệt, map được chuyển sang `status: "approved"`.
-   - Map đã `status: "approved"` thì các lần chạy tiếp theo bỏ qua bước dừng này.
+3. **Coordinator kiểm tra tự động và phê duyệt map (không cần Human duyệt)**:
+   - Sau khi dựng xong file `.course-plan/paths/<slug>.json`, coordinator chạy:
+     1. `plan-lint.mjs .course-plan/paths/<slug>.json`
+     2. `evidence-check.mjs .course-plan/paths/<slug>.json` (kiểm tra `sources`)
+   - Cả hai pass: coordinator tự động đặt `status: "approved"` và tiếp tục sang bước đề xuất trong cùng lần chạy, không dừng (AC-01).
+   - Nếu có lỗi: role sửa lại map (tối đa 2 lần). Nếu vẫn fail, coordinator dừng lại, giữ `draft` và ghi lỗi vào báo cáo phiên (AC-01).
+   - Map đã `status: "approved"` được tái sử dụng, không sinh lại (AC-02).

@@ -20,7 +20,7 @@ Skill không ghi cơ sở dữ liệu và không import khóa học lên hệ th
 Tất cả dữ liệu được lưu trong thư mục `.course-plan/` ở gốc repo:
 
 - `.course-plan/backlog.json`: Danh sách backlog duy nhất lưu toàn bộ đề xuất khóa học (đang mở `open`, đã chọn `chosen`, đã bị loại `rejected`, đã sản xuất `produced`). Chứa trường `focus: { "path": "<map slug>" }` hoặc `null`. Do role `00-shortlist.md` bổ sung cho các ô sẵn sàng của map đang focus, script `rank.mjs` xếp hạng đề xuất `open`.
-- `.course-plan/paths/<slug>.json`: Bản đồ kỹ năng (Skill Map) thuộc một trong 3 loại: `ecosystem`, `role`, `skill`. Do role `01-path.md` dựng từ tài liệu chính thức, Human duyệt một lần chuyển sang `status: "approved"`.
+- `.course-plan/paths/<slug>.json`: Bản đồ kỹ năng (Skill Map) thuộc một trong 3 loại: `ecosystem`, `role`, `skill`. Do role `01-path.md` dựng từ tài liệu chính thức, coordinator tự động kiểm tra và chuyển sang `status: "approved"` khi đạt kiểm tra.
 - `.course-plan/catalog.json`: Bản chụp catalog hiện có (sinh bởi `scripts/catalog-snapshot.mjs`, không sửa tay).
 - `.course-plan/evaluations/<slug>.json`: Đánh giá chi tiết từng ứng viên khóa học (do role `02-candidate.md` lập).
 - `.course-plan/decisions/<YYYY-MM-DD>-<n>.json`: Nhật ký quyết định của từng phiên chạy `scripts/next.mjs`.
@@ -29,7 +29,7 @@ Tất cả dữ liệu được lưu trong thư mục `.course-plan/` ở gốc 
 
 ## Trình tự Điều phối (Coordinator Workflow)
 
-Coordinator thực hiện tuần tự các bước sau. Mỗi lần chạy dừng đúng một lần: duyệt map mới hoặc chọn dòng. Sau đó coordinator tự động thực hiện liên tục các bước tiếp theo mà không dừng giữa chừng khi có handoff.
+Coordinator thực hiện tuần tự các bước sau. Mỗi lần chạy dừng đúng một lần: Human chọn dòng trong bảng rank. Sau đó coordinator tự động thực hiện liên tục các bước tiếp theo mà không dừng giữa chừng khi có handoff.
 
 ### Bước 1: Làm mới và Snapshot Catalog
 1. Làm mới dữ liệu catalog từ DB local (chỉ đọc):
@@ -46,12 +46,18 @@ Script quét toàn bộ thư mục `.course-runs/*/` và `.course-plan/catalog-e
 
 ### Bước 2: Kiểm tra Skill Map Focus
 1. Đọc trường `focus` trong `.course-plan/backlog.json`. Nếu `focus` có trỏ tới một map (ví dụ `{ "path": "solana" }`):
-   - Kiểm tra xem file `.course-plan/paths/<map-slug>.json` đã tồn tại và có `status: "approved"` hay chưa.
-   - Nếu map **chưa tồn tại** hoặc đang ở **`status: "draft"`**:
-     - Nếu chưa tồn tại: Chạy role `roles/01-path.md` để nghiên cứu tài liệu chính thức và dựng map ở `status: "draft"`.
-     - Chạy `plan-lint.mjs .course-plan/paths/<map-slug>.json` để đảm bảo map hợp lệ.
-     - **Trình map cho Human và DỪNG:** Đây là điểm dừng Human của phiên chạy để Human duyệt map mới. Sau khi Human duyệt, chuyển status sang `"approved"`.
-   - Nếu map đã có `status: "approved"`: Đi tiếp sang Bước 3.
+   - Kiểm tra xem file `.course-plan/paths/<map-slug>.json` đã tồn tại:
+     - **Nếu map đã có `status: "approved"`**: Tái sử dụng map hiện có, không sinh lại, đi tiếp sang Bước 3 (AC-02).
+     - **Nếu map đang ở `status: "draft"` có sẵn**: (Do Human tự đặt để giữ lại) Coordinator không tự duyệt và **DỪNG**, báo map đang bị giữ lại (AC-02).
+     - **Nếu map chưa tồn tại**:
+       - Chạy role `roles/01-path.md` để nghiên cứu tài liệu chính thức và dựng map (ban đầu ở `status: "draft"`).
+       - Coordinator chạy kiểm tra tự động:
+         1. `node .claude/skills/course-planner/scripts/plan-lint.mjs .course-plan/paths/<map-slug>.json`
+         2. `node .claude/skills/course-planner/scripts/evidence-check.mjs .course-plan/paths/<map-slug>.json` (kiểm tra `sources`)
+       - Nếu cả hai kiểm tra đạt: Coordinator tự động đặt `status: "approved"` và tiếp tục thực hiện sang Bước 3 trong cùng lần chạy mà không dừng (AC-01).
+       - Nếu một trong hai kiểm tra không đạt: Yêu cầu role `roles/01-path.md` sửa lại map (tối đa 2 lần).
+       - Nếu sau 2 lần sửa vẫn fail: **DỪNG**, ghi lỗi vào báo cáo phiên, giữ `status: "draft"`, không trình bảng rank (AC-01).
+   - Nếu không có focus map: Đi tiếp sang Bước 3.
 
 ### Bước 3: Quản lý Backlog và Xếp hạng Đề xuất
 Kiểm tra xem trong `.course-plan/backlog.json` đã có đề xuất nào có `status === "chosen"` mà khóa đó chưa vào sản xuất (`produced`) hay chưa.
@@ -74,10 +80,12 @@ Nếu chưa có:
    ```bash
    node .claude/skills/course-planner/scripts/rank.mjs .course-plan/backlog.json --table
    ```
-   Script xếp hạng theo thứ tự layer, sau đó đến độ sâu requires; tiêu chí cũ dùng phá hòa. Bảng hiển thị cột Layer / Nhánh.
+   Script xếp hạng theo thứ tự layer, sau đó đến độ sâu requires; tiêu chí cũ dùng phá hòa. Bảng hiển thị cột Layer / Nhánh. Khi focus có map, script in thêm bảng Tổng quan map phía trên bảng rank.
 6. **Trình Human và DỪNG:**
-   Trình bày đúng bảng Markdown do `rank.mjs --table` in ra. Bên dưới bảng chỉ nêu khuyến nghị là dòng rank 1 và các cảnh báo của script.
-   **DỪNG LẠI TẠI ĐÂY:** Chờ Human chọn một dòng trong bảng xếp hạng.
+   Trình bày cho Human gồm đúng output của `rank.mjs --table` (tổng quan map + bảng rank + cảnh báo).
+   - Nếu không còn ô sẵn sàng nào (bảng rank rỗng): coordinator vẫn in tổng quan map và nêu rõ ô nào đang chặn ô nào theo output của script rồi DỪNG, tuyệt đối không đề xuất ngoài map (AC-05).
+   - Nếu có đề xuất trong bảng rank: Bên dưới bảng chỉ nêu khuyến nghị là dòng rank 1 và các cảnh báo của script.
+     **DỪNG LẠI TẠI ĐÂY:** Chờ Human chọn một dòng trong bảng xếp hạng. Mỗi lần chạy dừng đúng một lần: Human chọn dòng trong bảng rank (AC-04).
 
 ### Bước 4: Tiếp nhận Lựa chọn của Human
 Sau khi Human phản hồi và chốt một dòng:
@@ -128,7 +136,7 @@ Khi người dùng chủ động đưa vào một chủ đề hoặc tên khóa,
 1. **Khớp với một ô có sẵn trong map approved:**
    Ánh xạ chủ đề vào ô đó, tiến hành đánh giá qua gate và chạy `next.mjs` như mọi candidate.
 2. **Không có ô nào phù hợp trong map:**
-   Đề xuất bổ sung ô mới vào map với đầy đủ layer, requires, required_tools, scope; trình Human duyệt map trước khi tiến hành.
+   Đề xuất bổ sung ô mới vào map với đầy đủ layer, requires, required_tools, scope; kiểm tra tự động qua lint và evidence-check trước khi tiến hành.
 3. **Đã được catalog đáp ứng:**
    Chỉ ra khóa học hoặc bài học cụ thể trong catalog hiện tại (`catalog.json`) đã phủ nội dung này.
 4. **Cần cập nhật khóa có sẵn:**

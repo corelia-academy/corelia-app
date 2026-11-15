@@ -12,6 +12,7 @@ import {
   SHORTLIST_CRITERIA_KEYS,
   MAP_LAYERS,
 } from "./constants.mjs";
+import { isNodeSatisfied } from "./plan-lint.mjs";
 
 export {
   SHORTLIST_MIN_PROPOSALS,
@@ -51,6 +52,8 @@ export function rankShortlist(shortlistData, catalogData, { toolChecker = defaul
     ? shortlistData.proposals
     : (Array.isArray(shortlistData?.shortlist) ? shortlistData.shortlist : []);
 
+  const envWarnings = [];
+
   // AC-05: Kiểm tra focus
   const focusMapSlug = typeof shortlistData?.focus === "object" && !Array.isArray(shortlistData?.focus)
     ? shortlistData.focus?.path
@@ -75,6 +78,8 @@ export function rankShortlist(shortlistData, catalogData, { toolChecker = defaul
     return maxReq;
   }
 
+  let mapOverview = null;
+
   if (focusMapSlug) {
     const pDir = pathsDir || path.join(path.resolve(repoRoot), ".course-plan", "paths");
     const mapFile = path.join(pDir, `${focusMapSlug}.json`);
@@ -82,7 +87,7 @@ export function rankShortlist(shortlistData, catalogData, { toolChecker = defaul
       return {
         needs_map: true,
         focus_map: focusMapSlug,
-        message: `Chưa có skill map "${focusMapSlug}". Cần dựng map và được Human duyệt trước.`,
+        message: `Chưa có skill map "${focusMapSlug}". Cần dựng map trước.`,
         total: 0,
         eligible_count: 0,
         envWarnings: [`Chưa có skill map "${focusMapSlug}". Cần chạy role 01-path.md để dựng map trước.`],
@@ -103,6 +108,88 @@ export function rankShortlist(shortlistData, catalogData, { toolChecker = defaul
         envWarnings: [`File map "${focusMapSlug}" bị lỗi: ${err.message}`],
         rows: [],
       };
+    }
+
+    // AC-03: Tính toán bảng Tổng quan map
+    if (Array.isArray(mapData.nodes)) {
+      const layers = mapData.kind && MAP_LAYERS[mapData.kind] ? MAP_LAYERS[mapData.kind] : [];
+
+      mapOverview = mapData.nodes.map((n, idx) => {
+        const layer = n?.layer || "—";
+        const branch = n?.branch || null;
+        const layerBranch = branch ? `${layer} (${branch})` : layer;
+        let layerOrder = layers.indexOf(layer);
+        if (layerOrder < 0) layerOrder = 999;
+        const depth = getNodeDepth(n.id);
+        const coverage = n?.coverage || "empty";
+        const course_slug = n?.course_slug || null;
+        const currentCourse = course_slug || "—";
+        const nodeRequires = Array.isArray(n?.requires) ? n.requires : [];
+
+        let status = "sẵn sàng";
+        const unmetRequires = [];
+
+        if (n?.ref != null) {
+          status = "ref";
+        } else if (coverage === "covered") {
+          status = "đã phủ";
+        } else {
+          for (const reqId of nodeRequires) {
+            const reqNode = mapNodes.get(reqId);
+            if (!isNodeSatisfied(reqNode, allProposals, focusMapSlug)) {
+              unmetRequires.push(reqId);
+            }
+          }
+          if (unmetRequires.length > 0) {
+            status = `chờ ${unmetRequires.join(", ")}`;
+          } else {
+            status = "sẵn sàng";
+          }
+        }
+
+        return {
+          id: n.id,
+          title: n.title || n.id,
+          layer,
+          branch,
+          layerBranch,
+          layerOrder,
+          depth,
+          idx,
+          coverage,
+          course_slug,
+          currentCourse,
+          requires: nodeRequires,
+          unmetRequires,
+          status,
+        };
+      });
+
+      // Sắp xếp theo thứ tự layer, sau đó theo requires (depth), rồi theo thứ tự khai báo ban đầu
+      mapOverview.sort((a, b) => {
+        if (a.layerOrder !== b.layerOrder) {
+          return a.layerOrder - b.layerOrder;
+        }
+        if (a.depth !== b.depth) {
+          return a.depth - b.depth;
+        }
+        return a.idx - b.idx;
+      });
+
+      // AC-05: Kiểm tra nếu không còn ô sẵn sàng nào
+      const readyNodes = mapOverview.filter((n) => n.status === "sẵn sàng");
+      const blockedNodes = mapOverview.filter((n) => n.status.startsWith("chờ "));
+      if (readyNodes.length === 0) {
+        if (blockedNodes.length > 0) {
+          const blockMsg = ["Không còn ô sẵn sàng nào trong map:"];
+          for (const b of blockedNodes) {
+            blockMsg.push(`  - Ô "${b.id}" (${b.title}) đang chờ: ${b.unmetRequires.join(", ")}`);
+          }
+          envWarnings.push(blockMsg.join("\n"));
+        } else {
+          envWarnings.push("Không còn ô sẵn sàng nào trong map (toàn bộ ô đã phủ hoặc là ref).");
+        }
+      }
     }
   }
 
@@ -278,7 +365,6 @@ export function rankShortlist(shortlistData, catalogData, { toolChecker = defaul
   });
 
   // Kiểm tra công cụ nền (deno, yt-dlp, docker) một lần
-  const envWarnings = [];
   if (typeof toolChecker === "function") {
     const hasYtDlp = toolChecker("yt-dlp");
     const hasDeno = toolChecker("deno");
@@ -310,6 +396,7 @@ export function rankShortlist(shortlistData, catalogData, { toolChecker = defaul
     envWarnings,
     hasMap: Boolean(focusMapSlug && mapData),
     focus_map: focusMapSlug,
+    mapOverview,
     rows,
   };
 }
@@ -326,14 +413,35 @@ export function formatShortlistTable(rankedResult) {
   }
 
   const hasMap = Boolean(rankedResult?.hasMap);
-  const headers = hasMap
+  const sections = [];
+
+  // AC-03: Khi focus có map, in thêm bảng Tổng quan map phía trên bảng rank
+  if (hasMap && Array.isArray(rankedResult?.mapOverview) && rankedResult.mapOverview.length > 0) {
+    const mapHeaders = ["Layer / Nhánh", "Ô (title)", "Coverage", "Khóa hiện có", "Trạng thái"];
+    const mapHeaderLine = `| ${mapHeaders.join(" | ")} |`;
+    const mapSeparatorLine = `| ${mapHeaders.map(() => "---").join(" | ")} |`;
+    const mapRowLines = rankedResult.mapOverview.map((item) => {
+      return `| ${escapeTableCell(item.layerBranch)} | ${escapeTableCell(item.title)} | ${escapeTableCell(item.coverage)} | ${escapeTableCell(item.currentCourse)} | ${escapeTableCell(item.status)} |`;
+    });
+
+    sections.push([
+      "### Tổng quan map",
+      "",
+      mapHeaderLine,
+      mapSeparatorLine,
+      ...mapRowLines,
+    ].join("\n"));
+  }
+
+  // Bảng xếp hạng đề xuất
+  const rankHeaders = hasMap
     ? ["Rank", "Khóa đề xuất", "Hướng", "Layer / Nhánh", "Cơ sở đề xuất", "Ghi chú"]
     : ["Rank", "Khóa đề xuất", "Hướng", "Cơ sở đề xuất", "Ghi chú"];
 
-  const headerLine = `| ${headers.join(" | ")} |`;
-  const separatorLine = `| ${headers.map(() => "---").join(" | ")} |`;
+  const rankHeaderLine = `| ${rankHeaders.join(" | ")} |`;
+  const rankSeparatorLine = `| ${rankHeaders.map(() => "---").join(" | ")} |`;
 
-  const rowsLines = rankedResult.rows.map((row) => {
+  const rowsLines = (rankedResult.rows || []).map((row) => {
     const rankStr = row.rank != null ? String(row.rank) : "—";
 
     // Khóa đề xuất: title, complete_existing note, promise
@@ -402,15 +510,28 @@ export function formatShortlistTable(rankedResult) {
     return `| ${escapeTableCell(rankStr)} | ${escapeTableCell(courseDesc)} | ${escapeTableCell(directionStr)} | ${escapeTableCell(basisStr)} | ${escapeTableCell(notesStr)} |`;
   });
 
-  const tableLines = [headerLine, separatorLine, ...rowsLines];
-  if (Array.isArray(rankedResult.envWarnings) && rankedResult.envWarnings.length > 0) {
-    tableLines.push("");
-    for (const w of rankedResult.envWarnings) {
-      tableLines.push(`⚠️ Cảnh báo: ${w}`);
-    }
+  const rankSectionLines = [];
+  if (hasMap) {
+    rankSectionLines.push("### Bảng xếp hạng đề xuất", "");
   }
 
-  return tableLines.join("\n");
+  if (rowsLines.length > 0) {
+    rankSectionLines.push(rankHeaderLine, rankSeparatorLine, ...rowsLines);
+  } else {
+    rankSectionLines.push("*(Bảng xếp hạng rỗng — không có đề xuất khả dụng trong backlog)*");
+  }
+
+  sections.push(rankSectionLines.join("\n"));
+
+  if (Array.isArray(rankedResult.envWarnings) && rankedResult.envWarnings.length > 0) {
+    const warningLines = [];
+    for (const w of rankedResult.envWarnings) {
+      warningLines.push(`⚠️ Cảnh báo: ${w}`);
+    }
+    sections.push(warningLines.join("\n"));
+  }
+
+  return sections.join("\n\n");
 }
 
 // CLI runner
