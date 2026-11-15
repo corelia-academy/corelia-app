@@ -1,6 +1,7 @@
 import { SocialNotification, SocialNotificationAvatar } from "./SocialNotification";
 import { ProjectAutoHiddenNotification } from "./ProjectAutoHiddenNotification";
 import { feedRelativeTime } from "@/lib/feedRelativeTime";
+import { notificationTarget } from "@/lib/notificationTarget";
 import { groupNotificationsByDay, type NotificationDayGroup } from "@/lib/notificationGroups";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -173,11 +174,11 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
   if (!authInitialized || !isAuthenticated) return null;
 
   return (
-    <section aria-label={t("header.notifications")} className={compact ? "relative flex max-h-[384px] flex-col" : undefined}>
+    <section aria-label={t("header.notifications")} className={compact ? "relative flex max-h-[23.875rem] flex-col" : undefined}>
       {drawer ? null : compact ? (
         <div className="flex flex-col gap-3 px-4 pt-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-[10px]">
+            <div className="flex items-center gap-2.5">
               <h2 className="text-title-large font-body text-foreground">{t("header.notifications")}</h2>
               {unreadCount > 0 && <Badge color="gray" variant="filled" size="small">{unreadCount}</Badge>}
             </div>
@@ -241,23 +242,25 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                 const hackathonSlug = payloadString(n.payload, "hackathon_slug");
                 const projectSlug = payloadString(n.payload, "project_slug");
                 const reviewNote = payloadString(n.payload, "review_note");
+                const rowTarget = n.group_key ? notificationTarget(n.payload) : null;
                 return (
                   <li
                     key={n.id}
                     className="relative"
                     onClickCapture={event => { if (!n.group_key && (event.target as HTMLElement).closest("a")) markRead(n.id); }}
                   >
-                    {!n.read_at && !n.resolved_at && <span aria-hidden="true" className="absolute left-0 top-[24.5px] z-10 size-2 rounded-full bg-icon-destructive" />}
+                    {!n.read_at && !n.resolved_at && <span aria-hidden="true" className="absolute left-0 top-[1.53125rem] z-10 size-2 rounded-full bg-icon-destructive" />}
                     <Action
                     nativeButton={false}
                     render={<div />}
-                    role="presentation"
-                    tabIndex={-1}
+                    role={rowTarget ? undefined : "presentation"}
+                    tabIndex={rowTarget ? undefined : -1}
+                    onClick={rowTarget ? () => { markRead(n.id); setOpen(false); navigate(rowTarget); } : undefined}
                     multiline
                     size="small"
-                    className="items-start gap-2xl rounded-md border-0 px-3xl py-lg hover:rounded-md hover:bg-dropdown-hover [&>span:first-child]:!size-8 [&>span:first-child]:mt-xs"
+                    className={cn("items-start gap-2xl rounded-md border-0 px-3xl py-lg hover:rounded-md hover:bg-dropdown-hover [&>span:first-child]:!size-8 [&>span:first-child]:mt-xs", rowTarget && "cursor-pointer")}
                     icon={n.group_key ? <SocialNotificationAvatar notification={n} /> : undefined}
-                    label={n.group_key ? <SocialNotification notification={n} onOpen={() => { markRead(n.id); setOpen(false); }} /> : isInvite ? (
+                    label={n.group_key ? <SocialNotification notification={n} /> : isInvite ? (
                       <>
                         <div className="font-medium text-foreground">
                           {t("notifications.projectInviteTitle")}

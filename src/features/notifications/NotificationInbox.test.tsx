@@ -40,7 +40,7 @@ describe("notification history", () => {
   const view = await mount();
   expect(view.container.querySelectorAll("li")).toHaveLength(20);
   expect(state.all).not.toHaveBeenCalled(); expect(state.read).not.toHaveBeenCalled();
-  await act(async () => { view.container.querySelector<HTMLAnchorElement>('a[href="/projects/1"]')!.click(); });
+  await act(async () => { view.container.querySelector<HTMLElement>('[data-slot="action"]')!.click(); });
   expect(state.read).toHaveBeenCalledWith("1", true, "2026-10-13T00:00:00Z");
   await view.cleanup();
  });
