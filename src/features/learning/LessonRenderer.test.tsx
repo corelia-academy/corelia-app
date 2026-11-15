@@ -45,6 +45,21 @@ it("shows an updating video without offering a completion action", () => {
   act(() => root.unmount());
 });
 
+it("puts the updating video above the lesson header, where the video would be", () => {
+  const host = document.createElement("div");
+  const root = createRoot(host);
+  const lesson = { id: "updating-video", section_id: "section", order: 0, duration_seconds: 0, title: "Updating video", lesson_format: "video", youtube_url: "", published: true } as CourseLesson;
+
+  act(() => root.render(
+    <LessonRenderer lesson={lesson} courseId="course" mode="learner" completed={false} onComplete={vi.fn()} onAction={vi.fn()} contentFrame={{ header: <p data-testid="header">Header</p> }} />,
+  ));
+
+  const status = host.querySelector('[role="status"]')!;
+  const header = host.querySelector('[data-testid="header"]')!;
+  expect(status.compareDocumentPosition(header) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  act(() => root.unmount());
+});
+
 it("shows the lesson data error instead of the lesson when its data is invalid", () => {
   const host = document.createElement("div");
   const root = createRoot(host);
