@@ -146,12 +146,13 @@ Khi người dùng chủ động đưa vào một chủ đề hoặc tên khóa,
 
 ## Bảng Model cho Subagents
 
-Coordinator chạy bằng model của session, không dừng, không báo trước; ghi tên model coordinator vào `run-log.jsonl` và `run-report.md`.
+Coordinator chạy bằng model của session, không dừng, không báo trước; ghi tên model coordinator vào `run-log.jsonl` và `run-report.md`. Session chạy skill này dùng `sonnet` (`terra`) với effort `low`; không dùng `haiku` (`luna`) cho coordinator.
 
-Bảng model child có hai cột: Claude và ChatGPT. Quy ước: `haiku` → `luna`, `sonnet` → `terra`, `opus` → `astra`. Coordinator dùng cột ứng với nền tảng đang chạy. Nền tảng không cho chọn model của child: chạy bằng model mặc định và ghi điều đó vào báo cáo.
+Bảng model child có hai cột: Claude và ChatGPT. Quy ước: `haiku` → `luna`, `sonnet` → `terra`, `opus` → `astra`. Coordinator dùng cột ứng với nền tảng đang chạy và truyền đúng effort của bảng khi spawn child. Nền tảng không cho chọn model hoặc effort của child: chạy bằng giá trị mặc định và ghi điều đó vào báo cáo.
 
-| Vai trò | Model (Claude) | Model (ChatGPT) | Ghi chú |
-|---|---|---|---|
-| Coordinator (`course-planner`) | Model của session | Model của session | Điều phối, chạy script, tổng hợp |
-| Role 1: Dựng skill map (`roles/01-path.md`) | `sonnet` | `terra` | Yêu cầu web research và đọc trang thật |
-| Role 2: Đánh giá candidate (`roles/02-candidate.md`) | `sonnet` | `terra` | Đối chiếu platform và thẩm định outcome |
+| Vai trò | Model (Claude) | Model (ChatGPT) | Effort | Ghi chú |
+|---|---|---|---|---|
+| Coordinator (`course-planner`) | Model của session | Model của session | Effort của session | Điều phối, chạy script, tổng hợp |
+| Role 0: Đề xuất khóa (`roles/00-shortlist.md`) | `haiku` | `luna` | `medium` | Quote được `evidence-check.mjs` kiểm bằng script |
+| Role 1: Dựng skill map (`roles/01-path.md`) | `sonnet` | `terra` | `medium` | Mỗi map dựng một lần; yêu cầu đọc docs chính thức |
+| Role 2: Đánh giá candidate (`roles/02-candidate.md`) | `haiku` | `luna` | `medium` | Đối chiếu platform và thẩm định outcome |

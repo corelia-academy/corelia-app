@@ -121,9 +121,11 @@ test("AC2.4: bảng Các bước và bảng Model trong SKILL.md nhất quán v�
   // Kiểm tra bảng Các bước
   assert.match(skillContent, /\| 7 \| `roles\/07-course-review\.md`/);
 
-  // Kiểm tra bảng Model: bước 3, 4 là opus; bước 7 là sonnet
-  assert.match(skillContent, /\| Bước 3: curriculum \| `opus` \|/);
-  assert.match(skillContent, /\| Bước 4: review curriculum \| `opus` \|/);
+  // Kiểm tra bảng Model: bước 3, 4, 6, 7 là sonnet; viết lesson là haiku effort xhigh
+  assert.match(skillContent, /\| Bước 3: curriculum \| `sonnet` \|/);
+  assert.match(skillContent, /\| Bước 4: review curriculum \| `sonnet` \|/);
+  assert.match(skillContent, /\| Bước 5: viết lesson \| `haiku` \| `luna` \| `xhigh` \|/);
+  assert.match(skillContent, /\| Bước 6: review lesson \| `sonnet` \|/);
   assert.match(skillContent, /\| Bước 7: review cấp khóa \| `sonnet` \|/);
 
   // File role 07 tồn tại

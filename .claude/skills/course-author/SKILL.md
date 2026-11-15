@@ -100,20 +100,20 @@ Khi KHÔNG có handoff: hỏi khi thiếu tên khóa hoặc đối tượng, thi
 
 ## Model
 
-Coordinator chạy bằng model của session, không dừng, không báo trước; ghi tên model coordinator vào `run-log.jsonl` và `run-report.md`.
+Coordinator chạy bằng model của session, không dừng, không báo trước; ghi tên model coordinator vào `run-log.jsonl` và `run-report.md`. Session chạy skill này dùng `sonnet` (`terra`) với effort `low`; không dùng `haiku` (`luna`) cho coordinator.
 
-Bảng model child có hai cột: Claude và ChatGPT. Quy ước: `haiku` → `luna`, `sonnet` → `terra`, `opus` → `astra`. Coordinator dùng cột ứng với nền tảng đang chạy. Nền tảng không cho chọn model của child: chạy bằng model mặc định và ghi điều đó vào báo cáo.
+Bảng model child có hai cột: Claude và ChatGPT. Quy ước: `haiku` → `luna`, `sonnet` → `terra`, `opus` → `astra`. Coordinator dùng cột ứng với nền tảng đang chạy và truyền đúng effort của bảng khi spawn child. Nền tảng không cho chọn model hoặc effort của child: chạy bằng giá trị mặc định và ghi điều đó vào báo cáo.
 
-| Child | Model (Claude) | Model (ChatGPT) |
-|---|---|---|
-| Bước 1: metadata, brief | `haiku` | `luna` |
-| Bước 2: research | `sonnet` | `terra` |
-| Bước 3: curriculum | `opus` | `astra` |
-| Bước 4: review curriculum | `opus` | `astra` |
-| Bước 5: viết lesson | `sonnet` | `terra` |
-| Bước 5: chạy kiểm chứng (`verification/<id>.md`) | `haiku` | `luna` |
-| Bước 6: review lesson | `sonnet` | `terra` |
-| Bước 7: review cấp khóa | `sonnet` | `terra` |
+| Child | Model (Claude) | Model (ChatGPT) | Effort |
+|---|---|---|---|
+| Bước 1: metadata, brief | `haiku` | `luna` | `low` |
+| Bước 2: research | `haiku` | `luna` | `medium` |
+| Bước 3: curriculum | `sonnet` | `terra` | `high` |
+| Bước 4: review curriculum | `sonnet` | `terra` | `high` |
+| Bước 5: viết lesson | `haiku` | `luna` | `xhigh` |
+| Bước 5: chạy kiểm chứng (`verification/<id>.md`) | `haiku` | `luna` | `low` |
+| Bước 6: review lesson | `sonnet` | `terra` | `medium` |
+| Bước 7: review cấp khóa | `sonnet` | `terra` | `medium` |
 
 Ở bước 5, child viết lesson soạn danh sách bước cần chạy. Một child `haiku` riêng chạy các bước đó và ghi `verification/<id>.md`. Child viết lesson đọc kết quả rồi sửa bài nếu output thật khác `expected`.
 
