@@ -224,4 +224,15 @@ describe("Action", () => {
     expect(markup).not.toContain("bg-action-active");
     expect(markup).toContain("text-action-text");
   });
+
+  it("truncates label and supporting text by default and wraps them when multiline", () => {
+    const base = { label: "Long title", supportingText: "Long supporting text" };
+
+    const truncated = renderAction(base);
+    expect(truncated).toContain("truncate");
+
+    const wrapped = renderAction({ ...base, multiline: true });
+    expect(wrapped).not.toContain("truncate");
+    expect(wrapped).toContain("break-words");
+  });
 });

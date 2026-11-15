@@ -207,6 +207,10 @@
     "member": "Un miembro",
     "actorGroup": "{{name}} y {{count}} más",
     "newActivity": "Tienes actividad nueva",
+    "justNow": "Ahora mismo",
+    "drawerSubtitle": "Todas las notificaciones",
+    "today": "Hoy",
+    "yesterday": "Ayer",
     "social": {
       "project_liked": "A {{actors}} les gustó el proyecto de tu equipo {{title}}.",
       "project_followed": "{{actors}} siguieron el proyecto de tu equipo {{title}}.",

@@ -185,6 +185,7 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive-muted: var(--destructive-muted);
+  --color-icon-destructive: var(--icon-destructive);
 
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
@@ -996,6 +997,8 @@
   --destructive: var(--error-400);
   --destructive-foreground: var(--neutral-50);
   --destructive-muted: var(--error-100);
+  /* Figma icon/destructive (unread dot). */
+  --icon-destructive: var(--error-400);
 
   --success: var(--success-400);
   --success-foreground: var(--neutral-50);
@@ -1382,6 +1385,8 @@
   --destructive: var(--error-300);
   --destructive-foreground: var(--error-600);
   --destructive-muted: var(--error-600);
+  /* Figma icon/destructive (unread dot): #eb5146. */
+  --icon-destructive: var(--error-400);
 
   --success: var(--success-300);
   --success-foreground: var(--success-600);

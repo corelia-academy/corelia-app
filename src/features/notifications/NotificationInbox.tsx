@@ -1,11 +1,19 @@
-import { SocialNotification } from "./SocialNotification";
+import { SocialNotification, SocialNotificationAvatar } from "./SocialNotification";
 import { ProjectAutoHiddenNotification } from "./ProjectAutoHiddenNotification";
-import { useMemo, useState } from "react";
+import { feedRelativeTime } from "@/lib/feedRelativeTime";
+import { groupNotificationsByDay, type NotificationDayGroup } from "@/lib/notificationGroups";
+import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Action } from "@/components/ui/action";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Timestamp } from "@/components/ui/timestamp";
+import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
+import { Checks } from "@phosphor-icons/react";
 import { QueryErrorState } from "@/components/QueryErrorState";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
@@ -43,8 +51,8 @@ function payloadInternalPath(
   return path.startsWith("/") && !path.startsWith("//") ? path : fallback;
 }
 
-export function NotificationInbox({ compact = false, onNavigate }: { compact?: boolean; onNavigate?: () => void }) {
-  const { t } = useTranslation("common");
+export function NotificationInbox({ compact = false, drawer = false, onNavigate, onViewAll }: { compact?: boolean; drawer?: boolean; onNavigate?: () => void; onViewAll?: () => void }) {
+  const { t, i18n } = useTranslation("common");
   const { isAuthenticated, authInitialized, profile, user } = useAuth();
   const userId = user?.id ?? null;
   // Achievements (Certificate vault) live on the public profile page.
@@ -54,12 +62,18 @@ export function NotificationInbox({ compact = false, onNavigate }: { compact?: b
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [unread, setUnread] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 60_000); return () => window.clearInterval(timer); }, []);
   const setOpen = (open: boolean) => { if (!open) onNavigate?.(); };
   const notificationsQuery = useInfiniteQuery(
     notificationsQueryOptions(userId, authInitialized && isAuthenticated, unread),
   );
   const items = useMemo(() => Array.from(new Map((notificationsQuery.data?.pages.flatMap(page => page.items) ?? []).map(item => [item.id, item])).values()), [notificationsQuery.data]);
   const loading = notificationsQuery.isPending;
+  const unreadCount = notificationsQuery.data?.pages[0]?.unread_count ?? 0;
+  const groups: NotificationDayGroup[] = drawer
+    ? groupNotificationsByDay(items, now, i18n.language, { today: t("notifications.today"), yesterday: t("notifications.yesterday") })
+    : [{ key: "all", label: null, items: compact ? items.slice(0, 20) : items }];
 
   const inviteProjectIds = useMemo(() => {
     const ids = new Set<string>();
@@ -159,12 +173,25 @@ export function NotificationInbox({ compact = false, onNavigate }: { compact?: b
   if (!authInitialized || !isAuthenticated) return null;
 
   return (
-    <section aria-label={t("header.notifications")}>
-      <div className="flex flex-wrap items-center gap-2 border-b border-border-subtle p-3">
-        {!compact && <><Button type="button" size="small" variant="cta" hierarchy={unread ? "tertiary" : "secondary"} aria-pressed={!unread} onClick={() => setUnread(false)}>{t("notifications.all")}</Button><Button type="button" size="small" variant="cta" hierarchy={unread ? "secondary" : "tertiary"} aria-pressed={unread} onClick={() => setUnread(true)}>{t("notifications.unread")}</Button></>}
-        <Button type="button" size="xsmall" variant="cta" hierarchy="tertiary" disabled={markingAllRead} onClick={() => markAllRead()}>{t("notifications.markAllRead")}</Button>
-      </div>
-      <div className={compact ? "scrollbar-design max-h-96 overflow-auto p-2" : "py-4"}>
+    <section aria-label={t("header.notifications")} className={compact ? "relative flex max-h-[384px] flex-col" : undefined}>
+      {drawer ? null : compact ? (
+        <div className="flex flex-col gap-3 px-4 pt-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-[10px]">
+              <h2 className="text-title-large font-body text-foreground">{t("header.notifications")}</h2>
+              {unreadCount > 0 && <Badge color="gray" variant="filled" size="small">{unreadCount}</Badge>}
+            </div>
+            <Button type="button" size="small" variant="cta" hierarchy="tertiary" className="px-xs capitalize hover:bg-transparent hover:text-foreground-muted active:bg-transparent" leadingIcon={<Checks weight="duotone" aria-hidden />} disabled={markingAllRead} onClick={() => markAllRead()}>{t("notifications.markAllRead")}</Button>
+          </div>
+          <Separator />
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center gap-2 border-b border-border-subtle p-3">
+          <Button type="button" size="small" variant="cta" hierarchy={unread ? "tertiary" : "secondary"} aria-pressed={!unread} onClick={() => setUnread(false)}>{t("notifications.all")}</Button><Button type="button" size="small" variant="cta" hierarchy={unread ? "secondary" : "tertiary"} aria-pressed={unread} onClick={() => setUnread(true)}>{t("notifications.unread")}</Button>
+          <Button type="button" size="xsmall" variant="cta" hierarchy="tertiary" disabled={markingAllRead} onClick={() => markAllRead()}>{t("notifications.markAllRead")}</Button>
+        </div>
+      )}
+      <div className={drawer ? undefined : compact ? cn("scrollbar-design min-h-0 flex-1 overflow-auto px-4 py-2", items.length > 0 && "pb-10") : "py-4"}>
         {notificationsQuery.isError && items.length > 0 && <p role="alert" className="p-3 text-sm text-destructive">{t("notifications.loadError")} <button type="button" className="underline" onClick={() => void notificationsQuery.refetch()}>{t("notifications.retry")}</button></p>}
           {loading && items.length === 0 ? (
             <ListRowsSkeleton rows={compact ? 4 : 6} className="px-2" />
@@ -176,12 +203,16 @@ export function NotificationInbox({ compact = false, onNavigate }: { compact?: b
               onRetry={() => void notificationsQuery.refetch()}
             />
           ) : items.length === 0 ? (
-            <div className="px-2 py-6 text-center text-sm text-foreground-muted">
-              {t("header.noNotifications")}
+            <div className="flex justify-center p-3xl">
+              <EmptyStateIllustration type="search" size="tiny" description={t("header.noNotifications")} />
             </div>
           ) : (
-            <ul className={cn("grid gap-2 transition-opacity", notificationsQuery.isPlaceholderData && "opacity-60")} aria-busy={notificationsQuery.isPlaceholderData || undefined}>
-              {(compact ? items.slice(0, 20) : items).map((n) => {
+            <div className={cn("flex flex-col gap-4xl transition-opacity", notificationsQuery.isPlaceholderData && "opacity-60")} aria-busy={notificationsQuery.isPlaceholderData || undefined}>
+              {groups.map(group => (
+              <section key={group.key} className="flex flex-col gap-xl">
+                {group.label ? <h3 className="text-title-large font-body text-foreground">{group.label}</h3> : null}
+                <ul className="grid">
+              {group.items.map((n, index) => {
                 const isInvite = n.type === "project_collaboration_invite";
                 const isCoInstructorInvite = n.type === "co_instructor_invite";
                 const isRegApproved = n.type === "hackathon_registration_approved";
@@ -213,11 +244,20 @@ export function NotificationInbox({ compact = false, onNavigate }: { compact?: b
                 return (
                   <li
                     key={n.id}
-                    className={`rounded-2xl border border-border-subtle p-3 text-sm ${!n.read_at && !n.resolved_at ? "bg-primary/5" : "bg-surface-base"}`}
+                    className="relative"
                     onClickCapture={event => { if (!n.group_key && (event.target as HTMLElement).closest("a")) markRead(n.id); }}
                   >
-                    <div className="mb-2 flex items-center justify-between text-xs text-foreground-muted"><time dateTime={n.activity_at}>{new Date(n.activity_at).toLocaleString()}</time>{!n.read_at && !n.resolved_at && <span>{t("notifications.unread")}</span>}</div>
-                    {n.group_key ? <SocialNotification notification={n} onOpen={() => { markRead(n.id); setOpen(false); }} /> : isInvite ? (
+                    {!n.read_at && !n.resolved_at && <span aria-hidden="true" className="absolute left-0 top-[24.5px] z-10 size-2 rounded-full bg-icon-destructive" />}
+                    <Action
+                    nativeButton={false}
+                    render={<div />}
+                    role="presentation"
+                    tabIndex={-1}
+                    multiline
+                    size="small"
+                    className="items-start gap-2xl rounded-md border-0 px-3xl py-lg hover:rounded-md hover:bg-dropdown-hover [&>span:first-child]:!size-8 [&>span:first-child]:mt-xs"
+                    icon={n.group_key ? <SocialNotificationAvatar notification={n} /> : undefined}
+                    label={n.group_key ? <SocialNotification notification={n} onOpen={() => { markRead(n.id); setOpen(false); }} /> : isInvite ? (
                       <>
                         <div className="font-medium text-foreground">
                           {t("notifications.projectInviteTitle")}
@@ -580,14 +620,24 @@ export function NotificationInbox({ compact = false, onNavigate }: { compact?: b
                     ) : (
                       <div className="text-foreground-muted">{n.type}</div>
                     )}
+                    supportingText={<Timestamp type="some-time-ago" size="medium" relativeText={feedRelativeTime(n.activity_at, now, i18n.language, t("notifications.justNow"))} />}
+                    />
+                    {drawer && index < group.items.length - 1 ? <Separator /> : null}
                   </li>
                 );
               })}
-            </ul>
+                </ul>
+              </section>
+              ))}
+            </div>
           )}
         </div>
       {!compact && notificationsQuery.hasNextPage && <Button type="button" variant="cta" hierarchy="secondary" disabled={notificationsQuery.isFetchingNextPage} onClick={() => void notificationsQuery.fetchNextPage()}>{t("notifications.loadMore")}</Button>}
-      {compact && <NavLink className="block border-t border-border-subtle p-3 text-center text-sm text-primary" to="/notifications" onClick={onNavigate}>{t("notifications.viewAll")}</NavLink>}
+      {compact && items.length > 0 && (
+        <div className="pointer-events-none absolute -inset-x-2 -bottom-2 flex items-end justify-center bg-gradient-to-b from-transparent to-dropdown-surface to-[72%] pb-xl pt-4xl">
+          <Button type="button" size="small" variant="cta" hierarchy="tertiary" className="pointer-events-auto px-xs capitalize hover:bg-transparent hover:text-foreground-muted active:bg-transparent" onClick={onViewAll}>{t("notifications.viewAll")}</Button>
+        </div>
+      )}
     </section>
   );
 }

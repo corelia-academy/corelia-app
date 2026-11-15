@@ -207,6 +207,10 @@
     "member": "メンバー",
     "actorGroup": "{{name}} さんほか {{count}} 人",
     "newActivity": "新しいアクティビティがあります",
+    "justNow": "たった今",
+    "drawerSubtitle": "すべての通知",
+    "today": "今日",
+    "yesterday": "昨日",
     "social": {
       "project_liked": "{{actors}} があなたのチームのプロジェクト {{title}} に「いいね」しました。",
       "project_followed": "{{actors}} があなたのチームのプロジェクト {{title}} をフォローしました。",
