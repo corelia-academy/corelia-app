@@ -11,7 +11,7 @@
 - `description_markdown` dưới video giữ đúng các phần và heading hiện có:
   1. Phần mở bài như bài dạy, nêu rõ video bằng tiếng Anh và thời lượng đoạn phát, và nói người đã biết nội dung có thể đọc phần tóm lược thay cho xem.
   2. `## Mục tiêu` (1–2 mục).
-  3. `## Tóm lược kiến thức`: là một bài article tiếng Việt tự đủ, phủ mọi outcome trong `outcome_ids` của bài, viết từ nguồn research (`source_ids`), đủ để người không xem video vẫn hiểu trọn vẹn và trả lời được bài kiểm tra ngay sau. Bỏ giới hạn số từ cố định; độ dài theo nội dung và bị chặn bởi kiểm độ dài theo `target_minutes`. Không chép transcript, không khẳng định "video đã nói X", ví dụ code có verification như bài article.
+  3. `## Tóm lược kiến thức`: là một bài article tiếng Việt tự đủ, phủ mọi outcome trong `outcome_ids` của bài, viết từ nguồn research (`source_ids`), đủ để người không xem video vẫn hiểu trọn vẹn và trả lời được bài kiểm tra ngay sau. Thân bài tóm lược theo thứ tự hiện tượng → mô hình → mô hình dự đoán được gì → lỗi hiểu thường gặp và vì sao sai → đoạn code ngắn minh họa (nếu có); không viết thành hướng dẫn từng bước dựng tính năng. Bỏ giới hạn số từ cố định; độ dài theo nội dung và bị chặn bởi kiểm độ dài theo `target_minutes`. Không chép transcript, không khẳng định "video đã nói X", ví dụ code có verification như bài article.
   4. Một dòng ghi kênh gốc.
 
 ## Output

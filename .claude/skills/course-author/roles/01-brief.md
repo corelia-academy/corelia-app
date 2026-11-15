@@ -24,12 +24,15 @@ Không tính điểm tổng, không xếp hạng giữa các khóa.
 - `audience`, `level`.
 - `promise`: khi có `handoff.json`, giữ nguyên văn trường `promise` từ handoff; khi không có handoff, ghi `null`.
 - `final_product`: khi có `handoff.json`, giữ nguyên văn trường `final_product` từ handoff; khi không có handoff, ghi `null`.
-- `goals`: hành động người học làm được và quan sát được. Khi có `promise`, mục tiêu (goal) đầu tiên bắt buộc khớp với `promise`. Không viết "hiểu X". Không hứa năng lực mà khóa không kiểm được.
+- `mental_models`: danh sách mô hình tư duy cốt lõi (`string[]`). Khi có `handoff.json`, chép nguyên văn `handoff.mental_models`. Khi không có handoff: brief tự rút ra từ `goals` (ít nhất 1 mô hình tư duy cốt lõi).
+- `reasoning_outcomes`: danh sách kết quả lập luận mong đợi. Khi có `handoff.json`, chép nguyên văn `handoff.reasoning_outcomes`; khi không có handoff, ghi `null`.
+- `misconceptions`: danh sách lỗi hiểu sai ban đầu. Khi có `handoff.json`, chép nguyên văn `handoff.misconceptions`; khi không có handoff, ghi `null`.
+- `goals`: hành động người học làm được và quan sát được, ưu tiên ánh xạ từ `reasoning_outcomes` (nếu có). Khi có `promise`, mục tiêu (goal) đầu tiên bắt buộc khớp với `promise`. Không viết "hiểu X". Không hứa năng lực mà khóa không kiểm được.
 - `scope`, `out_of_scope`: chốt từng chủ đề lớn là trong hay ngoài khóa, vừa với trình độ và thời lượng. Bước sau không quyết định lại phạm vi. Nếu có `scope_note`: mọi chủ đề trong đó nằm trong `scope`, hoặc nằm trong `out_of_scope` kèm lý do.
 - `prerequisites`: kiến thức cần có trước. Không ghi điều kiện như biết đọc tiếng Việt hay có máy tính; những điều đó thuộc `audience`.
 - `tools`: công cụ dùng trong ví dụ, practice và bài cuối khóa. Không ghi phiên bản; bước research chốt sau.
 - `code_language`: một ID đang bật trong `platform.md` khi khóa có bài `code_exercise`; khóa dạy một ngôn ngữ đang bật thì chọn đúng ngôn ngữ đó. `null` khi khóa không có bài code.
-- `is_foundation`: khi có handoff, lấy trực tiếp từ handoff; khi không có handoff: `true` khi user nói khóa là khóa basic đầu một path để các khóa sau kế thừa; mặc định `false`. `true` thì áp dụng `references/foundation.md`.
+- `is_foundation`: khi có handoff, lấy trực tiếp từ handoff (nếu handoff không có thì mặc định `false`); khi không có handoff: `true` khi user nói khóa là khóa basic đầu một path để các khóa sau kế thừa; mặc định `false`. `true` thì áp dụng `references/foundation.md`.
 - `prerequisite_courses`: danh sách đường dẫn tới thư mục hoặc `provided_prerequisites.json` của khóa nền tảng mà khóa này kế thừa (khi có handoff, lấy từ handoff). Có giá trị thì kiểm tra và đọc file `provided_prerequisites.json` trong thư mục đó để lấy `prerequisites` theo mục "Khóa kế thừa" trong `references/foundation.md`. Nếu khóa tiên quyết chưa có file `provided_prerequisites.json`: ghi câu hỏi vào `open_questions` ("Khóa tiên quyết <slug> chưa có provided_prerequisites.json để trích xuất danh sách prerequisites chuẩn hóa"), không tự ý bổ sung ngầm; rỗng khi không có.
 - `duration_hours`: ước tính.
 - `assumptions`: mọi suy luận từ metadata hoặc từ đầu vào không ghi rõ.
@@ -51,6 +54,7 @@ Không xác định được chủ đề hoặc đối tượng: trả `status: 
 ```json
 { "status": "ready", "title_en": "", "slug": "", "title": "", "topic": "", "audience": "", "level": "beginner|intermediate|advanced",
   "promise": null, "final_product": null,
+  "mental_models": [""], "reasoning_outcomes": null, "misconceptions": null,
   "goals": [""], "scope": [""], "out_of_scope": [""], "prerequisites": [""], "tools": [""],
   "code_language": null, "is_foundation": false, "prerequisite_courses": [], "duration_hours": 0, "assumptions": [""], "open_questions": [] }
 ```

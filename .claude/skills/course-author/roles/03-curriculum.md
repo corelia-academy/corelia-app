@@ -4,7 +4,7 @@ Từ `brief.json` và `research.json`, thiết kế curriculum và bài cuối k
 
 ## Thiết kế đánh giá trước nội dung
 
-1. Viết `outcomes` từ `brief.goals`: mỗi outcome là một hành động quan sát được, kiểm được bằng một loại bài trong `platform.md` hoặc bằng bài cuối khóa.
+1. Viết `outcomes` từ `brief.goals`: mỗi outcome là một hành động quan sát được, kiểm được bằng một loại bài trong `platform.md` hoặc bằng bài cuối khóa. Outcome chủ yếu là hành động lập luận (dự đoán, giải thích, truy vết luồng thực thi, chẩn đoán lỗi). Outcome "viết/sửa được" chỉ ở khóa hoặc module layer ngôn ngữ/lõi, và theo luật hiện có (phải có bài luyện tập và phần kiểm được).
 2. Thiết kế bài cuối khóa: một tình huống khác mọi ví dụ trong khóa, đòi kết hợp các outcome chính. Nêu sản phẩm cần nộp, tiêu chí chấm, các trường nộp (luôn có `notes`).
 3. Với mỗi outcome, chọn bài kiểm tra (`check_lesson_ids`), rồi mới chọn bài dạy và bài luyện chuẩn bị cho nó.
 
@@ -17,9 +17,10 @@ Outcome dạng "tự viết/tự làm trọn vẹn" mà nền tảng chỉ kiể
 ## Nhiệm vụ xuyên suốt
 
 - Toàn khóa xoay quanh `brief.topic`. Lesson đầu tiên nêu người học làm được gì khi học xong.
-- Tên module là việc người học làm được ("Đọc một file cấu hình"), không phải chủ đề ("Xử lý lỗi").
+- Mỗi module có `model_ref` (chuỗi chép nguyên văn một mục của `brief.mental_models` mà module thuộc về) và `mental_model` (một câu nêu mô hình tư duy cụ thể nó dạy, có thể là mô hình con của `model_ref`). Mọi mục trong `brief.mental_models` phải được ít nhất một module trỏ tới qua `model_ref`.
+- Tên module là việc người học làm được (hành động theo P1, ví dụ "Dự đoán account nào bị khóa khi chạy song song"), không phải chủ đề trừu tượng ("Xử lý lỗi").
 - Bài đầu khóa không mở bằng lịch sử hay cài đặt; người học thấy kết quả đầu tiên trong vài phút.
-- Mô tả lesson đầu mỗi module nêu: (1) đích của bài, tức người học làm hoặc phân biệt được gì sau bài; (2) tình huống mở bài là một thứ cụ thể người học nhìn thấy (chương trình nhỏ hoàn chỉnh kèm kết quả chạy thật, màn hình, một giá trị), không phải một câu mô tả trừu tượng hay một dòng dữ liệu rời; (3) khái niệm được dạy theo thứ tự vấn đề trước, cú pháp sau: người học thấy vấn đề xảy ra rồi mới học công cụ giải quyết nó.
+- Mô tả lesson đầu mỗi module nêu: (1) đích của bài, tức người học làm hoặc phân biệt được gì sau bài; (2) tình huống mở bài là một hiện tượng quan sát được (kết quả lạ, lỗi, giá trị, hành vi), không bắt buộc là chương trình chạy thật; (3) khái niệm được dạy theo thứ tự vấn đề trước, cú pháp sau: người học thấy vấn đề xảy ra rồi mới học công cụ giải quyết nó.
 
 ## Quy tắc đặt tên bài và module
 
@@ -49,7 +50,7 @@ Gắn `purpose` cho từng lesson theo flow học:
 | purpose | Vai trò | Loại bài phù hợp |
 |---|---|---|
 | `explanation` | Dạy khái niệm | article, video |
-| `worked_example` | Dạy qua lời giải mẫu có giải thích từng bước | article, video |
+| `worked_example` | Dạy qua lời giải mẫu của một lập luận (truy vết, dự đoán, chẩn đoán), không chỉ là code mẫu | article, video |
 | `supported_practice` | Làm có hỗ trợ, ngay sau bài dạy | code_exercise `fill`, practice, quiz tình huống |
 | `independent_practice` | Tự làm, ít gợi ý hơn | code_exercise `edit`, practice, quiz tình huống |
 | `recall` | Gọi lại kiến thức vừa dạy hoặc của module trước | quiz 2–3 câu |
@@ -57,7 +58,7 @@ Gắn `purpose` cho từng lesson theo flow học:
 
 Quy tắc:
 
-- Lesson đầu mỗi module là `explanation` hoặc `worked_example`. Mô tả lesson ghi tình huống mở bài và cách bài giải quyết nó.
+- Lesson đầu mỗi module là `explanation` hoặc `worked_example`, dạy chính `mental_model` của module đó. Mô tả lesson ghi tình huống mở bài và cách bài giải quyết nó.
 - Mỗi kỹ năng có bài dạy, rồi `supported_practice`, rồi `independent_practice`. Không có bài kiểm tra nào đứng trước bài dạy của nó.
 - Từ module thứ hai, ít nhất một bài `recall` hoặc một câu hỏi gọi lại kiến thức module trước qua `review_lesson_ids`.
 - Mỗi module 3–6 bài (không tính `final_check`). Lệch khoảng này thì ghi `size_reason`.
@@ -71,7 +72,7 @@ Quy tắc:
 
 - `code_exercise` chỉ khi `brief.code_language` khác `null`; dùng đúng ngôn ngữ đó cho toàn khóa. `code_mode` mặc định: `fill` cho `supported_practice`, `edit` cho `independent_practice` và `final_check`. Chọn khác mặc định được, nhưng mô tả lesson phải nêu rõ điền chỗ nào hoặc viết/sửa gì.
 - Chọn dạng theo mục "Chọn dạng `code_exercise`" trong `platform.md`. Mô tả mỗi bài `fill` liệt kê các chỗ điền (tối đa 5, chỉ phần cốt lõi) và phần cho sẵn; mô tả mỗi bài `edit` nêu chữ ký cố định và lý do test so khớp chuỗi đủ để chấm. Không chắc chấm được đáng tin thì dùng `fill` hoặc `practice`, không chọn `edit`.
-- Các bài code dùng chung một khung code xuyên suốt. Mô tả mỗi bài code ghi rõ tên file, hàm, kiểu mà bài dùng; bài `independent_practice` ghi rõ phần nào của module trước nối vào.
+- Bỏ yêu cầu khung code xuyên suốt: `frame.md` chỉ bắt buộc khi nhiều bài code thật sự dùng chung một đoạn code. Mỗi bài code ngắn, chỉ đủ để thấy mô hình. Lesson `code_exercise` có trường `reinforces`: một câu nêu mô hình tư duy nó củng cố và lập luận người học phải làm (dự đoán, sửa chỗ vi phạm mô hình, điền đúng dòng thể hiện mô hình).
 - `video`:
   - Chỉ được tạo từ ứng viên `fit: "primary"` trong `research.videos`, mang purpose `explanation` hoặc `worked_example`, và LÀ bài dạy chính của kiến thức đó. Lesson ghi `video_id` và đoạn đã chọn từ `segments` (hoặc cả video). Một video chỉ làm bài `primary` một lần trong toàn khóa.
   - Ứng viên `supplement` chỉ dùng qua `suggested_videos` của bài liên quan, không thành bài riêng.
@@ -81,7 +82,7 @@ Quy tắc:
   - Thứ tự bài trong module được xếp theo trình tự của video khi không vi phạm `prerequisite_lesson_ids`.
   - `target_minutes` của bài video = thời lượng đoạn phát (làm tròn lên phút) + thời gian đọc article (số từ / 200).
   - Sau bài video phải có bài kiểm tra outcome tương ứng; video không nhắc kiến thức mà bài đứng trước chưa dạy.
-- Quiz: ít nhất 5 câu, trừ `recall` (2–3 câu). `pass_threshold` là phần trăm trong (0, 100]. Mọi quiz có `review_lesson_ids` trỏ tới bài dạy đứng trước.
+- Quiz: ít nhất 5 câu, trừ `recall` (2–3 câu). `pass_threshold` là phần trăm trong (0, 100]. Mọi quiz có `review_lesson_ids` trỏ tới bài dạy đứng trước. Phương án nhiễu của quiz lấy từ `brief.misconceptions` hoặc research `misconceptions`.
 - Dùng đúng `stack_choice` của research cho toàn khóa; không tự chọn công cụ khác.
 
 ## Nguồn
@@ -97,9 +98,10 @@ Chỉ dùng chủ đề và `source_id` có trong research. Thiếu nguồn cho 
   "outcomes": [{ "outcome_id": "O1", "text": "", "check_lesson_ids": ["L1-3"] }],
   "no_video_reason": null,
   "unused_primary_videos": [{ "video_id": "", "reason": "" }],
-  "modules": [{ "module_id": "M1", "title": "", "description": "", "size_reason": null,
+  "modules": [{ "module_id": "M1", "title": "", "model_ref": "", "mental_model": "", "description": "", "size_reason": null,
     "lessons": [{ "lesson_id": "L1-1", "title": "", "description": "", "type": "article|video|quiz|code_exercise|practice",
       "purpose": "explanation|worked_example|supported_practice|independent_practice|recall|final_check",
+      "reinforces": null,
       "code_mode": null, "video_id": null, "start_seconds": 0, "end_seconds": 0,
       "outcome_ids": ["O1"], "target_minutes": 10, "length_reason": null,
       "prerequisites": [""], "prerequisite_lesson_ids": [],
@@ -107,6 +109,9 @@ Chỉ dùng chủ đề và `source_id` có trong research. Thiếu nguồn cho 
   "missing": [] }
 ```
 
+- `model_ref` là chuỗi chép nguyên văn một mục của `brief.mental_models` mà module thuộc về (bắt buộc khi `brief.mental_models` không rỗng).
+- `mental_model` là chuỗi một câu nêu mô hình tư duy module dạy (có thể là mô hình con của `model_ref`).
+- `reinforces` là chuỗi nêu mô hình bài code củng cố và lập luận người học phải làm (bắt buộc khi `type === "code_exercise"`, `null` với loại khác).
 - `code_mode` là `fill` hoặc `edit` với `code_exercise`, `null` với loại khác.
 - `pass_threshold` chỉ có giá trị với quiz.
 - `outcome_ids` không rỗng. `prerequisite_lesson_ids` và `review_lesson_ids` chỉ trỏ tới lesson đứng trước.
@@ -127,11 +132,11 @@ Chỉ dùng chủ đề và `source_id` có trong research. Thiếu nguồn cho 
 
 ## Khung chuẩn (`frame.md`)
 
-Khi `brief.code_language` khác `null`, ghi thêm `frame.md` cùng thư mục. Đây là nguồn chuẩn cho mọi lesson có code, quiz và practice; mọi article, bài code, quiz, practice lấy tên và chuỗi từ đây thay vì tự đặt. Gồm:
+Khi các bài code trong khóa thực sự dùng chung một đoạn code, ghi thêm `frame.md` cùng thư mục. Đây là nguồn chuẩn cho các bài code, quiz và practice đó; các bài dùng chung khung lấy tên và chuỗi từ đây thay vì tự đặt. Gồm:
 
 - tên file và module, kiểu và biến thể, hàm và chữ ký (kiểu trả về, tham số);
 - mọi chuỗi người học sẽ thấy trong kết quả chạy (thông báo lỗi, Display, nhãn in ra), viết đúng từng ký tự;
 - bài nào thêm hoặc đổi phần nào của khung (ví dụ biến thể mới do bài thực hành thêm, từ bài nào trở đi);
 - môi trường chạy thật (công cụ và phiên bản đã kiểm ở bước chuẩn bị).
 
-Khung là đặc tả, chưa chạy. Child viết lesson chạy thật và báo lệch cho coordinator; khi lệch, sửa `frame.md` một lần rồi đồng bộ các bài, không để mỗi bài giữ một bản.
+Khung không bắt buộc cho mọi khóa có code: bài code ngắn, độc lập để củng cố mô hình tư duy riêng không cần tạo `frame.md`. Khi có khung, khung là đặc tả, chưa chạy. Child viết lesson chạy thật và báo lệch cho coordinator; khi lệch, sửa `frame.md` một lần rồi đồng bộ các bài, không để mỗi bài giữ một bản.

@@ -201,6 +201,8 @@ test("W-02: mỗi dòng > 25 ký tự của 2 file gốc xuất hiện nguyên v
   ]);
 
   const allowedExceptions06 = new Set([
+    // L18: Tiêu chí frame_consistency chỉ áp dụng khi khóa dùng frame.md (bỏ bắt buộc cho mọi khóa có code)
+    "| `frame_consistency` | Khóa có code: tên file/module, kiểu, biến thể, chữ ký, chuỗi in ra và import khớp `frame.md` và các bài kề; code và output trong bài ghép được với bài trước (đặt file ghép thử nếu cần). Lệch làm người học viết hoặc đọc code không biên dịch hay ra output khác bài kề: `flow_violation`, `blocking`; chỉ lệch chữ: `minor` |",
     // L31: Đổi đường dẫn sang roles/05-lesson/ và quy tắc phân loại minor của Gói 1
     "**Phân loại.** Mọi vi phạm một quy tắc viết bằng chữ trong `principles.md`, `platform.md`, `roles/05-lesson.md` hoặc `frame.md` là `blocking`, bất kể category (chọn category đúng nhất, kể cả `style_or_wording`, `insufficient_description`, `other`). `minor` chỉ dành cho gợi ý không vi phạm quy tắc nào và không làm người học hiểu sai, làm sai hay đọc sai (ví dụ chọn từ hay hơn). Nghi ngờ giữa hai mức thì chọn `blocking`.",
     // L51: Gói 1 sửa quy tắc unverified ở pass cho phát biểu phụ

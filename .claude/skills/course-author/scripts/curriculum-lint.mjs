@@ -63,7 +63,35 @@ export function lintCurriculumData(curriculum, research, options = {}) {
   const usedModuleTitles = new Map();
   const usedLessonTitles = new Map();
 
+  // A-08: Chỉ áp dụng luật mental_model khi brief.mental_models có giá trị
+  const brief = options?.brief;
+  const mentalModels = Array.isArray(brief?.mental_models)
+    ? brief.mental_models.filter((m) => typeof m === "string" && m.trim().length > 0)
+    : [];
+  const hasMentalModels = mentalModels.length > 0;
+  const validMentalModels = new Set(mentalModels.map((m) => m.trim()));
+  const referencedMentalModels = new Set();
+
   for (const mod of curriculum?.modules ?? []) {
+    // A-08: Kiểm tra model_ref và mental_model của module
+    if (hasMentalModels) {
+      if (typeof mod.model_ref !== "string" || !mod.model_ref.trim()) {
+        add(mod.module_id, "thiếu-model-ref", "module thiếu trường model_ref");
+      } else if (!validMentalModels.has(mod.model_ref.trim())) {
+        add(
+          mod.module_id,
+          "model-ref-không-hợp-lệ",
+          `model_ref "${mod.model_ref}" không khớp mục nào trong brief.mental_models`,
+        );
+      } else {
+        referencedMentalModels.add(mod.model_ref.trim());
+      }
+
+      if (typeof mod.mental_model !== "string" || !mod.mental_model.trim()) {
+        add(mod.module_id, "thiếu-mental-model", "module thiếu mental_model");
+      }
+    }
+
     // 1. Kiểm tra quy tắc đặt tên module (N-01)
     if (typeof mod.title === "string") {
       const modTitle = mod.title.trim();
@@ -156,6 +184,13 @@ export function lintCurriculumData(curriculum, research, options = {}) {
           } else {
             usedLessonTitles.set(lTitle, l.lesson_id);
           }
+        }
+      }
+
+      // A-08: Kiểm tra reinforces của code_exercise (chỉ khi brief.mental_models có giá trị)
+      if (hasMentalModels && l.type === "code_exercise") {
+        if (typeof l.reinforces !== "string" || !l.reinforces.trim()) {
+          add(l.lesson_id, "thiếu-reinforces", "bài code_exercise thiếu trường reinforces");
         }
       }
     }
@@ -290,6 +325,19 @@ export function lintCurriculumData(curriculum, research, options = {}) {
     }
   }
 
+  // A-08: Kiểm tra mọi mục trong brief.mental_models phải được ít nhất một module dạy qua model_ref
+  if (hasMentalModels) {
+    for (const mm of mentalModels) {
+      if (!referencedMentalModels.has(mm.trim())) {
+        add(
+          "curriculum",
+          "mô-hình-chưa-dạy",
+          `mô hình tư duy "${mm}" trong brief.mental_models không có module nào dạy`,
+        );
+      }
+    }
+  }
+
   return problems;
 }
 
@@ -302,8 +350,15 @@ export function lintCurriculum(courseDir, options = {}) {
   const curriculum = JSON.parse(fs.readFileSync(currFile, "utf8"));
   const resFile = path.join(dir, "research.json");
   const research = fs.existsSync(resFile) ? JSON.parse(fs.readFileSync(resFile, "utf8")) : null;
+  const briefFile = path.join(dir, "brief.json");
+  let brief = options.brief ?? null;
+  if (!brief && fs.existsSync(briefFile)) {
+    try {
+      brief = JSON.parse(fs.readFileSync(briefFile, "utf8"));
+    } catch {}
+  }
 
-  return lintCurriculumData(curriculum, research, options);
+  return lintCurriculumData(curriculum, research, { ...options, brief, courseDir: dir });
 }
 
 if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/").split("/").pop())) {

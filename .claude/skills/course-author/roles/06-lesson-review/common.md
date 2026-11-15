@@ -13,7 +13,7 @@ Mỗi tiêu chí có đúng một mục trong `checks`:
 | `factual_accuracy` | Kiểm phát biểu thực tế, định nghĩa, kiến thức nền và hướng dẫn quyết định theo nguồn đã đọc; đối chiếu điều kiện, phạm vi và phản ví dụ liên quan, không chỉ khớp từ khóa. Phân biệt định nghĩa chung với đặc tính của nền tảng hoặc trường hợp cụ thể; không dùng video làm bằng chứng |
 | `tool_versions` | Phiên bản và công cụ khớp `tool_versions` và `stack_choice` |
 | `outcome_and_level` | Lesson dạy/kiểm đủ outcome của nó, đúng trình độ, dễ hiểu |
-| `frame_consistency` | Khóa có code: tên file/module, kiểu, biến thể, chữ ký, chuỗi in ra và import khớp `frame.md` và các bài kề; code và output trong bài ghép được với bài trước (đặt file ghép thử nếu cần). Lệch làm người học viết hoặc đọc code không biên dịch hay ra output khác bài kề: `flow_violation`, `blocking`; chỉ lệch chữ: `minor` |
+| `frame_consistency` | Khóa có dùng `frame.md` (nếu các bài code dùng chung khung) hoặc bài kề: tên file/module, kiểu, biến thể, chữ ký, chuỗi in ra và import khớp `frame.md` (khi có khung) và các bài kề; code và output trong bài ghép được với bài trước (đặt file ghép thử nếu cần). Lệch làm người học viết hoặc đọc code không biên dịch hay ra output khác bài kề: `flow_violation`, `blocking`; chỉ lệch chữ: `minor` |
 | `verification` | Mọi bước có kết quả `pass`, hoặc `not_run` kèm lý do hợp lệ; kết quả trong bài khớp output thật |
 | `language` | Tiếng Việt rõ, thuật ngữ nhất quán, xưng hô đúng mục Giọng văn (bạn / chúng ta / hãy; không "mình", "tôi", "chúng tôi"). Nhắc bài khác đúng nhãn app ("Part A, Bài 2") và khớp bảng nhãn; không có mã nội bộ (`lesson_id`, `module_id`, `source_ids`) trong chữ người học (vi phạm: `minor`, `style_or_wording`) |
 | `tone_and_flow` | Văn đọc như người hướng dẫn nói chuyện: câu đủ chủ vị, có từ nối giữa câu và đoạn, mỗi đoạn có câu mở và câu chuyển, nêu lý do trước thao tác. Không có chuỗi ba câu cụt liên tiếp, không có đoạn chỉ là danh sách cụt thiếu câu dẫn |
@@ -30,6 +30,7 @@ Luôn là `blocking`:
 
 - Xưng hô sai ("ta" tự xưng, "mình", "tôi", "chúng tôi"), mã nội bộ trong chữ người học, nhãn "Part X, Bài N" không có trong bảng nhãn hoặc trỏ nhầm bài.
 - Lệch `frame.md` hoặc bài kề: tên file/module, kiểu, biến thể, chữ ký, chuỗi in ra, chỗ đặt định nghĩa; câu nói code ở "cuối Part X" mà bài đó đặt khác.
+- Bài `code_exercise` thiếu trường `reinforces` hoặc là bước dựng tính năng thay vì củng cố mô hình tư duy; bài không dùng `frame.md` thì bỏ qua lỗi lệch `frame.md`.
 - Khái niệm, cú pháp hoặc ký hiệu dùng mà chưa giải thích (gộp một issue, nêu từng tên).
 - Khối code người học thấy không có kết quả chạy thật, hoặc kết quả chỉ đúng một hệ điều hành/phiên bản mà bài không nói; ví dụ trong tóm lược video không có verification.
 - Bất kỳ dòng nào `scripts/lesson-lint.mjs` báo. Reviewer chạy lại script trên lesson trước khi kết luận.

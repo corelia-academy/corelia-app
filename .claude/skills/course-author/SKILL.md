@@ -31,7 +31,7 @@ brief.json         bước 1
 research.json      bước 2
 curriculum.json    bước 3
 labels.json        (script labels.mjs sau bước 3)
-frame.md           bước 3 (chỉ khóa có code)
+frame.md           bước 3 (chỉ khi khóa dùng chung khung code)
 reviews/curriculum.json
 lessons/<lesson_id>.json
 reviews/<lesson_id>.json
@@ -51,9 +51,9 @@ Mỗi file chỉ do một child ghi. Child đọc file của bước trước, k
 | 2 | `roles/02-research.md` | `brief.json` | `research.json` |
 | 3 | `roles/03-curriculum.md` | `brief.json`, `research.json` | `curriculum.json`, `final_assignment.json` |
 | 4 | `roles/04-curriculum-review.md` | các file bước 1–3 | `reviews/curriculum.json` |
-| 5 | `roles/05-lesson/` (`common.md` + file loại bài) | output `lesson-context.mjs`, `frame.md` | `lessons/<id>.json`, `verification/<id>.md` |
+| 5 | `roles/05-lesson/` (`common.md` + file loại bài) | output `lesson-context.mjs`, `frame.md` (nếu có) | `lessons/<id>.json`, `verification/<id>.md` |
 | 6 | `roles/06-lesson-review/` (`common.md` + file loại bài) | lesson, output `lesson-context.mjs`, `verification/<id>.md` | `reviews/<id>.json` |
-| 7 | `roles/07-course-review.md` | `brief.json`, `curriculum.json`, digest, `frame.md` | `reviews/course.json` |
+| 7 | `roles/07-course-review.md` | `brief.json`, `curriculum.json`, digest, `frame.md` (nếu có) | `reviews/course.json` |
 
 Bước 5 và 6 chạy theo từng lesson. Các lesson không phụ thuộc nhau có thể chạy song song, mỗi lesson một child. Bài nối tiếp nội dung bài trước hoặc dùng lại khung code của bài trước phải chờ bài trước viết xong (để đọc `prev_lesson_path`).
 
@@ -78,9 +78,9 @@ Khóa basic đầu path (`brief.is_foundation`) và khóa dựng trên nó (`bri
 
 ## Khung chuẩn cho khóa có code
 
-Khóa có `brief.code_language`: bước 3 ghi thêm `frame.md` (xem `roles/03-curriculum.md`), bước 4 kiểm nó (tiêu chí `frame`). Mọi child viết lesson và review nhận đường dẫn `frame.md`. Lệch giữa bài và khung: child báo, coordinator sửa `frame.md` một lần rồi đồng bộ các bài bị ảnh hưởng.
+Khóa có `brief.code_language` mà curriculum quyết định dùng chung khung code: bước 3 ghi thêm `frame.md` (xem `roles/03-curriculum.md`), bước 4 kiểm nó (tiêu chí `frame`). Khi có khung, mọi child viết lesson và review nhận đường dẫn `frame.md`. Lệch giữa bài và khung: child báo, coordinator sửa `frame.md` một lần rồi đồng bộ các bài bị ảnh hưởng. Khóa có các bài code ngắn, độc lập để củng cố mô hình tư duy riêng không cần tạo `frame.md`.
 
-Sau mỗi bài viết xong, coordinator chạy `node .claude/skills/course-author/scripts/lesson-lint.mjs .course-runs/<slug> <lesson_id>`: công cụ tự động kiểm tra chuỗi khung `frame.md` mà bài trích lại (giới hạn: chỉ bắt chuỗi lệch 1–2 ký tự; các chuỗi viết khác hẳn hoặc đổi vai trò do reviewer kiểm ở tiêu chí `frame_consistency`). Mọi chuỗi cùng vai trò nhưng khác chữ là không đạt.
+Sau mỗi bài viết xong, coordinator chạy `node .claude/skills/course-author/scripts/lesson-lint.mjs .course-runs/<slug> <lesson_id>`: khi khóa có `frame.md`, công cụ tự động kiểm tra chuỗi khung `frame.md` mà bài trích lại (giới hạn: chỉ bắt chuỗi lệch 1–2 ký tự; các chuỗi viết khác hẳn hoặc đổi vai trò do reviewer kiểm ở tiêu chí `frame_consistency`). Mọi chuỗi cùng vai trò nhưng khác chữ là không đạt. Khóa không có `frame.md`: công cụ bỏ qua kiểm tra chuỗi khung.
 
 ## Chuẩn bị trước khi viết lesson
 

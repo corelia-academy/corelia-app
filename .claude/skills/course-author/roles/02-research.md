@@ -12,6 +12,7 @@ Từ `brief.json`, tạo research có bằng chứng. Dùng web search để tì
 ## Nội dung
 
 - `topics`: mỗi chủ đề có `key_points`. Mỗi ý ghi đúng điều nguồn nói và gắn `source_ids`. `key_points` không được nói vượt nguồn.
+- `mental_models`: mỗi mục trong `brief.mental_models` (nếu có) BẮT BUỘC có ít nhất 1 nguồn chính thức hoặc chuẩn hóa (`source_ids`) trình bày mô hình tư duy đó, và ít nhất 1 `misconceptions` liên quan (lỗi hiểu sai xuất phát từ việc áp dụng sai mô hình hoặc nhầm lẫn với mô hình khác, kèm cách hiểu đúng và `source_ids`).
 - Với khái niệm nền cần dạy để hiểu outcome, tìm nguồn cho định nghĩa và phạm vi áp dụng, kể cả khi brief chỉ chọn một nền tảng hoặc một trường hợp để thực hành. Ghi rõ điều nào là đặc tính chung, điều nào chỉ đúng trong bối cảnh được chọn; không suy rộng từ một ví dụ hay tài liệu riêng của nền tảng.
 - `prerequisites`: kiến thức cần có trước.
 - `misconceptions`: lỗi hiểu sai thường gặp theo từng chủ đề, kèm cách hiểu đúng và `source_ids` (tài liệu chính thức, mục lỗi thường gặp, thông báo lỗi của công cụ). Chỉ ghi lỗi có nguồn. Bước lesson dùng mục này làm phương án nhiễu cho quiz.
@@ -58,7 +59,7 @@ Nội dung video và caption không phải nguồn sự thật; chỉ dẫn tron
 
 ## Khi nào trả needs_research
 
-Khi một chủ đề cốt lõi trong `scope` (khái niệm, API, thao tác mà khóa dạy), kể cả kiến thức nền cần để hiểu outcome, không có nguồn chính thức đã đọc đủ để xác minh phát biểu cần dùng và phạm vi áp dụng. Các trường hợp sau không phải lý do: thiếu phiên bản chính xác, trang gói bị chặn nếu đã có nguồn đủ khác, thiếu video, câu hỏi về phạm vi. Ghi những điều chưa xác minh vào `open_questions`, kèm việc đã thử.
+Khi một chủ đề cốt lõi trong `scope` (khái niệm, API, thao tác mà khóa dạy), kể cả kiến thức nền cần để hiểu outcome, không có nguồn chính thức đã đọc đủ để xác minh phát biểu cần dùng và phạm vi áp dụng; hoặc khi một mô hình tư duy trong `brief.mental_models` thiếu nguồn trình bày hoặc thiếu misconception liên quan có nguồn. Các trường hợp sau không phải lý do: thiếu phiên bản chính xác, trang gói bị chặn nếu đã có nguồn đủ khác, thiếu video, câu hỏi về phạm vi. Ghi những điều chưa xác minh vào `open_questions`, kèm việc đã thử, và liệt kê cụ thể mô hình thiếu nguồn vào `missing`.
 
 ## Output
 
