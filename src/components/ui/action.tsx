@@ -129,6 +129,10 @@ type ActionProps = Omit<ButtonPrimitive.Props, "children"> &
         // Toggle the transient pressed state (bật/tắt trạng thái đang nhấn).
         // Opt-in only: callers enable it explicitly when needed.
         showPressed?: boolean;
+
+        // Let label and supporting text wrap instead of truncating to one line
+        // (cho label và supporting text xuống dòng thay vì cắt một dòng; mặc định tắt).
+        multiline?: boolean;
     };
 
 function Action({
@@ -146,6 +150,7 @@ function Action({
     showActive = true,
     hoverAsActive = false,
     showPressed = false,
+    multiline = false,
     disabled = false,
     ...props
 }: ActionProps) {
@@ -281,7 +286,7 @@ function Action({
                 {/* Label luôn có; nội dung label do nơi sử dụng truyền vào. */}
                 <span
                     className={cn(
-                        "block truncate font-body",
+                        multiline ? "block break-words font-body" : "block truncate font-body",
                         size === "large"
                             ? "text-label-large leading-[22px] tracking-[0]"
                             : "text-label-medium leading-5 tracking-[-0.005em]",
@@ -296,7 +301,7 @@ function Action({
                 {supportingText !== undefined && supportingText !== null ? (
                     <span
                         className={cn(
-                            "block truncate font-body",
+                            multiline ? "block break-words font-body" : "block truncate font-body",
                             size === "large"
                                 ? "text-body-medium"
                                 : "text-body-small",

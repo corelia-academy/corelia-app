@@ -157,6 +157,7 @@
     "projectInviteBody": "您被邀請加入一個黑客松專案。",
     "projectInviteProjectLabel": "專案：{{title}}",
     "projectInviteHackathonLabel": "黑客松：{{title}}",
+    "projectInviteUnavailable": "此專案目前無法使用。",
     "openHackathon": "開啟黑客松",
     "inviteResolved": "已處理",
     "inviteAccepted": "您已加入專案。",
@@ -207,6 +208,10 @@
     "member": "一位成員",
     "actorGroup": "{{name}} 等 {{count}} 人",
     "newActivity": "您有新的動態",
+    "justNow": "剛剛",
+    "drawerSubtitle": "所有通知",
+    "today": "今天",
+    "yesterday": "昨天",
     "social": {
       "project_liked": "{{actors}} 對您團隊的專案 {{title}} 按了讚。",
       "project_followed": "{{actors}} 追蹤了您團隊的專案 {{title}}。",

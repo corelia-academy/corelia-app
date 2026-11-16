@@ -157,6 +157,7 @@
     "projectInviteBody": "해커톤 프로젝트에 초대받았습니다.",
     "projectInviteProjectLabel": "프로젝트: {{title}}",
     "projectInviteHackathonLabel": "해커톤: {{title}}",
+    "projectInviteUnavailable": "이 프로젝트는 더 이상 이용할 수 없습니다.",
     "openHackathon": "해커톤 열기",
     "inviteResolved": "처리됨",
     "inviteAccepted": "프로젝트에 합류했습니다.",
@@ -207,6 +208,10 @@
     "member": "한 회원",
     "actorGroup": "{{name}} 외 {{count}}명",
     "newActivity": "새로운 활동이 있습니다",
+    "justNow": "방금",
+    "drawerSubtitle": "모든 알림",
+    "today": "오늘",
+    "yesterday": "어제",
     "social": {
       "project_liked": "{{actors}}님이 팀의 프로젝트 {{title}}을(를) 좋아합니다.",
       "project_followed": "{{actors}}님이 팀의 프로젝트 {{title}}을(를) 팔로우했습니다.",
