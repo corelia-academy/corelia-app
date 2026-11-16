@@ -157,6 +157,7 @@
     "projectInviteBody": "You were invited to join a hackathon project.",
     "projectInviteProjectLabel": "Project: {{title}}",
     "projectInviteHackathonLabel": "Hackathon: {{title}}",
+    "projectInviteUnavailable": "This project is no longer available.",
     "openHackathon": "Open hackathon",
     "inviteResolved": "Resolved",
     "inviteAccepted": "You joined the project.",

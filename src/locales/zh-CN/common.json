@@ -157,6 +157,7 @@
     "projectInviteBody": "您被邀请加入一个黑客松项目。",
     "projectInviteProjectLabel": "项目：{{title}}",
     "projectInviteHackathonLabel": "黑客松：{{title}}",
+    "projectInviteUnavailable": "该项目目前不可用。",
     "openHackathon": "打开黑客松",
     "inviteResolved": "已处理",
     "inviteAccepted": "您已加入项目。",

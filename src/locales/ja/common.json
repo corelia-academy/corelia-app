@@ -157,6 +157,7 @@
     "projectInviteBody": "ハッカソンのプロジェクトに招待されました。",
     "projectInviteProjectLabel": "プロジェクト：{{title}}",
     "projectInviteHackathonLabel": "ハッカソン：{{title}}",
+    "projectInviteUnavailable": "このプロジェクトは現在利用できません。",
     "openHackathon": "ハッカソンを開く",
     "inviteResolved": "対応済み",
     "inviteAccepted": "プロジェクトに参加しました。",

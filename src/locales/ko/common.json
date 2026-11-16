@@ -157,6 +157,7 @@
     "projectInviteBody": "해커톤 프로젝트에 초대받았습니다.",
     "projectInviteProjectLabel": "프로젝트: {{title}}",
     "projectInviteHackathonLabel": "해커톤: {{title}}",
+    "projectInviteUnavailable": "이 프로젝트는 더 이상 이용할 수 없습니다.",
     "openHackathon": "해커톤 열기",
     "inviteResolved": "처리됨",
     "inviteAccepted": "프로젝트에 합류했습니다.",

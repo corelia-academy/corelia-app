@@ -157,6 +157,7 @@
     "projectInviteBody": "Bạn được mời tham gia một dự án hackathon.",
     "projectInviteProjectLabel": "Dự án: {{title}}",
     "projectInviteHackathonLabel": "Hackathon: {{title}}",
+    "projectInviteUnavailable": "Dự án này hiện không còn khả dụng.",
     "openHackathon": "Mở hackathon",
     "inviteResolved": "Đã xử lý",
     "inviteAccepted": "Bạn đã tham gia dự án.",
