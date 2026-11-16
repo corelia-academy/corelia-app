@@ -8,7 +8,7 @@ export function ProjectAutoHiddenNotification({ notification: n }: { notificatio
     ? n.payload.project_title
     : t("notifications.projectFallback");
   return <>
-    <div className="font-medium text-foreground">{t("notifications.projectAutoHiddenTitle")}</div>
+    <div className="font-medium text-action-text">{t("notifications.projectAutoHiddenTitle")}</div>
     <p className="mt-1 text-xs leading-relaxed text-foreground-muted">{t("notifications.projectAutoHiddenBody", { title })}</p>
   </>;
 }

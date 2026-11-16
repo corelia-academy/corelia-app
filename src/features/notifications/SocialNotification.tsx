@@ -13,6 +13,13 @@ export function SocialNotificationAvatar({ notification: n }: { notification: Us
   return <UserAvatar userId={actor?.id} avatarUrl={actor?.avatar_url} alt={name} fallback={name[0]} size="Medium" />;
 }
 
+/** Follow-back button; rendered under the timestamp like the invite actions. */
+export function SocialFollowAction({ notification: n }: { notification: UserNotificationRow }) {
+  const actor = socialActor(n);
+  if (n.type !== "user_followed" || !actor?.id) return null;
+  return <div className="mt-2" onClick={event => event.stopPropagation()}><FollowButton subject={{ type: "user", id: actor.id }} size="xsmall" showCount={false} /></div>;
+}
+
 export function SocialNotification({ notification: n }: { notification: UserNotificationRow }) {
   const { t } = useTranslation("common");
   const actor = socialActor(n);
@@ -22,6 +29,5 @@ export function SocialNotification({ notification: n }: { notification: UserNoti
   return <>
     {t(`notifications.social.${n.type}`, { actors, count, title: String(n.payload.title ?? ""), defaultValue: t("notifications.newActivity") })}
     {n.type === "hackathon_announcement" && typeof n.payload.body === "string" && <p className="mt-2 whitespace-pre-wrap text-sm text-foreground-muted">{n.payload.body}</p>}
-    {n.type === "user_followed" && actor?.id && <div className="mt-2" onClick={event => event.stopPropagation()}><FollowButton subject={{ type: "user", id: actor.id }} size="xsmall" showCount={false} /></div>}
   </>;
 }

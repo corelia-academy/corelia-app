@@ -1,4 +1,4 @@
-import { SocialNotification, SocialNotificationAvatar } from "./SocialNotification";
+import { SocialFollowAction, SocialNotification, SocialNotificationAvatar } from "./SocialNotification";
 import { ProjectAutoHiddenNotification } from "./ProjectAutoHiddenNotification";
 import { feedRelativeTime } from "@/lib/feedRelativeTime";
 import { notificationRowTarget } from "@/lib/notificationRowTarget";
@@ -304,26 +304,26 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                           : <NotificationTypeIcon type={n.type} />}
                     label={n.group_key ? <SocialNotification notification={n} /> : isInvite ? (
                       <>
-                        <div className={inviteCtx?.projectTitle ? "font-normal text-foreground-muted" : "font-medium text-foreground"}>
+                        <div className="font-medium text-action-text">
                           {t("notifications.projectInviteTitle")}
                           {inviteCtx?.projectTitle ? (
-                            <span className="font-medium text-foreground"> · {inviteCtx.projectTitle}</span>
+                            <>{" · "}<span className="text-primary">{inviteCtx.projectTitle}</span></>
+                          ) : inviteContextQuery.isSuccess ? (
+                            <span className="font-normal text-foreground-muted"> · {t("notifications.projectInviteUnavailable")}</span>
                           ) : null}
                         </div>
-                        {!inviteCtx?.projectTitle ? (
+                        {!inviteCtx?.projectTitle && !inviteContextQuery.isSuccess ? (
                           <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
-                            {inviteContextQuery.isSuccess
-                              ? t("notifications.projectInviteUnavailable")
-                              : t("notifications.projectInviteBody")}
+                            {t("notifications.projectInviteBody")}
                           </p>
                         ) : null}
                       </>
                     ) : isCoInstructorInvite ? (
                       <>
-                        <div className={inviteCourseTitle ? "font-normal text-foreground-muted" : "font-medium text-foreground"}>
+                        <div className="font-medium text-action-text">
                           {t("notifications.coInstructorInviteTitle")}
                           {inviteCourseTitle ? (
-                            <span className="font-medium text-foreground"> · {inviteCourseTitle}</span>
+                            <>{" · "}<span className="text-primary">{inviteCourseTitle}</span></>
                           ) : null}
                         </div>
                         {!inviteCourseTitle ? (
@@ -336,7 +336,7 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                       </>
                     ) : isHackathonRegistrationReview ? (
                       <>
-                        <div className="font-medium text-foreground">
+                        <div className="font-medium text-action-text">
                           {isRegApproved
                             ? t("notifications.hackathonRegistrationApprovedTitle")
                             : t("notifications.hackathonRegistrationRejectedTitle")}
@@ -353,7 +353,7 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                       </>
                     ) : isHackathonWinnerAward ? (
                       <>
-                        <div className="font-medium text-foreground">
+                        <div className="font-medium text-action-text">
                           {t("notifications.hackathonWinnerAwardTitle")}
                         </div>
                         <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
@@ -370,7 +370,7 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                       <ProjectAutoHiddenNotification notification={n} />
                     ) : isCourseCompleted ? (
                       <>
-                        <div className="font-medium text-foreground">
+                        <div className="font-medium text-action-text">
                           {t("notifications.courseCompletedTitle")}
                         </div>
                         <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
@@ -388,7 +388,7 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                       </>
                     ) : isCourseCertificateIssued ? (
                       <>
-                        <div className="font-medium text-foreground">
+                        <div className="font-medium text-action-text">
                           {t("notifications.courseCertificateIssuedTitle")}
                         </div>
                         <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
@@ -400,7 +400,7 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                       </>
                     ) : isOcCredential ? (
                       <>
-                        <div className="font-medium text-foreground">
+                        <div className="font-medium text-action-text">
                           {t("notifications.ocCredentialMintedTitle")}
                         </div>
                         <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
@@ -415,7 +415,7 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                       </>
                     ) : isCourseAnnouncement ? (
                       <>
-                        <NavLink className="font-medium text-foreground hover:underline" to={payloadInternalPath(n.payload, "target_path", `/courses/${encodeURIComponent(payloadString(n.payload, "course_id"))}`)} onClick={() => setOpen(false)}>
+                        <NavLink className="font-medium text-action-text hover:underline" to={payloadInternalPath(n.payload, "target_path", `/courses/${encodeURIComponent(payloadString(n.payload, "course_id"))}`)} onClick={() => setOpen(false)}>
                           {t("notifications.courseAnnouncementTitle")}
                         </NavLink>
                         {typeof n.payload.subject === "string" && n.payload.subject ? (
@@ -429,6 +429,7 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                     )}
                     supportingText={<>
                       <Timestamp type="some-time-ago" size="medium" relativeText={feedRelativeTime(n.activity_at, now, i18n.language, t("notifications.justNow"))} />
+                      {n.group_key ? <SocialFollowAction notification={n} /> : null}
                       {isInvite || isCoInstructorInvite ? (
                         !resolved ? (
                           <div className="mt-2 flex flex-wrap gap-2">
