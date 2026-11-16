@@ -427,9 +427,7 @@
       },
       "noLessonSelected": "Select a lesson from the curriculum to begin.",
       "toggleCurriculum": "Toggle curriculum",
-      "openCurriculum": "Open curriculum",
-      "moveBar": "Move action bar (drag or use arrow keys)",
-      "resetBar": "Reset bar position"
+      "openCurriculum": "Open curriculum"
     }
   },
   "filters": {
@@ -553,8 +551,6 @@
     "moreActions": "More actions",
     "noHints": "This exercise has no hints yet.",
     "outline": "Content",
-    "footerToDock": "Switch to floating bar",
-    "footerToBar": "Pin the bar to the bottom",
     "recalculateDuration": "Recalculate duration",
     "previewBanner": "PREVIEW · Progress, submissions and drafts are not saved.",
     "completed": "Completed",

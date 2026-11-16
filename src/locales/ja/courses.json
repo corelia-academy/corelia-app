@@ -418,9 +418,7 @@
       },
       "noLessonSelected": "カリキュラムからレッスンを選択して始めましょう。",
       "toggleCurriculum": "カリキュラムを切り替え",
-      "openCurriculum": "カリキュラムを開く",
-      "moveBar": "アクションバーを移動(ドラッグまたは矢印キー)",
-      "resetBar": "バーの位置をリセット"
+      "openCurriculum": "カリキュラムを開く"
     }
   },
   "filters": {
@@ -538,8 +536,6 @@
     "markIncompleteShort": "未完了",
     "noHints": "この演習にはまだヒントがありません。",
     "outline": "目次",
-    "footerToDock": "フローティングバーに切り替える",
-    "footerToBar": "バーを下部に固定",
     "redoShort": "やり直す",
     "nextShort": "次へ",
     "redoFromStart": "最初からやり直す",
