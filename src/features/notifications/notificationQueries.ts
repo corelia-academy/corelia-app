@@ -5,7 +5,9 @@ import {
   type NotificationCursor,
 } from "@/lib/notifications";
 import {
+  fetchCourseInviteDisplayContextByCourseIds,
   fetchProjectInviteDisplayContextByProjectIds,
+  type CourseInviteDisplayContext,
   type ProjectInviteDisplayContext,
 } from "@/lib/notificationInviteContext";
 import { keepPreviousDataForUser } from "@/lib/queryClient";
@@ -16,6 +18,8 @@ export const notificationKeys = {
     [...notificationKeys.all, "list", userId ?? "anonymous"] as const,
   inviteContexts: (userId: string | null, projectIds: readonly string[]) =>
     [...notificationKeys.all, "invite-contexts", userId ?? "anonymous", ...projectIds] as const,
+  courseContexts: (userId: string | null, courseIds: readonly string[]) =>
+    [...notificationKeys.all, "course-contexts", userId ?? "anonymous", ...courseIds] as const,
 };
 
 export function notificationsQueryOptions(userId: string | null, enabled = true, unread = false) {
@@ -41,6 +45,21 @@ export function notificationInviteContextsQueryOptions(
     queryKey: notificationKeys.inviteContexts(userId, projectIds),
     queryFn: () => fetchProjectInviteDisplayContextByProjectIds([...projectIds]),
     enabled: userId != null && projectIds.length > 0,
+    staleTime: 5 * 60_000,
+    meta: userId
+      ? { scope: "private", userId, showInGlobalLoading: false }
+      : { scope: "public", showInGlobalLoading: false },
+  });
+}
+
+export function notificationCourseContextsQueryOptions(
+  userId: string | null,
+  courseIds: readonly string[],
+) {
+  return queryOptions<Record<string, CourseInviteDisplayContext>>({
+    queryKey: notificationKeys.courseContexts(userId, courseIds),
+    queryFn: () => fetchCourseInviteDisplayContextByCourseIds([...courseIds]),
+    enabled: userId != null && courseIds.length > 0,
     staleTime: 5 * 60_000,
     meta: userId
       ? { scope: "private", userId, showInGlobalLoading: false }
