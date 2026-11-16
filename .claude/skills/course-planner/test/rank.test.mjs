@@ -217,7 +217,7 @@ test("rank: AC4 - rank.mjs --table in đúng 5 cột, mọi tiêu chí đạt �
   assert.ok(lines[2].includes("\\|"), "Ký tự | trong nội dung ô phải được escape thành \\|");
 });
 
-test("rank: W5 - đề xuất thiếu công cụ thành Rank — và các dòng khác dồn hạng; thiếu yt-dlp sinh đúng một cảnh báo", () => {
+test("rank: W5 - đề xuất thiếu công cụ vẫn giữ rank (eligible không phụ thuộc hasAllTools); thiếu yt-dlp sinh đúng một cảnh báo", () => {
   const shortlistData = {
     date: "2026-11-14",
     shortlist: [
@@ -305,19 +305,19 @@ test("rank: W5 - đề xuất thiếu công cụ thành Rank — và các dòng 
 
   const resMissing = rankShortlist(shortlistData, mockCatalog, { toolChecker: mockToolChecker });
 
-  // Khóa 1 thiếu công cụ -> Rank null (hiển thị —), eligible: false
+  // AC-05: Khóa 1 thiếu công cụ nhưng VẪN eligible: true và giữ nguyên Rank 1
   const r1 = resMissing.rows.find((r) => r.slug === "course-1");
-  assert.strictEqual(r1.eligible, false);
-  assert.strictEqual(r1.rank, null);
+  assert.strictEqual(r1.eligible, true, "Thiếu công cụ không làm mất eligible");
+  assert.strictEqual(r1.rank, 1, "Thiếu công cụ không làm mất rank");
   assert.deepStrictEqual(r1.missingTools, ["forge", "slither"]);
 
-  // Các khóa còn lại dồn hạng: Khóa 2 thành Rank 1, Khóa 3 thành Rank 2
+  // Khóa 2 và 3 giữ nguyên rank 2, 3
   const r2 = resMissing.rows.find((r) => r.slug === "course-2");
   const r3 = resMissing.rows.find((r) => r.slug === "course-3");
   assert.strictEqual(r2.eligible, true);
-  assert.strictEqual(r2.rank, 1);
+  assert.strictEqual(r2.rank, 2);
   assert.strictEqual(r3.eligible, true);
-  assert.strictEqual(r3.rank, 2);
+  assert.strictEqual(r3.rank, 3);
 
   // Công cụ nền thiếu yt-dlp: sinh đúng 1 cảnh báo
   assert.strictEqual(resMissing.envWarnings.length, 1);
@@ -325,7 +325,6 @@ test("rank: W5 - đề xuất thiếu công cụ thành Rank — và các dòng 
 
   // Format bảng
   const tableMissing = formatShortlistTable(resMissing);
-  assert.ok(tableMissing.includes("| — |"));
   assert.ok(tableMissing.includes("Thiếu công cụ: forge, slither"));
   assert.ok(tableMissing.includes("⚠️ Cảnh báo: Thiếu công cụ nền yt-dlp: khóa sẽ không có bài video."));
   assert.doesNotMatch(tableMissing, /luồng sẽ dừng trước bước nhập/);
@@ -698,6 +697,119 @@ test("rank: AC-03 & AC-05 - không focus thì không in tổng quan; bảng rank
     assert.ok(tableEmptyRank.includes("### Tổng quan map"), "Bảng rank rỗng vẫn phải in bảng tổng quan map");
     assert.ok(tableEmptyRank.includes("Mô hình Account và State trên Solana"), "Vẫn có các ô của map trong bảng tổng quan");
     assert.ok(tableEmptyRank.includes("Bảng xếp hạng rỗng"), "Thông báo bảng rank rỗng");
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("rank: AC-05 - hiện đề xuất open của mọi map trong focus.paths, xếp theo min layerOrder -> depth -> criteria, format cột Map và Modules", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "rank-ac05-test-"));
+  const pathsDir = path.join(tmpDir, ".course-plan", "paths");
+  fs.mkdirSync(pathsDir, { recursive: true });
+
+  try {
+    // Tạo 2 map: solana và redis
+    const solanaMap = {
+      slug: "solana",
+      kind: "ecosystem",
+      entry: "Solana",
+      title: "Solana",
+      nodes: [
+        { id: "s-fnd", title: "Solana Foundation", layer: "foundation", requires: [], coverage: "empty" },
+        { id: "s-core", title: "Solana Core", layer: "core", requires: ["s-fnd"], coverage: "empty" },
+        { id: "s-token", title: "Solana Token", layer: "branch", branch: "token", requires: ["s-core"], coverage: "empty" }
+      ]
+    };
+    const redisMap = {
+      slug: "redis",
+      kind: "skill",
+      entry: "Redis",
+      title: "Redis",
+      nodes: [
+        { id: "r-fnd", title: "Redis Foundation", layer: "fundamentals", requires: [], coverage: "empty" },
+        { id: "r-core", title: "Redis Core", layer: "core", requires: ["r-fnd"], coverage: "empty" },
+        { id: "r-prod", title: "Redis Prod", layer: "production", requires: ["r-core"], coverage: "empty" }
+      ]
+    };
+    fs.writeFileSync(path.join(pathsDir, "solana.json"), JSON.stringify(solanaMap, null, 2));
+    fs.writeFileSync(path.join(pathsDir, "redis.json"), JSON.stringify(redisMap, null, 2));
+
+    const backlogData = {
+      focus: { paths: ["solana", "redis"] },
+      proposals: [
+        // 1. Khóa thuộc redis, min layer là core (thứ tự 2)
+        {
+          slug: "redis-advanced",
+          title: "Khóa Redis Nâng Cao",
+          status: "open",
+          path_nodes: {
+            path: "redis",
+            nodes: ["r-core", "r-prod"]
+          },
+          direction: { axis: "skill", entry: "Redis" },
+          level: "intermediate",
+          kind: "new",
+          promise: "Vận hành Redis",
+          starting_point: { knowledge: "Cơ bản", requires: [] },
+          final_product: "Setup Redis",
+          feasibility: "feasible",
+          why_now: { kind: "direct", urls: ["https://d1.com"] },
+          criteria: {
+            continues_catalog: { met: false, basis: "Mới", refs: [] },
+            fills_direction: { met: true, basis: "Đạt", refs: ["r1"] },
+            timely: { met: true, basis: "Đạt", refs: ["r2"] },
+            differentiated: { met: true, basis: "Đạt", refs: ["r3"] },
+            showable_product: { met: true, basis: "Đạt", refs: ["r4"] }
+          }
+        },
+        // 2. Khóa thuộc solana, min layer là foundation (thứ tự 0 -> phải đứng Rank 1)
+        {
+          slug: "solana-foundation-course",
+          title: "Khóa Solana Nền Tảng",
+          status: "open",
+          path_nodes: {
+            path: "solana",
+            nodes: ["s-fnd", "s-core"]
+          },
+          direction: { axis: "ecosystem", entry: "Solana" },
+          level: "beginner",
+          kind: "new",
+          promise: "Lập trình Solana",
+          starting_point: { knowledge: "Cơ bản", requires: [] },
+          final_product: "Program Solana",
+          feasibility: "feasible",
+          why_now: { kind: "direct", urls: ["https://d1.com"] },
+          criteria: {
+            continues_catalog: { met: false, basis: "Mới", refs: [] },
+            fills_direction: { met: true, basis: "Đạt", refs: ["r1"] },
+            timely: { met: true, basis: "Đạt", refs: ["r2"] },
+            differentiated: { met: true, basis: "Đạt", refs: ["r3"] },
+            showable_product: { met: true, basis: "Đạt", refs: ["r4"] }
+          }
+        }
+      ]
+    };
+
+    const ranked = rankShortlist(backlogData, [], { pathsDir, repoRoot: tmpDir });
+    // Cả 2 map đều được đưa vào rank
+    assert.strictEqual(ranked.total, 2);
+    // solana-foundation-course có min layer foundation -> Rank 1
+    assert.strictEqual(ranked.rows[0].slug, "solana-foundation-course");
+    assert.strictEqual(ranked.rows[0].mapSlug, "solana");
+    // redis-advanced có min layer core -> Rank 2
+    assert.strictEqual(ranked.rows[1].slug, "redis-advanced");
+    assert.strictEqual(ranked.rows[1].mapSlug, "redis");
+
+    const table = formatShortlistTable(ranked);
+    // Bảng có cột Map và Modules
+    assert.ok(table.includes("| Map |"), "Bảng phải có cột Map");
+    assert.ok(table.includes("| Modules |"), "Bảng phải có cột Modules");
+    assert.ok(table.includes("s-fnd, s-core"));
+    assert.ok(table.includes("r-core, r-prod"));
+
+    // Bảng tổng quan in cho cả 2 map
+    assert.ok(table.includes("### Tổng quan map: solana"));
+    assert.ok(table.includes("### Tổng quan map: redis"));
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }

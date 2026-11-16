@@ -92,9 +92,11 @@ export function decideNext({
       continue;
     }
 
-    // Điều kiện B: Có path_node hợp lệ
-    const pathNode = cand.path_node;
-    if (!pathNode || typeof pathNode !== "object" || !pathNode.path || !pathNode.node) {
+    // Điều kiện B: Có path_nodes hoặc path_node hợp lệ
+    const hasPathNodes = Boolean(cand.path_nodes && typeof cand.path_nodes === "object" && cand.path_nodes.path && Array.isArray(cand.path_nodes.nodes));
+    const hasPathNode = Boolean(cand.path_node && typeof cand.path_node === "object" && cand.path_node.path && cand.path_node.node);
+
+    if (!hasPathNodes && !hasPathNode) {
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
@@ -104,14 +106,17 @@ export function decideNext({
       continue;
     }
 
+    const mapSlug = hasPathNodes ? cand.path_nodes.path : cand.path_node.path;
+    const nodeIds = hasPathNodes ? cand.path_nodes.nodes : [cand.path_node.node];
+
     // Điều kiện C: Map tồn tại và có status "approved"
-    const map = allMaps.get(pathNode.path);
+    const map = allMaps.get(mapSlug);
     if (!map) {
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: pathNode.path,
-        reason: `Map "${pathNode.path}" không tồn tại`,
+        path_slug: mapSlug,
+        reason: `Map "${mapSlug}" không tồn tại`,
       });
       continue;
     }
@@ -120,65 +125,71 @@ export function decideNext({
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: pathNode.path,
-        reason: `Map "${pathNode.path}" có status "${map.status}" (yêu cầu "approved")`,
+        path_slug: mapSlug,
+        reason: `Map "${mapSlug}" có status "${map.status}" (yêu cầu "approved")`,
       });
       continue;
     }
 
-    // Điều kiện D: Ô tồn tại trong map
-    const node = (map.nodes || []).find((n) => n.id === pathNode.node);
-    if (!node) {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: pathNode.path,
-        reason: `Ô "${pathNode.node}" không tồn tại trong map "${pathNode.path}"`,
-      });
-      continue;
+    // Điều kiện D: Toàn bộ các ô tồn tại trong map, chưa covered, không có ref
+    let nodeError = null;
+    const matchedNodes = [];
+    for (const nId of nodeIds) {
+      const node = (map.nodes || []).find((n) => n.id === nId);
+      if (!node) {
+        nodeError = `Ô "${nId}" không tồn tại trong map "${mapSlug}"`;
+        break;
+      }
+      if (node.coverage === "covered") {
+        nodeError = `Ô "${nId}" trong map "${mapSlug}" đã có coverage "covered"`;
+        break;
+      }
+      if (node.ref != null) {
+        nodeError = `Ô "${nId}" trong map "${mapSlug}" có ref "${node.ref}", không thể tạo khóa trực tiếp`;
+        break;
+      }
+      matchedNodes.push(node);
     }
 
-    if (node.coverage === "covered") {
+    if (nodeError) {
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: pathNode.path,
-        reason: `Ô "${pathNode.node}" trong map "${pathNode.path}" đã có coverage "covered"`,
-      });
-      continue;
-    }
-
-    if (node.ref != null) {
-      needs_research.push({
-        slug: cand.slug,
-        title: cand.title,
-        path_slug: pathNode.path,
-        reason: `Ô "${pathNode.node}" trong map "${pathNode.path}" có ref "${node.ref}", không thể tạo khóa trực tiếp`,
+        path_slug: mapSlug,
+        reason: nodeError,
       });
       continue;
     }
 
     // Điều kiện E (AC-02 & AC-07): mọi ô trong requires đã covered hoặc đã có đề xuất chosen/produced
-    const nodeRequires = Array.isArray(node.requires) ? node.requires : [];
+    const allRequires = [];
     const unmetRequires = [];
 
-    for (const reqId of nodeRequires) {
-      const reqNode = (map.nodes || []).find((n) => n.id === reqId);
-
-      if (reqNode?.course_slug) {
-        const catReq = catalogMap.get(reqNode.course_slug);
-        if (catReq && (!catReq.content_state || catReq.content_state === "unknown")) {
-          allWarnings.push(
-            `Khóa tiên quyết "${reqNode.course_slug}" của "${cand.slug}" ${
-              !catReq.content_state ? "thiếu content_state" : "có content_state unknown"
-            } (cần export catalog mới)`
-          );
+    for (const node of matchedNodes) {
+      const nodeRequires = Array.isArray(node.requires) ? node.requires : [];
+      for (const reqId of nodeRequires) {
+        allRequires.push(reqId);
+        if (nodeIds.includes(reqId)) {
+          // Nằm trong chính khóa đó
+          continue;
         }
-      }
 
-      // V-05: requires chỉ thỏa khi ô tiên quyết covered hoặc có đề xuất chosen/produced
-      if (!isNodeSatisfied(reqNode, proposals, pathNode.path)) {
-        unmetRequires.push(reqId);
+        const reqNode = (map.nodes || []).find((n) => n.id === reqId);
+        if (reqNode?.course_slug) {
+          const catReq = catalogMap.get(reqNode.course_slug);
+          if (catReq && (!catReq.content_state || catReq.content_state === "unknown")) {
+            allWarnings.push(
+              `Khóa tiên quyết "${reqNode.course_slug}" của "${cand.slug}" ${
+                !catReq.content_state ? "thiếu content_state" : "có content_state unknown"
+              } (cần export catalog mới)`
+            );
+          }
+        }
+
+        // V-05: requires chỉ thỏa khi ô tiên quyết covered hoặc có đề xuất chosen/produced
+        if (!isNodeSatisfied(reqNode, proposals, mapSlug)) {
+          unmetRequires.push(reqId);
+        }
       }
     }
 
@@ -186,8 +197,8 @@ export function decideNext({
       blocked.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: pathNode.path,
-        blocked_by: unmetRequires.sort(),
+        path_slug: mapSlug,
+        blocked_by: Array.from(new Set(unmetRequires)).sort(),
       });
       continue;
     }
@@ -198,7 +209,7 @@ export function decideNext({
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: pathNode.path,
+        path_slug: mapSlug,
         reason: "Thiếu file evaluation",
       });
       continue;
@@ -211,7 +222,7 @@ export function decideNext({
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: pathNode.path,
+        path_slug: mapSlug,
         reason: `File evaluation hỏng: ${err.message}`,
       });
       continue;
@@ -223,7 +234,7 @@ export function decideNext({
       updates.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: pathNode.path,
+        path_slug: mapSlug,
         reason: evData.catalog?.basis || "Cần cập nhật khóa có sẵn",
       });
       continue;
@@ -231,7 +242,7 @@ export function decideNext({
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: pathNode.path,
+        path_slug: mapSlug,
         reason: `Catalog verdict không hợp lệ (${catVerdict})`,
       });
       continue;
@@ -249,7 +260,7 @@ export function decideNext({
         needs_research.push({
           slug: cand.slug,
           title: cand.title,
-          path_slug: pathNode.path,
+          path_slug: mapSlug,
           reason: `Catalog có khóa mới chưa đối chiếu trong evaluation: ${missingFromEval.join(", ")}`,
         });
         continue;
@@ -274,7 +285,7 @@ export function decideNext({
         needs_research.push({
           slug: cand.slug,
           title: cand.title,
-          path_slug: pathNode.path,
+          path_slug: mapSlug,
           reason: `Khóa học trong catalog có thêm bài mới publish sau khi đánh giá: ${increasedCourses.join(", ")}`,
         });
         continue;
@@ -287,7 +298,7 @@ export function decideNext({
       rejected.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: pathNode.path,
+        path_slug: mapSlug,
         reason: `Không khả thi: ${evData.feasibility?.basis || ""}`,
       });
       continue;
@@ -295,7 +306,7 @@ export function decideNext({
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: pathNode.path,
+        path_slug: mapSlug,
         reason: `Feasibility verdict không hợp lệ (${feasVerdict})`,
       });
       continue;
@@ -313,21 +324,23 @@ export function decideNext({
       needs_research.push({
         slug: cand.slug,
         title: cand.title,
-        path_slug: pathNode.path,
+        path_slug: mapSlug,
         reason: "Handoff thiếu trường bắt buộc (title, audience, level, scope_note)",
       });
       continue;
     }
 
+    const firstNode = matchedNodes[0];
     readyCandidates.push({
       slug: cand.slug,
       title: cand.title,
-      path_slug: pathNode.path,
+      path_slug: mapSlug,
       path_title: map.title,
-      node_id: pathNode.node,
-      layer: node.layer,
+      node_id: firstNode?.id || nodeIds[0],
+      node_ids: nodeIds,
+      layer: firstNode?.layer || "—",
       level: cand.level || "all",
-      requires: nodeRequires,
+      requires: Array.from(new Set(allRequires)),
     });
   }
 
@@ -345,6 +358,7 @@ export function decideNext({
           path_slug: pick.path_slug,
           path_title: pick.path_title,
           node_id: pick.node_id,
+          node_ids: pick.node_ids,
           layer: pick.layer,
           level: pick.level,
           evaluation_ref: `.course-plan/evaluations/${pick.slug}.json`,
@@ -357,6 +371,7 @@ export function decideNext({
       level: q.level,
       path_slug: q.path_slug,
       node_id: q.node_id,
+      node_ids: q.node_ids,
       layer: q.layer,
       requires: q.requires,
     })),
@@ -369,6 +384,28 @@ export function decideNext({
   };
 
   return decision;
+}
+
+export function generateHandoff({ candidate, evaluation } = {}) {
+  const baseHandoff = evaluation?.handoff || {};
+  const modules = candidate?.modules || baseHandoff.modules || [];
+  const mental_models = modules.map((m) => m?.mechanism).filter(Boolean);
+  const misconceptions = Array.from(
+    new Set(
+      modules.flatMap((m) =>
+        Array.isArray(m?.pitfalls) ? m.pitfalls : (m?.pitfalls ? [m.pitfalls] : [])
+      ).filter(Boolean)
+    )
+  );
+  const reasoning_outcomes = modules.map((m) => m?.outcome).filter(Boolean);
+
+  return {
+    ...baseHandoff,
+    modules,
+    mental_models,
+    misconceptions,
+    reasoning_outcomes,
+  };
 }
 
 export function saveDecision(decision, repoRoot = ".", customDate = null) {

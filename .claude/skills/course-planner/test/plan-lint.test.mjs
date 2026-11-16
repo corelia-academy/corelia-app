@@ -31,6 +31,10 @@ function getBaseValidEcosystemMap() {
         branch: null,
         requires: [],
         ref: null,
+        mental_model: "Mọi dữ liệu và logic trên Solana đều lưu trong Account; program không lưu state nội tại mà chỉ xử lý các account được truyền vào.",
+        concepts: ["Account types", "Rent exemption", "PDA"],
+        app_use: ["Thiết kế schema dữ liệu cho app phi tập trung phân tách giữa logic và storage"],
+        pitfalls: ["Quên kiểm tra owner của account dẫn tới lỗ hổng giả mạo dữ liệu"],
         required_tools: ["solana"],
         scope: ["Account types", "Rent", "PDA"],
         course_slug: null,
@@ -43,6 +47,10 @@ function getBaseValidEcosystemMap() {
         branch: null,
         requires: ["accounts-model"],
         ref: null,
+        mental_model: "Rust quản lý bộ nhớ không cần garbage collection thông qua hệ thống ownership và borrow checker, phù hợp runtime deterministic khắt khe.",
+        concepts: ["Ownership", "Borrowing", "Traits", "Memory layout"],
+        app_use: ["Tối ưu compute units và zero-copy deserialization khi xử lý transaction high-throughput"],
+        pitfalls: ["Unwrap gây panic dẫn tới transaction abort và lãng phí gas"],
         required_tools: ["cargo", "rustc"],
         scope: ["Ownership", "Borrowing"],
         course_slug: null,
@@ -55,6 +63,10 @@ function getBaseValidEcosystemMap() {
         branch: null,
         requires: ["rust-basics"],
         ref: null,
+        mental_model: "Anchor framework trừu tượng hóa boilerplate tuần tự hóa và validation account bằng declarative IDL và macros.",
+        concepts: ["Anchor macros", "CPI", "Account validation"],
+        app_use: ["Xây dựng smart contract chuẩn hóa với auto-generated TypeScript client"],
+        pitfalls: ["Thiếu signer validation hoặc mutable constraint trong account struct"],
         required_tools: ["anchor", "cargo"],
         scope: ["Anchor macros", "CPI"],
         course_slug: null,
@@ -67,6 +79,10 @@ function getBaseValidEcosystemMap() {
         branch: "token",
         requires: ["anchor-programs"],
         ref: null,
+        mental_model: "Token trên Solana là mint account gắn liền với các token account của người dùng, phân tách quyền sở hữu token với logic mint.",
+        concepts: ["SPL Token 2022", "Associated Token Account", "Mint authority"],
+        app_use: ["Tạo utility token hoặc transfer hook cho sàn giao dịch DEX"],
+        pitfalls: ["Không khởi tạo ATA dẫn tới gửi token vào account thường gây kẹt tiền"],
         required_tools: ["spl-token", "anchor"],
         scope: ["SPL Token 2022"],
         course_slug: null,
@@ -79,6 +95,10 @@ function getBaseValidEcosystemMap() {
         branch: "nft",
         requires: ["anchor-programs"],
         ref: null,
+        mental_model: "Metaplex Core lưu metadata trực tiếp vào một account duy nhất để tối ưu hóa rent và đơn giản hóa quản lý lifecycle NFT.",
+        concepts: ["Metaplex Core standard", "Plugin lifecycle", "Collection management"],
+        app_use: ["Phát hành bộ sưu tập NFT vé sự kiện với dynamic metadata plugin"],
+        pitfalls: ["Ghi đè plugin authority khiến mất quyền cập nhật metadata sau mint"],
         required_tools: ["node", "anchor"],
         scope: ["Metaplex Core standard"],
         course_slug: null,
@@ -111,6 +131,10 @@ function getBaseValidSkillMap() {
         branch: null,
         requires: [],
         ref: null,
+        mental_model: "Redis lưu trữ dữ liệu hoàn toàn trên RAM và xử lý đơn luồng qua event loop, mang lại độ trễ microsecond cho các cấu trúc dữ liệu phong phú.",
+        concepts: ["Strings", "Hashes", "Event loop", "RAM persistence"],
+        app_use: ["Xây dựng leaderboards và session store tốc độ cao"],
+        pitfalls: ["Lưu object JSON khổng lồ vào 1 string key làm nghẽn single thread event loop"],
         required_tools: ["redis-cli"],
         scope: ["Strings", "Hashes"],
         course_slug: null,
@@ -123,6 +147,10 @@ function getBaseValidSkillMap() {
         branch: null,
         requires: ["redis-fundamentals"],
         ref: null,
+        mental_model: "Cache đóng vai trò lớp đệm trước database; tính nhất quán được duy trì qua các chiến lược vô hiệu hóa và thuật toán loại bỏ khi RAM đầy.",
+        concepts: ["Cache-aside", "TTL", "LRU/LFU eviction", "Cache stampede"],
+        app_use: ["Tối ưu latency cho endpoint đọc heavy và bảo vệ primary database khỏi traffic spike"],
+        pitfalls: ["Cache stampede (thundering herd) khi hot key hết hạn cùng lúc"],
         required_tools: ["redis-cli"],
         scope: ["Cache-aside", "TTL"],
         course_slug: null,
@@ -135,6 +163,10 @@ function getBaseValidSkillMap() {
         branch: null,
         requires: ["caching"],
         ref: null,
+        mental_model: "High availability đạt được qua Sentinel tự động failover, còn horizontal scale đạt được qua Cluster sharding data trên 16384 hash slots.",
+        concepts: ["Sentinel failover", "Hash slots", "Gossip protocol", "Split brain"],
+        app_use: ["Triển khai cluster chịu tải cao cho payment gateway và e-commerce"],
+        pitfalls: ["Multi-key commands trên các key không cùng hash tag trong cluster"],
         required_tools: ["docker", "redis-cli"],
         scope: ["Replication", "Clustering"],
         course_slug: null,
@@ -147,6 +179,10 @@ function getBaseValidSkillMap() {
         branch: null,
         requires: ["caching"],
         ref: null,
+        mental_model: "Redis Streams là append-only log logico cho phép nhiều consumer group đọc tin nhắn song song với cơ chế ACK và PEL.",
+        concepts: ["Consumer groups", "Pending Entries List", "XADD/XREADGROUP"],
+        app_use: ["Xây dựng event-driven asynchronous processing pipeline giữa các microservices"],
+        pitfalls: ["Không xử lý message trong PEL dẫn tới memory leak vô hình trong Redis"],
         required_tools: ["node", "redis-cli"],
         scope: ["Streams"],
         course_slug: null,
@@ -179,6 +215,10 @@ function getBaseValidRoleMap() {
         branch: null,
         requires: [],
         ref: null,
+        mental_model: "Giao tiếp mạng hoạt động theo mô hình phân tầng; client và server đàm phán kết nối TCP/TLS trước khi trao đổi message HTTP vô trạng thái.",
+        concepts: ["OSI model", "TCP handshake", "TLS termination", "HTTP/2 multiplexing"],
+        app_use: ["Thiết kế reverse proxy và tối ưu handshake latency cho API gateway"],
+        pitfalls: ["Header injection và không cấu hình timeout gây socket leak treo server"],
         required_tools: ["curl"],
         scope: ["OSI", "HTTP/2"],
         course_slug: null,
@@ -191,6 +231,10 @@ function getBaseValidRoleMap() {
         branch: null,
         requires: ["backend-foundations"],
         ref: null,
+        mental_model: "RESTful API định nghĩa tài nguyên qua URL danh từ và thao tác bằng HTTP verbs chuẩn hóa, bảo đảm tính idempotent cho các thao tác cập nhật.",
+        concepts: ["Routing", "Middleware pipeline", "Idempotency keys", "Status codes"],
+        app_use: ["Xây dựng hệ thống checkout và webhook integration với bên thứ ba"],
+        pitfalls: ["Xử lý thanh toán thiếu idempotency key gây trừ tiền hai lần"],
         required_tools: ["node"],
         scope: ["Routing", "Middleware"],
         course_slug: null,
@@ -203,6 +247,10 @@ function getBaseValidRoleMap() {
         branch: null,
         requires: ["api-development"],
         ref: null,
+        mental_model: "Khả năng quan sát (observability) được xây dựng từ ba trụ cột: logs có cấu trúc, metrics tổng hợp, và distributed tracing theo dõi toàn bộ request lifecycle.",
+        concepts: ["Structured logging", "Prometheus metrics", "Distributed tracing", "Alert rules"],
+        app_use: ["Phát hiện nút thắt cổ chai hiệu năng và debug distributed failure trong microservice"],
+        pitfalls: ["Log PII/token nhạy cảm ra plain log hoặc trace span gây rò rỉ dữ liệu"],
         required_tools: ["docker"],
         scope: ["Metrics", "Tracing"],
         course_slug: null,
@@ -424,7 +472,7 @@ test("plan-lint: AC-03 - lintMapData kiểm tra coverage tính từ published_le
   // 2. coverage là partial nhưng thiếu course_slug -> lỗi
   ecoMap.nodes[0].coverage = "partial";
   ecoMap.nodes[0].course_slug = null;
-  ecoMap.nodes[0].covered_lessons = ["Bài 1"];
+  ecoMap.nodes[0].covered_lessons = [{ title: "Bài 1", teaches: "Cơ chế 1" }];
   res = lintMapData(ecoMap, { proposalDocContent: realDoc });
   assert.strictEqual(res.ok, false);
   assert.ok(res.problems.some((p) => p.includes('coverage là "partial" bắt buộc phải có course_slug')));
@@ -439,7 +487,10 @@ test("plan-lint: AC-03 - lintMapData kiểm tra coverage tính từ published_le
   // 4. coverage là covered có đủ course_slug và covered_lessons -> pass
   ecoMap.nodes[0].coverage = "covered";
   ecoMap.nodes[0].course_slug = "solana-bootcamp";
-  ecoMap.nodes[0].covered_lessons = ["Hello Solana Setup", "PDA Counter"];
+  ecoMap.nodes[0].covered_lessons = [
+    { title: "Hello Solana Setup", teaches: "Setup môi trường" },
+    { title: "PDA Counter", teaches: "Cơ chế PDA" }
+  ];
   res = lintMapData(ecoMap, { proposalDocContent: realDoc });
   assert.strictEqual(res.ok, true, "Map có covered_lessons hợp lệ phải pass: " + res.problems.join("; "));
 });
@@ -515,7 +566,7 @@ test("plan-lint: V-09 - lintMapData đối chiếu covered_lessons và course_sl
   // 1. course_slug không có trong catalog -> FAIL
   ecoMap.nodes[0].coverage = "partial";
   ecoMap.nodes[0].course_slug = "non-existent-course";
-  ecoMap.nodes[0].covered_lessons = ["Giới thiệu"];
+  ecoMap.nodes[0].covered_lessons = [{ title: "Giới thiệu", teaches: "Tổng quan" }];
   let res = lintMapData(ecoMap, { proposalDocContent: realDoc, catalogData: mockCatalog });
   assert.strictEqual(res.ok, false);
   assert.ok(
@@ -525,7 +576,7 @@ test("plan-lint: V-09 - lintMapData đối chiếu covered_lessons và course_sl
 
   // 2. covered_lessons chứa bài nháp (không nằm trong published_lessons) -> FAIL
   ecoMap.nodes[0].course_slug = "solana-bootcamp";
-  ecoMap.nodes[0].covered_lessons = ["Rent, Space & Serialization"];
+  ecoMap.nodes[0].covered_lessons = [{ title: "Rent, Space & Serialization", teaches: "Cơ chế Rent" }];
   res = lintMapData(ecoMap, { proposalDocContent: realDoc, catalogData: mockCatalog });
   assert.strictEqual(res.ok, false);
   assert.ok(
@@ -537,7 +588,10 @@ test("plan-lint: V-09 - lintMapData đối chiếu covered_lessons và course_sl
 
   // 3. covered_lessons dùng bài published -> PASS
   ecoMap.nodes[0].coverage = "covered";
-  ecoMap.nodes[0].covered_lessons = ["Giới thiệu", "Hello Solana Setup"];
+  ecoMap.nodes[0].covered_lessons = [
+    { title: "Giới thiệu", teaches: "Tổng quan" },
+    { title: "Hello Solana Setup", teaches: "Setup môi trường" }
+  ];
   res = lintMapData(ecoMap, { proposalDocContent: realDoc, catalogData: mockCatalog });
   assert.strictEqual(res.ok, true, "Bài published phải pass: " + res.problems.join("; "));
 
@@ -550,7 +604,7 @@ test("plan-lint: V-09 - lintMapData đối chiếu covered_lessons và course_sl
       },
     ],
   };
-  ecoMap.nodes[0].covered_lessons = ["Bất kỳ bài nào"];
+  ecoMap.nodes[0].covered_lessons = [{ title: "Bất kỳ bài nào", teaches: "Cơ chế" }];
   res = lintMapData(ecoMap, { proposalDocContent: realDoc, catalogData: catalogWithoutPub });
   assert.strictEqual(res.ok, true, "Thiếu published_lessons trong catalog chỉ warn, không fatal error: " + res.problems.join("; "));
   assert.ok(
@@ -563,4 +617,106 @@ test("plan-lint: V-09 - lintMapData đối chiếu covered_lessons và course_sl
   const fixtureData = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
   res = lintMapData(fixtureData, { proposalDocContent: realDoc, catalogData: mockCatalog });
   assert.strictEqual(res.ok, true, "Fixture solana.json đã sửa phải pass: " + res.problems.join("; "));
+});
+
+test("plan-lint: AC-03 - kiểm tra contract ô map mới (mental_model, concepts, app_use, pitfalls, allow_tooling, covered_lessons format)", () => {
+  // 1. Thiếu mental_model hoặc rỗng
+  let map = getBaseValidEcosystemMap();
+  delete map.nodes[0].mental_model;
+  let res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes("thiếu mental_model")));
+
+  map = getBaseValidEcosystemMap();
+  map.nodes[0].mental_model = "   ";
+  res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes("thiếu mental_model")));
+
+  // 2. concepts < 2
+  map = getBaseValidEcosystemMap();
+  map.nodes[0].concepts = ["Chỉ có 1"];
+  res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes("concepts phải là mảng ít nhất 2 khái niệm")));
+
+  // 3. Thiếu app_use hoặc rỗng
+  map = getBaseValidEcosystemMap();
+  map.nodes[0].app_use = [];
+  res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes("app_use phải là mảng ít nhất 1 cách dùng")));
+
+  // 4. Thiếu pitfalls hoặc rỗng
+  map = getBaseValidEcosystemMap();
+  map.nodes[0].pitfalls = [];
+  res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes("pitfalls phải là mảng ít nhất 1 lỗi hoặc bẫy")));
+
+  // 5. Ô tooling không có allow_tooling + reason -> lỗi
+  map = getBaseValidEcosystemMap();
+  map.nodes[0].title = "Cài đặt môi trường và công cụ Solana CLI";
+  map.nodes[0].scope = ["cài đặt công cụ", "setup CLI"];
+  res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes("ô công cụ không được phép tồn tại riêng lẻ")));
+
+  // 5b. Có allow_tooling: true + reason -> pass
+  map.nodes[0].allow_tooling = true;
+  map.nodes[0].reason = "Bắt buộc cài đặt validator local để test program offline";
+  res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, true, "Có allow_tooling và reason phải pass: " + res.problems.join("; "));
+
+  // 6. covered_lessons là mảng string hoặc thiếu teaches -> lỗi
+  map = getBaseValidEcosystemMap();
+  map.nodes[0].coverage = "partial";
+  map.nodes[0].course_slug = "solana-bootcamp";
+  map.nodes[0].covered_lessons = ["Bài 1 dạng chuỗi"];
+  res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes("không phải là object { title, teaches }")));
+
+  map.nodes[0].covered_lessons = [{ title: "Bài 1" }]; // thiếu teaches
+  res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes("thiếu teaches")));
+});
+
+test("plan-lint: V-12 - ô công cụ không khớp nhầm ô khái niệm (có ranh giới từ, kiểm tra scope)", () => {
+  // 1. Ô environment-config với title "Tách cấu hình theo môi trường và quản lý secret", scope có khái niệm thực chất -> PASS
+  let map = getBaseValidRoleMap();
+  map.nodes[0].id = "environment-config";
+  map.nodes[0].title = "Tách cấu hình theo môi trường và quản lý secret";
+  map.nodes[0].scope = ["12-factor config", "secret rotation", "khác biệt dev/staging/prod"];
+  map.nodes[1].requires = ["environment-config"];
+  let res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, true, "Ô environment-config có scope khái niệm không được bị coi là ô tooling: " + res.problems.join("; "));
+
+  // 2. Ô có id chứa client (deploy-idl-client) -> không bị dính từ khóa tooling -> PASS
+  map = getBaseValidEcosystemMap();
+  map.nodes[4].id = "deploy-idl-client";
+  map.nodes[4].title = "Triển khai Devnet, IDL và client TypeScript";
+  map.nodes[4].scope = ["IDL codegen", "TypeScript client", "Devnet deployment"];
+  res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, true, "Id deploy-idl-client không được bị coi là tooling: " + res.problems.join("; "));
+
+  // 3. Ô "Cài đặt Solana CLI" với scope toàn bộ là tooling -> FAIL (lỗi allow_tooling)
+  map = getBaseValidEcosystemMap();
+  map.nodes[0].id = "solana-cli-install";
+  map.nodes[0].title = "Cài đặt Solana CLI";
+  map.nodes[0].scope = ["cài đặt CLI", "setup ví"];
+  map.nodes[1].requires = ["solana-cli-install"];
+  res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes("ô công cụ không được phép tồn tại riêng lẻ")),
+    "Ô cài đặt với scope tooling phải bị chặn: " + res.problems.join("; ")
+  );
+
+  // 4. Ô trên có allow_tooling: true + reason -> PASS
+  map.nodes[0].allow_tooling = true;
+  map.nodes[0].reason = "Bắt buộc có CLI để chạy test suite localnet";
+  res = lintMapData(map, { proposalDocContent: realDoc });
+  assert.strictEqual(res.ok, true, "Ô tooling có allow_tooling và reason phải pass: " + res.problems.join("; "));
 });

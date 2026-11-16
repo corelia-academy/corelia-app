@@ -1,6 +1,7 @@
 # Role: Đánh giá Ứng viên Khóa học (Candidate Evaluation)
 
-Vai trò này thẩm định tính khả thi, đối chiếu với catalog hiện có và chuẩn bị gói bàn giao (`handoff`) cho một ô ứng viên khóa học trong path.
+Vai trò này thẩm định tính khả thi, đối chiếu với catalog hiện có và chuẩn bị gói bàn giao (`handoff`) cho một đề xuất khóa học gom nhiều ô trong path.
+Tham khảo mẫu chuẩn tại `.claude/skills/course-author/references/exemplar-course.md` về cỡ khóa, nhịp module và cách viết nội dung thực chiến.
 
 Kết quả được ghi vào file `.course-plan/evaluations/<slug>.json`.
 
@@ -23,7 +24,8 @@ Kết quả được ghi vào file `.course-plan/evaluations/<slug>.json`.
 
 ### 2. Tính Khả thi trên Nền tảng (`feasibility`)
 - Bắt buộc đọc trực tiếp và đối chiếu với `.claude/skills/course-author/references/platform.md`.
-- Trích dẫn mục liên quan trong `platform.md` vào `basis`. Tuyệt đối không tự suy đoán khả năng nền tảng vượt ngoài `platform.md`.
+- **Không loại đề xuất vì thiếu công cụ cài đặt:** Các công cụ CLI hay môi trường phát triển (như Anchor CLI, Rust, Foundry) do học viên tự cài đặt theo hướng dẫn trong phần "Trước khi bắt đầu" của bài thực hành đầu tiên, hoặc được kiểm tra bằng bài tập quiz/code_exercise dạng so khớp chuỗi trên nền tảng. Thiếu công cụ cài đặt không làm đề xuất bị coi là `not_feasible`.
+- Trích dẫn mục liên quan trong `platform.md` vào `basis`.
 - Kiểm tra các giới hạn thực tế theo `platform.md`:
   - Định dạng bài học dự kiến phải nằm trong các loại được hỗ trợ: `article`, `video` (từ kênh được phép), `quiz`, `code_exercise`, `practice`.
   - Giới hạn của `code_exercise`: chỉ hỗ trợ chấm bằng so khớp chuỗi (`contains`, `not_contains`, `equals`), KHÔNG biên dịch, KHÔNG chạy mã, KHÔNG terminal. Dạng `fill` tối đa 1–5 ô điền; dạng `edit` chỉ khi khung code cố định và kiểm được bằng chuỗi. Ngôn ngữ phải thuộc danh sách đang bật.
@@ -39,20 +41,24 @@ Kết quả được ghi vào file `.course-plan/evaluations/<slug>.json`.
 
 ### 4. Gói Handoff Sẵn sàng (`handoff`)
 Chuẩn bị sẵn dữ liệu hợp đồng để khi khóa học được chọn, dữ liệu này có thể truyền trực tiếp sang `course-author`:
-- `title`: Tiêu đề tiếng Việt hiển thị.
+- `title`: Tiêu đề tiếng Việt hiển thị (nêu năng lực rộng, không đặt theo chủ đề hẹp).
 - `topic`: Một nhiệm vụ cụ thể người học hoàn thành được khi học xong (dùng động từ quan sát được).
 - `audience`: Đối tượng người học.
 - `level`: Trình độ (`"beginner"` | `"intermediate"` | `"advanced"`).
 - `promise`: Một câu, một hành động quan sát được người học làm được khi học xong (không mở đầu bằng "hiểu", "nắm", "biết", "tìm hiểu", "làm quen").
-- `final_product`: Sản phẩm cụ thể người học nộp ở bài cuối khóa và tình huống thực tế, nộp được qua các trường trong `platform.md` (`github_url`, `deployment_url`, `contract_address`, `transaction_url`, `demo_url`, `notes`).
+- `final_product`: Sản phẩm cụ thể người học nộp ở bài cuối khóa và tình huống thực tế kèm `notes` giải thích lựa chọn, nộp được qua các trường trong `platform.md` (`github_url`, `deployment_url`, `contract_address`, `transaction_url`, `demo_url`, `notes`).
 - `differentiation`: Điểm khác biệt vượt trội mà khóa học này lấp được (gộp từ gap của các nguồn thay thế).
 - `corelia_hook`: Sản phẩm cuối gắn với tính năng nào của Corelia (dự án, hackathon, chứng chỉ).
 - `scope_note`: Ghi chú phạm vi BẮT BUỘC, suy trực tiếp từ path: nêu rõ điều khóa này giả định từ khóa tiên quyết và điều để lại cho khóa sau.
 - `path`: Slug của path chứa khóa.
+- `modules`: Mảng `modules` nguyên văn từ đề xuất.
+- `mental_models`: Mảng các `mechanism` trích từ `modules`.
+- `misconceptions`: Mảng gộp toàn bộ các `pitfalls` từ `modules` (loại bỏ trùng lặp).
+- `reasoning_outcomes`: Mảng các `outcome` trích từ `modules`.
 - `prerequisite_courses`: Mảng các đường dẫn tới thư mục khóa tiên quyết mà khóa này kế thừa (dạng `[".course-runs/<prereq-slug>"]`), suy trực tiếp từ `requires` của path.
 
 Ngoài ra, evaluation BẮT BUỘC ghi trường:
-- `catalog_courses`: Mảng các slug của toàn bộ các khóa học đang có trạng thái `"produced"` hoặc `"in_catalog"` trong `.course-plan/catalog.json` tại thời điểm đánh giá. Khi catalog có thêm khóa mới xuất hiện, candidate sẽ bị coi là hết hạn và được xếp vào `needs_research` để đánh giá lại.
+- `catalog_courses`: Mảng các slug của toàn bộ các khóa học đang có trạng thái `"produced"` hoặc `"in_catalog"` trong `.course-plan/catalog.json` tại thời điểm đánh giá.
 
 ---
 
@@ -62,52 +68,65 @@ File được ghi tại `.course-plan/evaluations/<slug>.json`:
 
 ```json
 {
-  "slug": "smart-contract-reentrancy-defense",
-  "evaluated_on": "2026-11-13",
+  "slug": "solana-program-design",
+  "evaluated_on": "2026-11-16",
   "catalog_courses": [
-    "smart-contract-reading-before-interacting"
+    "solana-bootcamp"
   ],
   "compared_published_counts": {
-    "smart-contract-reading-before-interacting": 14
+    "solana-bootcamp": 12
   },
-  "draft_lessons_ignored": 0,
+  "draft_lessons_ignored": 4,
   "catalog": {
     "verdict": "new",
-    "basis": "Catalog hiện tại mới có smart-contract-reading-before-interacting với các bài published về đọc hiểu giao dịch; chưa có bài published nào dạy về lỗ hổng reentrancy hay pattern CEI.",
+    "basis": "solana-bootcamp mới publish các bài dự án; bài khái niệm đang là nháp nên theo rule không tính là đã phủ; khóa này dạy sâu về thiết kế account, PDA và CPI.",
     "refs": []
   },
   "feasibility": {
     "verdict": "feasible",
-    "basis": "Khả thi theo platform.md: bài code_exercise dạng fill (1–5 chỗ trống) kiểm tra đúng thứ tự checks-effects-interactions trên file .sol bằng so khớp chuỗi contains, kết hợp quiz kiểm tra nhận diện lỗi.",
-    "notes": "Không yêu cầu biên dịch hay deploy vì platform.md nêu rõ Solidity chấm bằng so khớp chuỗi, không biên dịch."
+    "basis": "Khả thi theo platform.md: code_exercise fill chấm bằng so khớp chuỗi trên mã nguồn Rust, practice tự tick checklist kiểm thử local validator, bài cuối khóa nộp repo GitHub kèm notes.",
+    "notes": "Học viên tự cài Anchor CLI trên máy theo hướng dẫn trước bài thực hành đầu tiên."
   },
   "evidence": [
     {
-      "claim": "Reentrancy vẫn nằm trong top 3 nguyên nhân thất thoát tài sản trên Ethereum theo các báo cáo bảo mật gần nhất",
+      "claim": "Các vụ exploit trên Solana xuất phát chủ yếu từ việc thiếu kiểm tra owner và ràng buộc PDA",
       "kind": "direct",
-      "quote": "Reentrancy vulnerabilities remain among the top three causes of protocol asset loss across EVM networks",
-      "urls": ["https://example.com/reports/evm-vulnerabilities"],
-      "observed_on": "2026-11-13"
+      "quote": "Solana is a blockchain built for mass adoption with fast finality and high throughput",
+      "urls": ["https://solana.com/docs"],
+      "observed_on": "2026-11-16"
     }
   ],
-  "missing": [
-    "Chưa có số liệu về tỉ lệ học viên vượt qua bài test CEI ở lần thử đầu tiên"
-  ],
+  "missing": [],
   "handoff": {
-    "title": "Phòng chống tấn công Reentrancy trong Smart Contract",
-    "topic": "Tái hiện tấn công reentrancy trên test contract và áp dụng checks-effects-interactions pattern để chặn rút tiền trái phép.",
-    "audience": "Lập trình viên Solidity đã biết đọc hiểu hàm nạp/rút tiền cơ bản và cấu trúc modifier.",
+    "title": "Thiết kế Program Solana với Anchor",
+    "topic": "Thiết kế account, PDA và CPI cho program Anchor của một app, rồi chặn được các lỗ hổng phổ biến trước khi deploy.",
+    "audience": "Lập trình viên đã viết được Rust cơ bản và đã dùng ví, Devnet.",
     "level": "intermediate",
-    "promise": "Xây dựng và triển khai cơ chế kiểm tra checks-effects-interactions chặn đứng tấn công rút tiền reentrancy trên testnet.",
-    "final_product": "Repo GitHub chứa smart contract đã được vá lỗi, kèm test suite tự động mô phỏng tấn công thất bại.",
-    "differentiation": "Cung cấp bài tập thực hành sửa lỗi trực tiếp trên code thay vì chỉ phân tích lý thuyết như các khóa học khác.",
-    "corelia_hook": "Sản phẩm cuối khóa nộp nhận Chứng chỉ chuyên môn Web3 Security Auditor của Corelia.",
-    "scope_note": "Tập trung vào single-function và cross-function reentrancy cơ bản, không đi sâu vào read-only reentrancy.",
-    "path": "blockchain-security-auditor",
-    "prerequisite_courses": [
-      ".course-runs/smart-contract-reading-before-interacting"
-    ]
+    "promise": "Thiết kế account, PDA và CPI cho program Anchor của một app, rồi chặn được các lỗ hổng phổ biến trước khi deploy.",
+    "final_product": "Tình huống câu lạc bộ cần quỹ chung; nộp repo GitHub chứa program Anchor tối thiểu kèm test và notes giải thích thiết kế account, seed PDA, kiểm tra lỗ hổng và compute limit.",
+    "differentiation": "Khóa học tiếng Việt chuyên sâu đầu tiên tập trung vào tư duy thiết kế state và checklist review bảo mật Anchor.",
+    "corelia_hook": "Dự án tốt nghiệp cấp Chứng chỉ Lập trình viên Solana Chuyên sâu Corelia.",
+    "scope_note": "Giả định người học đã biết Rust cơ bản; phần cài đặt công cụ nằm trong phần chuẩn bị của bài thực hành đầu tiên.",
+    "path": "solana",
+    "modules": [
+      {
+        "node": "accounts-model",
+        "mechanism": "Mọi state nằm trong account; chỉ program owner mới sửa được data hoặc lamport; account càng lớn phí rent càng cao.",
+        "app_use": ["Quyết định tách state thành account lớn hay nhỏ"],
+        "pitfalls": ["Quên dành chỗ cho dữ liệu mở rộng"],
+        "outcome": "Thiết kế các account cho một chức năng của app: chọn owner, ước tính kích thước và khoản lamport tối thiểu phải giữ"
+      }
+    ],
+    "mental_models": [
+      "Mọi state nằm trong account; chỉ program owner mới sửa được data hoặc lamport; account càng lớn phí rent càng cao."
+    ],
+    "misconceptions": [
+      "Quên dành chỗ cho dữ liệu mở rộng"
+    ],
+    "reasoning_outcomes": [
+      "Thiết kế các account cho một chức năng của app: chọn owner, ước tính kích thước và khoản lamport tối thiểu phải giữ"
+    ],
+    "prerequisite_courses": []
   }
 }
-```
 ```

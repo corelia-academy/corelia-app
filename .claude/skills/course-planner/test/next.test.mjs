@@ -4,7 +4,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { decideNext } from "../scripts/next.mjs";
+import { decideNext, generateHandoff } from "../scripts/next.mjs";
+import { updateMapNodeOnProduced } from "../scripts/plan-lint.mjs";
 
 function setupFixture() {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "next-test-"));
@@ -712,4 +713,134 @@ test("next: AC-04 - gate E-04 mở rộng so sánh compared_published_counts; kh
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
+});
+
+test("next: AC-06 - gate kiểm tra path_nodes toàn diện và updateMapNodeOnProduced cập nhật mọi ô sau produced", () => {
+  const { tmpDir, pathsDir, evalsDir, planDir } = setupFixture();
+  try {
+    makeMap(pathsDir, {
+      slug: "solana",
+      kind: "ecosystem",
+      entry: "Solana",
+      title: "Solana Map",
+      status: "approved",
+      nodes: [
+        { id: "accounts", title: "Accounts", layer: "foundation", requires: [], coverage: "empty", ref: null, mental_model: "M1" },
+        { id: "rust", title: "Rust", layer: "language", requires: ["accounts"], coverage: "empty", ref: null, mental_model: "M2" },
+        { id: "anchor", title: "Anchor", layer: "core", requires: ["rust"], coverage: "empty", ref: null, mental_model: "M3" },
+      ],
+    });
+
+    makeBacklog(planDir, [
+      {
+        slug: "solana-program-design",
+        title: "Thiết kế Program Solana với Anchor",
+        status: "chosen",
+        path_nodes: {
+          path: "solana",
+          nodes: ["accounts", "rust", "anchor"],
+        },
+        modules: [
+          { node: "accounts", mechanism: "M1", app_use: ["A1"], pitfalls: ["P1"], outcome: "chọn cấu trúc state" },
+          { node: "rust", mechanism: "M2", app_use: ["A2"], pitfalls: ["P2"], outcome: "viết code rust" },
+          { node: "anchor", mechanism: "M3", app_use: ["A3"], pitfalls: ["P3"], outcome: "viết anchor program" },
+        ],
+        level: "intermediate",
+      },
+    ], { paths: ["solana"] });
+
+    makeEval(evalsDir, {
+      slug: "solana-program-design",
+      catalog: { verdict: "new", basis: "Khóa mới hoàn toàn", refs: [] },
+      feasibility: { verdict: "feasible", basis: "Khả thi" },
+      handoff: {
+        title: "Thiết kế Program Solana với Anchor",
+        audience: "Devs",
+        level: "intermediate",
+        scope_note: "3 modules",
+      },
+    });
+
+    const res = decideNext({ repoRoot: tmpDir });
+    assert.ok(res.pick, "Khóa thỏa gate path_nodes phải được pick");
+    assert.strictEqual(res.pick.slug, "solana-program-design");
+    assert.deepStrictEqual(res.pick.node_ids, ["accounts", "rust", "anchor"]);
+
+    // Giả lập sau khi import thành công -> gọi updateMapNodeOnProduced với mảng nodeIds
+    const updatedMap = updateMapNodeOnProduced({
+      repoRoot: tmpDir,
+      mapSlug: "solana",
+      nodeIds: ["accounts", "rust", "anchor"],
+      courseSlug: "solana-program-design",
+    });
+
+    for (const nId of ["accounts", "rust", "anchor"]) {
+      const node = updatedMap.nodes.find((n) => n.id === nId);
+      assert.strictEqual(node.coverage, "covered", `Node "${nId}" phải có coverage covered`);
+      assert.strictEqual(node.course_slug, "solana-program-design", `Node "${nId}" phải có course_slug`);
+    }
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("next: AC-07 - generateHandoff sinh đúng modules, mental_models, misconceptions, reasoning_outcomes", () => {
+  const candidate = {
+    slug: "solana-program-design",
+    title: "Thiết kế Program Solana với Anchor",
+    modules: [
+      {
+        node: "accounts",
+        mechanism: "Mô hình account lưu trữ trạng thái",
+        app_use: ["Tách account"],
+        pitfalls: ["Quên tính rent", "Nghĩ program lưu state"],
+        outcome: "chọn cấu trúc account",
+      },
+      {
+        node: "rust",
+        mechanism: "Hệ thống sở hữu bộ nhớ của Rust",
+        app_use: ["Tối ưu compute units"],
+        pitfalls: ["Unwrap gây panic"],
+        outcome: "viết code zero-copy",
+      },
+      {
+        node: "anchor",
+        mechanism: "Macro validation và IDL của Anchor",
+        app_use: ["Xây dựng smart contract"],
+        pitfalls: ["Quên ràng buộc signer"],
+        outcome: "thiết kế instruction handler",
+      },
+    ],
+  };
+
+  const evaluation = {
+    handoff: {
+      title: "Thiết kế Program Solana với Anchor",
+      audience: "Developers",
+      level: "intermediate",
+      scope_note: "Gom 3 ô nền tảng",
+    },
+  };
+
+  const handoff = generateHandoff({ candidate, evaluation });
+
+  assert.deepStrictEqual(handoff.modules, candidate.modules, "modules phải được giữ nguyên văn");
+  assert.deepStrictEqual(handoff.mental_models, [
+    "Mô hình account lưu trữ trạng thái",
+    "Hệ thống sở hữu bộ nhớ của Rust",
+    "Macro validation và IDL của Anchor",
+  ], "mental_models phải là các mechanism");
+
+  assert.deepStrictEqual(handoff.misconceptions, [
+    "Quên tính rent",
+    "Nghĩ program lưu state",
+    "Unwrap gây panic",
+    "Quên ràng buộc signer",
+  ], "misconceptions phải là gộp các pitfalls");
+
+  assert.deepStrictEqual(handoff.reasoning_outcomes, [
+    "chọn cấu trúc account",
+    "viết code zero-copy",
+    "thiết kế instruction handler",
+  ], "reasoning_outcomes phải là các outcome");
 });

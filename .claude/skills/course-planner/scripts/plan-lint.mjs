@@ -23,6 +23,16 @@ import {
   TOOL_NAME_REGEX,
   VALID_FINAL_ASSIGNMENT_FIELDS,
   KNOWN_BAD_ASSIGNMENT_FIELDS,
+  COURSE_MIN_NODES,
+  COURSE_MAX_NODES,
+  MAX_OPEN_PROPOSALS_PER_MAP,
+  MIN_MAPS_WITH_OPEN_PROPOSALS,
+  TOOLING_KEYWORDS,
+  matchesToolingKeyword,
+  P1_OBSERVABLE_ACTIONS,
+  P1_CODE_ACTIONS,
+  getFocusPaths,
+  getFocusEntries,
 } from "./constants.mjs";
 
 export {
@@ -43,6 +53,14 @@ export {
   TOOL_NAME_REGEX,
   VALID_FINAL_ASSIGNMENT_FIELDS,
   KNOWN_BAD_ASSIGNMENT_FIELDS,
+  COURSE_MIN_NODES,
+  COURSE_MAX_NODES,
+  MAX_OPEN_PROPOSALS_PER_MAP,
+  MIN_MAPS_WITH_OPEN_PROPOSALS,
+  TOOLING_KEYWORDS,
+  P1_OBSERVABLE_ACTIONS,
+  P1_CODE_ACTIONS,
+  getFocusPaths,
 };
 
 // V-05: Tiên quyết requires chỉ được coi là thỏa khi:
@@ -54,12 +72,20 @@ export function isNodeSatisfied(reqNode, proposals = [], mapSlug = null) {
   if (reqNode.coverage === "covered") return true;
   if (Array.isArray(proposals)) {
     return proposals.some((p) => {
-      const matchMap = mapSlug ? p?.path_node?.path === mapSlug : true;
-      return (
-        matchMap &&
-        p?.path_node?.node === reqNode.id &&
-        (p?.status === "chosen" || p?.status === "produced")
-      );
+      const isChosenOrProduced = p?.status === "chosen" || p?.status === "produced";
+      if (!isChosenOrProduced) return false;
+
+      if (p?.path_nodes && typeof p.path_nodes === "object") {
+        const matchMap = mapSlug ? p.path_nodes.path === mapSlug : true;
+        return matchMap && Array.isArray(p.path_nodes.nodes) && p.path_nodes.nodes.includes(reqNode.id);
+      }
+
+      if (p?.path_node && typeof p.path_node === "object") {
+        const matchMap = mapSlug ? p.path_node.path === mapSlug : true;
+        return matchMap && p.path_node.node === reqNode.id;
+      }
+
+      return false;
     });
   }
   return false;
@@ -458,6 +484,53 @@ export function lintMapData(mapData, { proposalDocContent = null, pathsDir = nul
       }
     }
 
+    // AC-03 (Mới): Các trường bắt buộc của ô map (mental_model, concepts, app_use, pitfalls)
+    if (!n?.mental_model || typeof n.mental_model !== "string" || !n.mental_model.trim()) {
+      add(`${nId}:mental_model`, "thiếu mental_model hoặc mental_model rỗng (bắt buộc một câu nêu cơ chế)");
+    }
+
+    if (!Array.isArray(n?.concepts) || n.concepts.length < 2 || !n.concepts.every((c) => typeof c === "string" && c.trim())) {
+      add(`${nId}:concepts`, "concepts phải là mảng ít nhất 2 khái niệm (chuỗi không rỗng)");
+    }
+
+    if (!Array.isArray(n?.app_use) || n.app_use.length < 1 || !n.app_use.every((u) => typeof u === "string" && u.trim())) {
+      add(`${nId}:app_use`, "app_use phải là mảng ít nhất 1 cách dùng cơ chế khi build app");
+    }
+
+    if (!Array.isArray(n?.pitfalls) || n.pitfalls.length < 1 || !n.pitfalls.every((p) => typeof p === "string" && p.trim())) {
+      add(`${nId}:pitfalls`, "pitfalls phải là mảng ít nhất 1 lỗi hoặc bẫy bảo mật hay gặp");
+    }
+
+    // AC-03 & V-12: Không có ô riêng chỉ để cài đặt hoặc công cụ (ngoại lệ: allow_tooling: true + reason)
+    // So khớp theo từ hoặc cụm từ trọn vẹn (có ranh giới từ), không theo chuỗi con.
+    // Ô chỉ bị chặn khi khớp từ khóa VÀ mọi mục trong scope cũng khớp từ khóa công cụ.
+    const titleText = n?.title || "";
+    const idText = n?.id || "";
+    const matchesTitleOrId = TOOLING_KEYWORDS.some((kw) =>
+      matchesToolingKeyword(titleText, kw) ||
+      matchesToolingKeyword(idText.replace(/-/g, " "), kw) ||
+      matchesToolingKeyword(idText, kw)
+    );
+
+    let isTooling = false;
+    if (matchesTitleOrId) {
+      const scopeList = Array.isArray(n?.scope) ? n.scope : [];
+      if (scopeList.length === 0) {
+        isTooling = true;
+      } else {
+        isTooling = scopeList.every((item) =>
+          typeof item === "string" &&
+          TOOLING_KEYWORDS.some((kw) => matchesToolingKeyword(item, kw))
+        );
+      }
+    }
+
+    if (isTooling) {
+      if (n?.allow_tooling !== true || typeof n?.reason !== "string" || !n.reason.trim()) {
+        add(`${nId}:allow_tooling`, 'ô công cụ không được phép tồn tại riêng lẻ trừ khi có allow_tooling: true kèm reason giải thích hợp lệ');
+      }
+    }
+
     // AC-03: Kiểm tra coverage và mối quan hệ với course_slug, covered_lessons
     if (!n?.coverage || !MAP_COVERAGE_STATUSES.has(n.coverage)) {
       add(`${nId}:coverage`, `coverage "${n?.coverage}" không hợp lệ (phải là empty|partial|covered)`);
@@ -474,12 +547,19 @@ export function lintMapData(mapData, { proposalDocContent = null, pathsDir = nul
         add(`${nId}:coverage`, `coverage là "${n.coverage}" bắt buộc phải có course_slug`);
       }
       if (!Array.isArray(n.covered_lessons) || n.covered_lessons.length === 0) {
-        add(`${nId}:coverage`, `coverage là "${n.coverage}" bắt buộc phải có covered_lessons (mảng tên bài published không rỗng)`);
+        add(`${nId}:coverage`, `coverage là "${n.coverage}" bắt buộc phải có covered_lessons (mảng { title, teaches } không rỗng)`);
       } else {
         for (let cIdx = 0; cIdx < n.covered_lessons.length; cIdx++) {
           const item = n.covered_lessons[cIdx];
-          if (typeof item !== "string" || !item.trim()) {
-            add(`${nId}:covered_lessons`, `covered_lessons[${cIdx}] không phải là chuỗi hợp lệ`);
+          if (typeof item === "string" || !item || typeof item !== "object") {
+            add(`${nId}:covered_lessons`, `covered_lessons[${cIdx}] không phải là object { title, teaches } (không được dùng chuỗi)`);
+          } else {
+            if (!item.title || typeof item.title !== "string" || !item.title.trim()) {
+              add(`${nId}:covered_lessons`, `covered_lessons[${cIdx}] thiếu title hoặc title rỗng`);
+            }
+            if (!item.teaches || typeof item.teaches !== "string" || !item.teaches.trim()) {
+              add(`${nId}:covered_lessons`, `covered_lessons[${cIdx}] thiếu teaches hoặc teaches rỗng (phải nêu cơ chế bài đó dạy)`);
+            }
           }
         }
       }
@@ -502,13 +582,12 @@ export function lintMapData(mapData, { proposalDocContent = null, pathsDir = nul
                 .map((t) => t.trim())
             );
             for (const item of (n.covered_lessons || [])) {
-              if (typeof item === "string" && item.trim()) {
-                if (!publishedTitles.has(item.trim())) {
-                  add(
-                    `${nId}:covered_lessons`,
-                    `bài học "${item}" trong covered_lessons không nằm trong published_lessons của khóa "${n.course_slug}"`
-                  );
-                }
+              const itemTitle = typeof item === "string" ? item.trim() : (item?.title ? String(item.title).trim() : "");
+              if (itemTitle && !publishedTitles.has(itemTitle)) {
+                add(
+                  `${nId}:covered_lessons`,
+                  `bài học "${itemTitle}" trong covered_lessons không nằm trong published_lessons của khóa "${n.course_slug}"`
+                );
               }
             }
           }
@@ -516,15 +595,17 @@ export function lintMapData(mapData, { proposalDocContent = null, pathsDir = nul
       }
     }
 
-    // Kiểm tra required_tools, scope
-    if (!Array.isArray(n?.required_tools)) {
-      add(`${nId}:required_tools`, "required_tools phải là mảng chuỗi");
-    } else {
-      for (const t of n.required_tools) {
-        if (typeof t !== "string" || !TOOL_NAME_REGEX.test(t)) {
-          add(`${nId}:required_tools`, `tên tool "${t}" không hợp lệ (phải khớp ${TOOL_NAME_REGEX})`);
-        } else if (KNOWN_BAD_TOOLS[t]) {
-          add(`${nId}:required_tools`, `tên tool "${t}" là tên gói/alias, hãy đổi thành "${KNOWN_BAD_TOOLS[t]}"`);
+    // AC-03: required_tools tùy chọn (nếu có thì phải là mảng chuỗi tên tool hợp lệ)
+    if (n?.required_tools != null) {
+      if (!Array.isArray(n.required_tools)) {
+        add(`${nId}:required_tools`, "required_tools phải là mảng chuỗi");
+      } else {
+        for (const t of n.required_tools) {
+          if (typeof t !== "string" || !TOOL_NAME_REGEX.test(t)) {
+            add(`${nId}:required_tools`, `tên tool "${t}" không hợp lệ (phải khớp ${TOOL_NAME_REGEX})`);
+          } else if (KNOWN_BAD_TOOLS[t]) {
+            add(`${nId}:required_tools`, `tên tool "${t}" là tên gói/alias, hãy đổi thành "${KNOWN_BAD_TOOLS[t]}"`);
+          }
         }
       }
     }
@@ -648,28 +729,68 @@ export function lintMapData(mapData, { proposalDocContent = null, pathsDir = nul
 
 export function lintBacklogData(backlogData, { catalogData = null, proposalDocContent = null, pathsDir = null, mapsBySlug = null } = {}) {
   const problems = [];
+  const warnings = [];
   const add = (propId, rule, detail) => problems.push(`${propId}: ${rule}: ${detail}`);
+  const addWarn = (propId, rule, detail) => warnings.push(`${propId}: ${rule}: ${detail}`);
 
   if (!backlogData || typeof backlogData !== "object") {
     problems.push("backlog: Dữ liệu backlog bị null hoặc không phải object");
-    return { ok: false, problems };
+    return { ok: false, problems, warnings };
   }
 
   const proposals = backlogData.proposals;
   if (!Array.isArray(proposals)) {
     problems.push("backlog: Thiếu trường proposals hoặc proposals không phải mảng");
-    return { ok: false, problems };
+    return { ok: false, problems, warnings };
   }
 
-  const focusPath = typeof backlogData.focus === "object" && !Array.isArray(backlogData.focus)
-    ? backlogData.focus?.path
-    : null;
+  const focusEntries = getFocusEntries(backlogData.focus);
+  const focusPaths = getFocusPaths(backlogData.focus);
 
   if (!proposalDocContent || typeof proposalDocContent !== "string") {
     problems.push("backlog: Thiếu nội dung tài liệu docs/learn/learn-proposal.md để kiểm tra direction.entry");
   }
 
   const entriesByAxis = proposalDocContent ? extractProposalEntries(proposalDocContent) : null;
+
+  // V-13: Kiểm tra focus.paths nhận phần tử { path, kind, entry }
+  if (focusEntries && focusEntries.length > 0) {
+    for (const fItem of focusEntries) {
+      if (fItem.kind != null || fItem.entry != null) {
+        if (!fItem.kind || !MAP_KINDS.has(fItem.kind)) {
+          problems.push(`backlog: focus path "${fItem.path}" có kind "${fItem.kind}" không hợp lệ (phải là ecosystem|role|skill)`);
+        }
+        if (!fItem.entry || typeof fItem.entry !== "string" || !fItem.entry.trim()) {
+          problems.push(`backlog: focus path "${fItem.path}" thiếu entry hoặc entry rỗng`);
+        } else if (entriesByAxis && fItem.kind && MAP_KINDS.has(fItem.kind)) {
+          const axisEntries = entriesByAxis[fItem.kind];
+          if (!axisEntries || !axisEntries.has(fItem.entry.trim())) {
+            problems.push(
+              `backlog: focus path "${fItem.path}" có entry "${fItem.entry}" không tồn tại trong mục "${fItem.kind}" của learn-proposal.md`
+            );
+          }
+        }
+
+        // Map đã dựng phải có kind/entry trùng phần tử focus
+        let mapData = mapsBySlug?.get(fItem.path);
+        if (!mapData && pathsDir) {
+          const mPath = path.join(pathsDir, `${fItem.path}.json`);
+          if (fs.existsSync(mPath)) {
+            try {
+              mapData = JSON.parse(fs.readFileSync(mPath, "utf8"));
+            } catch {}
+          }
+        }
+        if (mapData && fItem.kind && fItem.entry) {
+          if (mapData.kind !== fItem.kind || mapData.entry !== fItem.entry) {
+            problems.push(
+              `backlog: map "${fItem.path}" đã dựng có kind "${mapData.kind}" / entry "${mapData.entry}" không khớp với focus ({ kind: "${fItem.kind}", entry: "${fItem.entry}" })`
+            );
+          }
+        }
+      }
+    }
+  }
 
   const catalogCourses = Array.isArray(catalogData)
     ? catalogData
@@ -679,6 +800,7 @@ export function lintBacklogData(backlogData, { catalogData = null, proposalDocCo
   const seenSlugs = new Set();
   const chosenSlugs = [];
   const openProposals = [];
+  const usedOpenChosenNodes = new Map();
 
   for (let idx = 0; idx < proposals.length; idx++) {
     const prop = proposals[idx];
@@ -729,95 +851,175 @@ export function lintBacklogData(backlogData, { catalogData = null, proposalDocCo
       }
     }
 
-    // AC-03: Kiểm tra path_node nếu có
-    if (prop?.path_node) {
-      if (typeof prop.path_node !== "object" || !prop.path_node.path || !prop.path_node.node) {
-        add(slug, "path_node", 'path_node phải là object có dạng { path: "<map slug>", node: "<node id>" }');
-      } else {
-        const { path: mapSlug, node: nodeId } = prop.path_node;
-        let mapData = mapsBySlug?.get(mapSlug);
-        if (!mapData && pathsDir) {
-          const mapPath = path.join(pathsDir, `${mapSlug}.json`);
-          if (fs.existsSync(mapPath)) {
-            try {
-              mapData = JSON.parse(fs.readFileSync(mapPath, "utf8"));
-            } catch {}
+    // AC-04: Kiểm tra path_nodes và modules cho đề xuất open và chosen
+    if (status === "open" || status === "chosen") {
+      if (prop?.path_nodes) {
+        if (typeof prop.path_nodes !== "object" || !prop.path_nodes.path || !Array.isArray(prop.path_nodes.nodes)) {
+          add(slug, "path_nodes", 'path_nodes phải là object có dạng { path: "<map slug>", nodes: string[] }');
+        } else {
+          const mapSlug = prop.path_nodes.path;
+          const nodes = prop.path_nodes.nodes;
+
+          if (nodes.length < COURSE_MIN_NODES || nodes.length > COURSE_MAX_NODES) {
+            add(slug, "path_nodes-nodes", `path_nodes.nodes phải có từ ${COURSE_MIN_NODES} đến ${COURSE_MAX_NODES} ô (hiện có ${nodes.length})`);
           }
-        }
-        if (mapData) {
-          const matchedNode = (mapData.nodes || []).find((n) => n.id === nodeId);
-          if (!matchedNode) {
-            add(slug, "path_node-node", `ô "${nodeId}" không tồn tại trong map "${mapSlug}"`);
-          } else {
-            // AC-03: tools phải chứa toàn bộ required_tools của ô
-            if (Array.isArray(matchedNode.required_tools)) {
-              const propTools = new Set(Array.isArray(prop.tools) ? prop.tools : []);
-              const missingTools = matchedNode.required_tools.filter((t) => !propTools.has(t));
-              if (missingTools.length > 0) {
-                add(slug, "required_tools", `tools thiếu required_tools của ô "${nodeId}" (${missingTools.join(", ")})`);
-              }
+
+          const nodeSet = new Set();
+          for (const nId of nodes) {
+            if (nodeSet.has(nId)) {
+              add(slug, "path_nodes-nodes", `ô "${nId}" bị lặp lại trong path_nodes.nodes`);
             }
+            nodeSet.add(nId);
+          }
 
-            // AC-03: final_product tự viết chạy bằng các tool đó, không chỉ gọi SDK cấp cao
-            // Ô ecosystem ở layer language/core: final_product phải có code on-chain do người học tự viết (program/contract) và test chạy được
-            if (mapData.kind === "ecosystem" && (matchedNode.layer === "language" || matchedNode.layer === "core")) {
-              const fp = typeof prop.final_product === "string" ? prop.final_product.toLowerCase() : "";
-              const hasOnchainCode = /contract|program|h\u1EE3p \u0111\u1ED3ng|on-chain/i.test(fp);
-              const hasTest = /test|ki\u1EC3m th\u1EED/i.test(fp);
-              if (!hasOnchainCode || !hasTest) {
-                add(
-                  slug,
-                  "final_product-onchain",
-                  `ô "${nodeId}" thuộc map ecosystem ở layer "${matchedNode.layer}" bắt buộc final_product phải có code on-chain (program/contract) và test chạy được`
-                );
-              }
+          let mapData = mapsBySlug?.get(mapSlug);
+          if (!mapData && pathsDir) {
+            const mapPath = path.join(pathsDir, `${mapSlug}.json`);
+            if (fs.existsSync(mapPath)) {
+              try {
+                mapData = JSON.parse(fs.readFileSync(mapPath, "utf8"));
+              } catch {}
             }
+          }
 
-            // V-03 (AC-02): Điều kiện sẵn sàng của ô đích và tiên quyết đối với open và chosen
-            if (status === "open" || status === "chosen") {
-              // 1. Ô đích đã covered -> không đề xuất thêm
-              if (matchedNode.coverage === "covered") {
-                add(
-                  slug,
-                  "node-coverage",
-                  `ô "${nodeId}" trong map "${mapSlug}" đã có coverage: "covered", không thể đề xuất thêm khóa mới`
-                );
-              }
+          if (mapData) {
+            const allRequiredTools = new Set();
 
-              // 2. Ô đích có ref khác null -> không đề xuất trực tiếp
-              if (matchedNode.ref != null) {
-                add(
-                  slug,
-                  "node-ref",
-                  `ô "${nodeId}" trong map "${mapSlug}" có ref "${matchedNode.ref}", không thể tạo khóa trực tiếp`
-                );
-              }
-
-              // 3. Toàn bộ ô trong requires phải đã covered hoặc có đề xuất chosen/produced
-              // V-05: Dùng helper isNodeSatisfied (không còn nhánh catalog partial)
-              if (Array.isArray(matchedNode.requires) && matchedNode.requires.length > 0) {
-                const unmetRequires = [];
-                for (const reqId of matchedNode.requires) {
-                  const reqNode = (mapData.nodes || []).find((n) => n.id === reqId);
-                  if (!isNodeSatisfied(reqNode, proposals, mapSlug)) {
-                    unmetRequires.push(reqId);
-                  }
+            for (const nodeId of nodes) {
+              const matchedNode = (mapData.nodes || []).find((n) => n.id === nodeId);
+              if (!matchedNode) {
+                add(slug, "path_nodes-node", `ô "${nodeId}" không tồn tại trong map "${mapSlug}"`);
+              } else {
+                if (Array.isArray(matchedNode.required_tools)) {
+                  matchedNode.required_tools.forEach((t) => allRequiredTools.add(t));
                 }
-                if (unmetRequires.length > 0) {
+
+                if (matchedNode.coverage === "covered") {
                   add(
                     slug,
-                    "node-readiness",
-                    `ô "${nodeId}" chưa sẵn sàng vì các ô tiên quyết chưa hoàn thành (${unmetRequires.join(", ")})`
+                    "node-coverage",
+                    `ô "${nodeId}" trong map "${mapSlug}" đã có coverage: "covered", không thể đề xuất thêm khóa mới`
                   );
+                }
+
+                if (matchedNode.ref != null) {
+                  add(
+                    slug,
+                    "node-ref",
+                    `ô "${nodeId}" trong map "${mapSlug}" có ref "${matchedNode.ref}", không thể tạo khóa trực tiếp`
+                  );
+                }
+
+                if (Array.isArray(matchedNode.requires) && matchedNode.requires.length > 0) {
+                  const unmetRequires = [];
+                  for (const reqId of matchedNode.requires) {
+                    if (nodes.includes(reqId)) {
+                      // Nằm trong chính khóa đó
+                      continue;
+                    }
+                    const reqNode = (mapData.nodes || []).find((n) => n.id === reqId);
+                    if (!isNodeSatisfied(reqNode, proposals, mapSlug)) {
+                      unmetRequires.push(reqId);
+                    }
+                  }
+                  if (unmetRequires.length > 0) {
+                    add(
+                      slug,
+                      "node-readiness",
+                      `ô "${nodeId}" chưa sẵn sàng vì các ô tiên quyết chưa hoàn thành và không nằm trong khóa (${unmetRequires.join(", ")})`
+                    );
+                  }
+                }
+              }
+
+              // Không ô nào trong path_nodes thuộc đề xuất open/chosen khác
+              const key = `${mapSlug}#${nodeId}`;
+              if (usedOpenChosenNodes.has(key)) {
+                add(
+                  slug,
+                  "node-conflict",
+                  `ô "${nodeId}" trong map "${mapSlug}" đã thuộc đề xuất khác đang open hoặc chosen ("${usedOpenChosenNodes.get(key)}")`
+                );
+              } else {
+                usedOpenChosenNodes.set(key, slug);
+              }
+            }
+
+            // AC-04: tools thiếu required_tools chuyển thành cảnh báo
+            if (allRequiredTools.size > 0) {
+              const propTools = new Set(Array.isArray(prop.tools) ? prop.tools : []);
+              const missing = Array.from(allRequiredTools).filter((t) => !propTools.has(t));
+              if (missing.length > 0) {
+                addWarn(slug, "required_tools", `tools thiếu required_tools của các ô (${missing.join(", ")})`);
+              }
+            }
+          } else if (mapsBySlug || pathsDir) {
+            if (!focusPaths || !focusPaths.includes(mapSlug)) {
+              add(slug, "path_nodes-map", `map "${mapSlug}" không tồn tại`);
+            }
+          }
+
+          // Kiểm tra modules
+          if (!Array.isArray(prop.modules)) {
+            add(slug, "modules", "thiếu modules hoặc modules không phải mảng");
+          } else {
+            if (prop.modules.length !== nodes.length) {
+              add(slug, "modules-count", `số lượng modules (${prop.modules.length}) không khớp với path_nodes.nodes (${nodes.length})`);
+            }
+            for (let mIdx = 0; mIdx < prop.modules.length; mIdx++) {
+              const mod = prop.modules[mIdx];
+              const expectedNodeId = nodes[mIdx];
+              if (!mod || typeof mod !== "object") {
+                add(slug, "modules", `modules[${mIdx}] không phải object`);
+                continue;
+              }
+              if (mod.node !== expectedNodeId) {
+                add(slug, "modules-order", `modules[${mIdx}].node "${mod.node}" không khớp thứ tự với path_nodes.nodes[${mIdx}] "${expectedNodeId}"`);
+              }
+              if (!mod.mechanism || typeof mod.mechanism !== "string" || !mod.mechanism.trim()) {
+                add(slug, "modules-mechanism", `modules[${mIdx}] thiếu mechanism hoặc mechanism rỗng`);
+              }
+              const hasAppUse = Array.isArray(mod.app_use)
+                ? mod.app_use.length > 0 && mod.app_use.every((u) => typeof u === "string" && u.trim())
+                : (typeof mod.app_use === "string" && mod.app_use.trim());
+              if (!hasAppUse) {
+                add(slug, "modules-app_use", `modules[${mIdx}] thiếu app_use hoặc app_use rỗng`);
+              }
+              const hasPitfalls = Array.isArray(mod.pitfalls)
+                ? mod.pitfalls.length > 0 && mod.pitfalls.every((p) => typeof p === "string" && p.trim())
+                : (typeof mod.pitfalls === "string" && mod.pitfalls.trim());
+              if (!hasPitfalls) {
+                add(slug, "modules-pitfalls", `modules[${mIdx}] thiếu pitfalls (phải có ít nhất 1 bẫy/lỗi)`);
+              }
+              if (!mod.outcome || typeof mod.outcome !== "string" || !mod.outcome.trim()) {
+                add(slug, "modules-outcome", `modules[${mIdx}] thiếu outcome hoặc outcome rỗng`);
+              } else {
+                const outcomeLower = mod.outcome.toLowerCase();
+                const matchesObservable = P1_OBSERVABLE_ACTIONS.some((act) => outcomeLower.includes(act));
+                const matchesCode = P1_CODE_ACTIONS.some((act) => outcomeLower.includes(act));
+                if (!matchesObservable && !matchesCode) {
+                  add(
+                    slug,
+                    "modules-outcome",
+                    `modules[${mIdx}].outcome "${mod.outcome}" phải là hành động quan sát được theo P1 (dự đoán, giải thích, chẩn đoán, chọn, thiết kế)`
+                  );
+                } else if (matchesCode) {
+                  const matchedNode = mapData ? (mapData.nodes || []).find((n) => n.id === mod.node) : null;
+                  const isLanguageOrCore = matchedNode && (matchedNode.layer === "language" || matchedNode.layer === "core");
+                  if (!isLanguageOrCore) {
+                    add(
+                      slug,
+                      "modules-outcome",
+                      `modules[${mIdx}].outcome "${mod.outcome}" dùng hành động "viết/sửa" chỉ được phép cho ô ở layer language hoặc core (ô "${mod.node}" ở layer "${matchedNode?.layer || "không rõ"}")`
+                    );
+                  }
                 }
               }
             }
           }
-        } else if (mapsBySlug || pathsDir) {
-          if (mapSlug !== focusPath) {
-            add(slug, "path_node-map", `map "${mapSlug}" không tồn tại`);
-          }
         }
+      } else if (prop?.path_node) {
+        add(slug, "path_nodes", `đề xuất ở status "${status}" bắt buộc dùng path_nodes gom 3–7 ô thay vì path_node đơn lẻ`);
       }
     }
 
@@ -839,11 +1041,52 @@ export function lintBacklogData(backlogData, { catalogData = null, proposalDocCo
     problems.push(`backlog: Có nhiều hơn 1 đề xuất đang ở status "chosen": ${chosenSlugs.join(", ")}`);
   }
 
-  // AC-02: Kiểm tra số lượng và đa dạng hướng trên tập open
-  if (focusPath) {
-    const openInFocus = openProposals.filter((p) => p.path_node?.path === focusPath);
-    if (openInFocus.length > 4) {
-      problems.push(`backlog: Số lượng đề xuất open trong focus "${focusPath}" là ${openInFocus.length} (tối đa 4 đề xuất)`);
+  // AC-02 & AC-04: Phân bổ đề xuất open
+  const openByMap = new Map();
+  for (const op of openProposals) {
+    if (op?.path_nodes?.path) {
+      const m = op.path_nodes.path;
+      openByMap.set(m, (openByMap.get(m) || 0) + 1);
+    }
+  }
+
+  for (const [mSlug, count] of openByMap.entries()) {
+    if (count > MAX_OPEN_PROPOSALS_PER_MAP) {
+      problems.push(`backlog: map "${mSlug}" có ${count} đề xuất open (tối đa ${MAX_OPEN_PROPOSALS_PER_MAP} đề xuất mỗi map)`);
+    }
+  }
+
+  if (focusPaths && focusPaths.length > 0) {
+    let readyMapsCount = 0;
+    for (const fMapSlug of focusPaths) {
+      let fMapData = mapsBySlug?.get(fMapSlug);
+      if (!fMapData && pathsDir) {
+        const fPath = path.join(pathsDir, `${fMapSlug}.json`);
+        if (fs.existsSync(fPath)) {
+          try {
+            fMapData = JSON.parse(fs.readFileSync(fPath, "utf8"));
+          } catch {}
+        }
+      }
+      if (fMapData && Array.isArray(fMapData.nodes)) {
+        // Đếm số ô sẵn sàng có thể gom khóa (ref null, coverage != covered, requires thỏa mãn)
+        const readyNodes = fMapData.nodes.filter((n) => {
+          if (n.ref != null || n.coverage === "covered") return false;
+          const reqs = Array.isArray(n.requires) ? n.requires : [];
+          return reqs.every((reqId) => {
+            const rNode = fMapData.nodes.find((x) => x.id === reqId);
+            return isNodeSatisfied(rNode, proposals, fMapSlug);
+          });
+        });
+        if (readyNodes.length >= COURSE_MIN_NODES) {
+          readyMapsCount++;
+        }
+      }
+    }
+    if (readyMapsCount >= MIN_MAPS_WITH_OPEN_PROPOSALS) {
+      if (openByMap.size < MIN_MAPS_WITH_OPEN_PROPOSALS) {
+        problems.push(`backlog: có ${readyMapsCount} map focus có ô sẵn sàng nhưng đề xuất open chỉ trải trên ${openByMap.size} map (yêu cầu ít nhất ${MIN_MAPS_WITH_OPEN_PROPOSALS} map)`);
+      }
     }
   } else {
     if (openProposals.length < BACKLOG_MIN_OPEN_PROPOSALS || openProposals.length > BACKLOG_MAX_OPEN_PROPOSALS) {
@@ -864,6 +1107,7 @@ export function lintBacklogData(backlogData, { catalogData = null, proposalDocCo
   return {
     ok: problems.length === 0,
     problems,
+    warnings,
   };
 }
 
@@ -1038,22 +1282,32 @@ export function lintEvaluationData(evData, { catalogData = null } = {}) {
   return { ok: problems.length === 0, problems };
 }
 
-// AC-08: Cập nhật ô trong map khi đề xuất được sản xuất thành công
-export function updateMapNodeOnProduced({ repoRoot = ".", mapSlug, nodeId, courseSlug, coveredLessons = null }) {
+// AC-08 & AC-06: Cập nhật ô trong map khi đề xuất được sản xuất thành công
+export function updateMapNodeOnProduced({ repoRoot = ".", mapSlug, nodeId = null, nodeIds = null, courseSlug, coveredLessons = null }) {
   const mapFile = path.join(path.resolve(repoRoot), ".course-plan", "paths", `${mapSlug}.json`);
   if (!fs.existsSync(mapFile)) {
     throw new Error(`Map "${mapSlug}" không tồn tại tại ${mapFile}`);
   }
   const data = JSON.parse(fs.readFileSync(mapFile, "utf8"));
-  const node = (data.nodes || []).find((n) => n.id === nodeId);
-  if (!node) {
-    throw new Error(`Ô "${nodeId}" không tồn tại trong map "${mapSlug}"`);
+  const targetIds = Array.isArray(nodeIds) && nodeIds.length > 0 ? nodeIds : (nodeId ? [nodeId] : []);
+  if (targetIds.length === 0) {
+    throw new Error("Cần chỉ định nodeId hoặc nodeIds");
   }
-  node.course_slug = courseSlug;
-  node.coverage = "covered";
-  node.covered_lessons = Array.isArray(coveredLessons) && coveredLessons.length > 0
-    ? coveredLessons
-    : (Array.isArray(node.covered_lessons) && node.covered_lessons.length > 0 ? node.covered_lessons : [courseSlug]);
+
+  for (const id of targetIds) {
+    const node = (data.nodes || []).find((n) => n.id === id);
+    if (!node) {
+      throw new Error(`Ô "${id}" không tồn tại trong map "${mapSlug}"`);
+    }
+    node.course_slug = courseSlug;
+    node.coverage = "covered";
+    node.covered_lessons = Array.isArray(coveredLessons) && coveredLessons.length > 0
+      ? coveredLessons
+      : (Array.isArray(node.covered_lessons) && node.covered_lessons.length > 0
+          ? node.covered_lessons
+          : [{ title: courseSlug, teaches: node.mental_model || courseSlug }]);
+  }
+
   fs.writeFileSync(mapFile, JSON.stringify(data, null, 2), "utf8");
   return data;
 }
