@@ -7,7 +7,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@phosphor-icons/react";
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
@@ -28,7 +28,7 @@ export function LearnHeader({
         to={`/courses/${courseId}`}
         className="mb-3 inline-flex items-center gap-2 text-sm text-foreground-muted transition-colors duration-150 hover:text-foreground sm:hidden"
       >
-        <ArrowLeft className="w-4 h-4" aria-hidden />
+        <ArrowLeft weight="duotone" className="size-4" aria-hidden />
         {translate("detail.learn.backToCourse")}
       </Link>
 

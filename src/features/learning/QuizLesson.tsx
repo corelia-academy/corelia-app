@@ -77,6 +77,8 @@ function Quiz({ courseId, lesson, mode, completed, onComplete, onAction, questio
   useEffect(() => {
     onAction({ label: t(busy ? "learning.checking" : result?.passed && mode === "learner" ? "learning.completeContinue" : error || (result && !result.passed) ? "learning.retry" : "learning.checkAnswers"), disabled: busy || (mode === "learner" && !user), pending: busy,
       summary: { correct: result?.correct ?? 0, total: result?.total ?? questions.length, passed: result?.passed },
+      // Figma shows Hint until the quiz has a result. Quiz questions have no hint data yet, so the list is empty.
+      ...(result ? {} : { hint: { items: [] } }),
       run: result && !result.passed ? retry : submit });
     return () => onAction(null);
   }, [onAction, busy, result, error, mode, user, retry, submit, t, questions.length]);

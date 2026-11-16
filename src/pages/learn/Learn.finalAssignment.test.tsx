@@ -156,9 +156,22 @@ it("opens the mobile curriculum from the right without tabs", async () => {
   expect(sheet.querySelectorAll('[role="tab"]')).toHaveLength(0);
 });
 
+it("pins the footer under the lesson by default, with the more-actions menu and no grip", async () => {
+  const { host } = await mount("/study/course/lesson/article");
+  expect(host.querySelector('[aria-label="learning.moreActions"]')).not.toBeNull();
+  expect(host.querySelector('[aria-label="detail.learn.moveBar"]')).toBeNull();
+});
+
+it("has no footer menu on the final assignment page", async () => {
+  const { host } = await mount("/study/course/final-assignment");
+  expect(host.querySelector('[aria-label="learning.moreActions"]')).toBeNull();
+});
+
 it("offers a grip to move the action bar and no reset button until it has been moved", async () => {
+  localStorage.setItem("learn-footer-mode-v1", JSON.stringify("dock"));
   const { host } = await mount("/study/course/lesson/article");
   expect(host.querySelector('[aria-label="detail.learn.moveBar"]')).not.toBeNull();
+  expect(host.querySelector('[aria-label="learning.moreActions"]')).not.toBeNull();
   expect(host.querySelector('[aria-label="detail.learn.resetBar"]')).toBeNull();
 });
 
@@ -167,6 +180,7 @@ it("restores a saved action bar position and lets the learner reset it", async (
   vi.spyOn(window, "matchMedia").mockImplementation(query =>
     query.includes("prefers-reduced-motion") ? Object.defineProperty(match(query), "matches", { value: true }) : match(query),
   );
+  localStorage.setItem("learn-footer-mode-v1", JSON.stringify("dock"));
   localStorage.setItem("learn-dock-bar-v1", JSON.stringify({ x: 0.1, y: -0.1 }));
   const { host } = await mount("/study/course/lesson/article");
   const reset = host.querySelector<HTMLButtonElement>('[aria-label="detail.learn.resetBar"]');
