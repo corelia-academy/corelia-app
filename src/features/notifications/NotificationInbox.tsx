@@ -1,7 +1,8 @@
 import { SocialNotification, SocialNotificationAvatar } from "./SocialNotification";
 import { ProjectAutoHiddenNotification } from "./ProjectAutoHiddenNotification";
 import { feedRelativeTime } from "@/lib/feedRelativeTime";
-import { notificationTarget } from "@/lib/notificationTarget";
+import { notificationRowTarget } from "@/lib/notificationRowTarget";
+import { NotificationInviteAvatar, NotificationTypeIcon } from "./NotificationLeading";
 import { groupNotificationsByDay, type NotificationDayGroup } from "@/lib/notificationGroups";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -33,6 +34,7 @@ import {
 import { useNavigate } from "react-router";
 import { openCampusCredentialExplorerUrl } from "@/lib/credentialIssuances";
 import {
+  notificationCourseContextsQueryOptions,
   notificationInviteContextsQueryOptions,
   notificationKeys,
   notificationsQueryOptions,
@@ -96,6 +98,21 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
     notificationInviteContextsQueryOptions(userId, inviteProjectIds),
   );
   const inviteContextByProjectId = inviteContextQuery.data ?? {};
+
+  const inviteCourseIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const n of items) {
+      if (n.type !== "co_instructor_invite") continue;
+      const cid = n.payload.course_id;
+      if (typeof cid === "string" && cid) ids.add(cid);
+    }
+    return Array.from(ids).sort();
+  }, [items]);
+
+  const courseContextQuery = useQuery(
+    notificationCourseContextsQueryOptions(userId, inviteCourseIds),
+  );
+  const courseContextById = courseContextQuery.data ?? {};
 
   const { mutate: markAllRead, isPending: markingAllRead } = useMutation({
     mutationFn: markAllNotificationsRead,
@@ -242,13 +259,13 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                 const pid =
                   typeof n.payload.project_id === "string" ? n.payload.project_id : "";
                 const inviteCtx = pid ? inviteContextByProjectId[pid] : undefined;
+                const inviteCourseId = payloadString(n.payload, "course_id");
+                const courseCtx = inviteCourseId ? courseContextById[inviteCourseId] : undefined;
+                const inviteCourseTitle = payloadString(n.payload, "course_title") || courseCtx?.title || "";
                 const hackathonTitle =
                   payloadString(n.payload, "hackathon_title") ||
                   t("notifications.hackathonRegistrationFallbackTitle");
-                const hackathonSlug = payloadString(n.payload, "hackathon_slug");
-                const projectSlug = payloadString(n.payload, "project_slug");
-                const reviewNote = payloadString(n.payload, "review_note");
-                const rowTarget = n.group_key ? notificationTarget(n.payload) : null;
+                const rowTarget = notificationRowTarget(n, { achievementsPath, ocCredentialUrl, projectSlug: inviteCtx?.projectSlug ?? null });
                 const unreadRow = !n.read_at && !n.resolved_at;
                 return (
                   <li
@@ -257,160 +274,65 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                     onClickCapture={event => { if (!n.group_key && (event.target as HTMLElement).closest("a")) markRead(n.id); }}
                   >
                     {compact
-                      ? <span aria-hidden="true" className="relative h-7 w-2 shrink-0">{unreadRow && <span className="absolute left-0 top-5 size-2 rounded-full bg-icon-destructive" />}</span>
+                      ? <span aria-hidden="true" className="relative h-7 w-2 shrink-0">{unreadRow && <span className="absolute left-0 top-4 size-2 rounded-full bg-icon-destructive" />}</span>
                       : unreadRow && <span aria-hidden="true" className="absolute left-0 top-[1.53125rem] z-10 size-2 rounded-full bg-icon-destructive" />}
                     <Action
                     nativeButton={false}
                     render={<div />}
-                    role={rowTarget ? undefined : "presentation"}
-                    tabIndex={rowTarget ? undefined : -1}
-                    onClick={rowTarget ? () => { markRead(n.id); setOpen(false); navigate(rowTarget); } : undefined}
+                    onClick={event => {
+                      if ((event.target as HTMLElement).closest("a, button")) return;
+                      if (rowTarget || unreadRow) markRead(n.id);
+                      if (!rowTarget) return;
+                      setOpen(false);
+                      if (rowTarget.kind === "external") window.open(rowTarget.href, "_blank", "noopener,noreferrer");
+                      else navigate(rowTarget.to);
+                    }}
                     multiline
                     size="small"
                     className={cn(
                       compact
-                        ? "min-w-0 flex-1 gap-3 rounded-md border-0 p-2.5 hover:rounded-md hover:bg-transparent [&>span.shrink-0:first-child]:!size-8 [&>span.flex-col]:gap-0.5"
+                        ? "min-w-0 flex-1 items-start gap-3 rounded-md border-0 p-2.5 hover:rounded-md hover:bg-transparent [&>span.shrink-0:first-child]:!size-8 [&>span.flex-col]:gap-0.5"
                         : "items-start gap-2xl rounded-md border-0 px-3xl py-lg hover:rounded-md hover:bg-dropdown-hover [&>span.shrink-0:first-child]:!size-8 [&>span.shrink-0:first-child]:mt-xs",
-                      rowTarget && "cursor-pointer",
+                      "cursor-pointer",
                     )}
-                    icon={n.group_key ? <SocialNotificationAvatar notification={n} /> : undefined}
+                    icon={n.group_key
+                      ? <SocialNotificationAvatar notification={n} />
+                      : isInvite
+                        ? <NotificationInviteAvatar type={n.type} imageUrl={inviteCtx?.logoUrl} />
+                        : isCoInstructorInvite
+                          ? <NotificationInviteAvatar type={n.type} imageUrl={courseCtx?.thumbnailUrl} />
+                          : <NotificationTypeIcon type={n.type} />}
                     label={n.group_key ? <SocialNotification notification={n} /> : isInvite ? (
                       <>
-                        <div className="font-medium text-foreground">
+                        <div className={inviteCtx?.projectTitle ? "font-normal text-foreground-muted" : "font-medium text-foreground"}>
                           {t("notifications.projectInviteTitle")}
+                          {inviteCtx?.projectTitle ? (
+                            <span className="font-medium text-foreground"> · {inviteCtx.projectTitle}</span>
+                          ) : null}
                         </div>
-                        <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
-                          {t("notifications.projectInviteBody")}
-                        </p>
-                        {inviteCtx?.projectTitle ? (
-                          <p className="mt-2 text-xs font-medium text-foreground">
-                            {t("notifications.projectInviteProjectLabel", {
-                              title: inviteCtx.projectTitle,
-                            })}
+                        {!inviteCtx?.projectTitle ? (
+                          <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                            {inviteContextQuery.isSuccess
+                              ? t("notifications.projectInviteUnavailable")
+                              : t("notifications.projectInviteBody")}
                           </p>
                         ) : null}
-                        {inviteCtx?.hackathonTitle ? (
-                          <p className="mt-0.5 text-xs text-foreground-muted">
-                            {t("notifications.projectInviteHackathonLabel", {
-                              title: inviteCtx.hackathonTitle,
-                            })}
-                          </p>
-                        ) : null}
-                        {inviteCtx?.hackathonHref ? (
-                          <div className="mt-1">
-                            <Button
-                              type="button"
-                              variant="cta" hierarchy="tertiary"
-                              size="xsmall"
-                              className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
-                              render={<NavLink to={inviteCtx.hackathonHref} />}
-                              nativeButton={false}
-                              onClick={() => setOpen(false)}
-                            >
-                              {t("notifications.openHackathon")}
-                            </Button>
-                          </div>
-                        ) : null}
-                        {!resolved ? (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <Button
-                              type="button"
-                              size="small"
-                              className="min-h-8"
-                              disabled={busyId === n.id}
-                              onClick={() =>
-                                inviteMutation.mutate({
-                                  action: "accept-project",
-                                  notification: n,
-                                })
-                              }
-                            >
-                              {t("header.accept")}
-                            </Button>
-                            <Button
-                              type="button"
-                              size="small"
-                              variant="cta" hierarchy="secondary"
-                              className="min-h-8"
-                              disabled={busyId === n.id}
-                              onClick={() =>
-                                inviteMutation.mutate({
-                                  action: "decline-project",
-                                  notification: n,
-                                })
-                              }
-                            >
-                              {t("header.decline")}
-                            </Button>
-                          </div>
-                        ) : (
-                          <p className="mt-2 text-xs text-foreground-muted">
-                            {t("notifications.inviteResolved")}
-                          </p>
-                        )}
                       </>
                     ) : isCoInstructorInvite ? (
                       <>
-                        <div className="font-medium text-foreground">
+                        <div className={inviteCourseTitle ? "font-normal text-foreground-muted" : "font-medium text-foreground"}>
                           {t("notifications.coInstructorInviteTitle")}
+                          {inviteCourseTitle ? (
+                            <span className="font-medium text-foreground"> · {inviteCourseTitle}</span>
+                          ) : null}
                         </div>
-                        <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
-                          {t("notifications.coInstructorInviteBody", {
-                            course: payloadString(n.payload, "course_title") ||
-                              t("notifications.coInstructorInviteCourseFallback"),
-                          })}
-                        </p>
-                        {(() => {
-                          const perms = (n.payload.permissions ?? {}) as Record<string, unknown>;
-                          const enabled = Object.entries(perms)
-                            .filter(([, v]) => v === true)
-                            .map(([k]) => k);
-                          if (enabled.length === 0) return null;
-                          return (
-                            <p className="mt-1 text-xs text-foreground-muted">
-                              {t("notifications.coInstructorInvitePermissions", {
-                                list: enabled.join(", "),
-                              })}
-                            </p>
-                          );
-                        })()}
-                        {!resolved ? (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <Button
-                              type="button"
-                              size="small"
-                              className="min-h-8"
-                              disabled={busyId === n.id}
-                              onClick={() =>
-                                inviteMutation.mutate({
-                                  action: "accept-course",
-                                  notification: n,
-                                })
-                              }
-                            >
-                              {t("header.accept")}
-                            </Button>
-                            <Button
-                              type="button"
-                              size="small"
-                              variant="cta" hierarchy="secondary"
-                              className="min-h-8"
-                              disabled={busyId === n.id}
-                              onClick={() =>
-                                inviteMutation.mutate({
-                                  action: "decline-course",
-                                  notification: n,
-                                })
-                              }
-                            >
-                              {t("header.decline")}
-                            </Button>
-                          </div>
-                        ) : (
-                          <p className="mt-2 text-xs text-foreground-muted">
-                            {t("notifications.inviteResolved")}
+                        {!inviteCourseTitle ? (
+                          <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                            {t("notifications.coInstructorInviteBody", {
+                              course: t("notifications.coInstructorInviteCourseFallback"),
+                            })}
                           </p>
-                        )}
+                        ) : null}
                       </>
                     ) : isHackathonRegistrationReview ? (
                       <>
@@ -428,30 +350,6 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                                 hackathonTitle,
                               })}
                         </p>
-                        {reviewNote ? (
-                          <p className="mt-2 text-xs leading-relaxed text-foreground-muted">
-                            {t("notifications.hackathonRegistrationReviewNote", {
-                              note: reviewNote,
-                            })}
-                          </p>
-                        ) : null}
-                        {hackathonSlug ? (
-                          <div className="mt-2">
-                            <Button
-                              type="button"
-                              variant="cta" hierarchy="tertiary"
-                              size="xsmall"
-                              className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
-                              render={<NavLink to={`/hackathons/${hackathonSlug}`} />}
-                              nativeButton={false}
-                              onClick={() => {
-                                setOpen(false);
-                              }}
-                            >
-                              {t("notifications.viewHackathon")}
-                            </Button>
-                          </div>
-                        ) : null}
                       </>
                     ) : isHackathonWinnerAward ? (
                       <>
@@ -467,34 +365,9 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                             hackathon: hackathonTitle,
                           })}
                         </p>
-                        {projectSlug || hackathonSlug ? (
-                          <div className="mt-2">
-                            <Button
-                              type="button"
-                              variant="cta" hierarchy="tertiary"
-                              size="xsmall"
-                              className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
-                              render={
-                                <NavLink
-                                  to={
-                                    projectSlug
-                                      ? `/projects/${projectSlug}`
-                                      : `/hackathons/${hackathonSlug}/projects`
-                                  }
-                                />
-                              }
-                              nativeButton={false}
-                              onClick={() => {
-                                setOpen(false);
-                              }}
-                            >
-                              {t("notifications.viewAwardDetails")}
-                            </Button>
-                          </div>
-                        ) : null}
                       </>
                     ) : isProjectAutoHidden ? (
-                      <ProjectAutoHiddenNotification notification={n} onOpen={() => setOpen(false)} />
+                      <ProjectAutoHiddenNotification notification={n} />
                     ) : isCourseCompleted ? (
                       <>
                         <div className="font-medium text-foreground">
@@ -512,25 +385,6 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                             },
                           )}
                         </p>
-                        <div className="mt-2">
-                          <Button
-                            type="button"
-                            variant="cta" hierarchy="tertiary"
-                            size="xsmall"
-                            className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
-                            render={
-                              <NavLink
-                                to={payloadInternalPath(n.payload, "target_path", achievementsPath)}
-                              />
-                            }
-                            nativeButton={false}
-                            onClick={() => {
-                              setOpen(false);
-                            }}
-                          >
-                            {t("notifications.viewCompletion")}
-                          </Button>
-                        </div>
                       </>
                     ) : isCourseCertificateIssued ? (
                       <>
@@ -543,33 +397,6 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                               t("notifications.courseCertificateIssuedCourseFallback"),
                           })}
                         </p>
-                        {typeof n.payload.certificate_template_url === "string" &&
-                        n.payload.certificate_template_url ? (
-                          <img
-                            src={n.payload.certificate_template_url}
-                            alt=""
-                            className="mt-2 size-12 rounded-md border border-border-subtle object-cover"
-                          />
-                        ) : null}
-                        <div className="mt-2">
-                          <Button
-                            type="button"
-                            variant="cta" hierarchy="tertiary"
-                            size="xsmall"
-                            className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
-                            render={
-                              <NavLink
-                                to={payloadInternalPath(n.payload, "target_path", achievementsPath)}
-                              />
-                            }
-                            nativeButton={false}
-                            onClick={() => {
-                              setOpen(false);
-                            }}
-                          >
-                            {t("notifications.viewCertificate")}
-                          </Button>
-                        </div>
                       </>
                     ) : isOcCredential ? (
                       <>
@@ -585,30 +412,6 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                                 name: payloadString(n.payload, "credential_name"),
                               })}
                         </p>
-                        {typeof n.payload.image_url === "string" && n.payload.image_url ? (
-                          <img
-                            src={n.payload.image_url}
-                            alt=""
-                            className="mt-2 size-12 rounded-md border border-border-subtle object-cover"
-                          />
-                        ) : null}
-                        <div className="mt-2">
-                          <Button
-                            type="button"
-                            variant="cta" hierarchy="tertiary"
-                            size="xsmall"
-                            className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
-                            render={ocCredentialUrl
-                              ? <a href={ocCredentialUrl} target="_blank" rel="noopener noreferrer" />
-                              : <NavLink to="/achievements" />}
-                            nativeButton={false}
-                            onClick={() => {
-                              setOpen(false);
-                            }}
-                          >
-                            {t("notifications.viewCredential")}
-                          </Button>
-                        </div>
                       </>
                     ) : isCourseAnnouncement ? (
                       <>
@@ -620,24 +423,52 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                             {n.payload.subject}
                           </p>
                         ) : null}
-                        {!n.read_at && (
-                          <div className="mt-2">
-                            <Button
-                              type="button"
-                              variant="cta" hierarchy="tertiary"
-                              size="xsmall"
-                              className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
-                              onClick={() => markRead(n.id, false)}
-                            >
-                              {t("notifications.markRead")}
-                            </Button>
-                          </div>
-                        )}
                       </>
                     ) : (
                       <div className="text-foreground-muted">{n.type}</div>
                     )}
-                    supportingText={<Timestamp type="some-time-ago" size="medium" relativeText={feedRelativeTime(n.activity_at, now, i18n.language, t("notifications.justNow"))} />}
+                    supportingText={<>
+                      <Timestamp type="some-time-ago" size="medium" relativeText={feedRelativeTime(n.activity_at, now, i18n.language, t("notifications.justNow"))} />
+                      {isInvite || isCoInstructorInvite ? (
+                        !resolved ? (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              size="small"
+                              className="min-h-8"
+                              disabled={busyId === n.id}
+                              onClick={() =>
+                                inviteMutation.mutate({
+                                  action: isInvite ? "accept-project" : "accept-course",
+                                  notification: n,
+                                })
+                              }
+                            >
+                              {t("header.accept")}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="small"
+                              variant="cta" hierarchy="tertiary"
+                              className="min-h-8"
+                              disabled={busyId === n.id}
+                              onClick={() =>
+                                inviteMutation.mutate({
+                                  action: isInvite ? "decline-project" : "decline-course",
+                                  notification: n,
+                                })
+                              }
+                            >
+                              {t("header.decline")}
+                            </Button>
+                          </div>
+                        ) : (
+                          <p className="mt-2 text-xs text-foreground-muted">
+                            {t("notifications.inviteResolved")}
+                          </p>
+                        )
+                      ) : null}
+                    </>}
                     />
                     {drawer && index < group.items.length - 1 ? <Separator /> : null}
                   </li>

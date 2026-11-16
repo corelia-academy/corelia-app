@@ -21,6 +21,7 @@ vi.mock("./notificationQueries", () => ({
   getNextPageParam: (page: { items: { id: string }[] }) => page.items.length === 20 ? page.items.at(-1) : undefined,
  }),
  notificationInviteContextsQueryOptions: () => ({ queryKey: ["invite-context"], queryFn: async () => ({}) }),
+ notificationCourseContextsQueryOptions: () => ({ queryKey: ["course-context"], queryFn: async () => ({}) }),
 }));
 const row = (id: number) => ({ id: String(id), user_id: "me", type: "project_liked", group_key: `group${id}`, activity_at: "2026-10-13T00:00:00Z", created_at: "2026-10-13T00:00:00Z", read_at: null, resolved_at: null, payload: { count: 1, title: `Project ${id}`, target_path: `/projects/${id}` } });
 beforeEach(async () => {
@@ -56,7 +57,7 @@ describe("notification history", () => {
   expect(state.all).toHaveBeenCalledTimes(1);
   await view.cleanup();
  });
- it("explains an automatically hidden project with readable field names and marks it read when opened", async () => {
+ it("explains an automatically hidden project and marks it read when its row is clicked", async () => {
   state.query.mockResolvedValue({ unread_count: 1, items: [{
    id: "hidden", user_id: "me", type: "project_auto_hidden", group_key: null,
    activity_at: "2026-10-27T00:00:00Z", created_at: "2026-10-27T00:00:00Z", read_at: null, resolved_at: null,
@@ -65,10 +66,20 @@ describe("notification history", () => {
   const view = await mount();
   expect(view.container.textContent).toContain("Your project was hidden");
   expect(view.container.textContent).toContain("Pact");
-  expect(view.container.textContent).toMatch(/Flagged: .+, .+ \(VI\)/);
-  expect(view.container.textContent).not.toContain("vi.summary");
-  await act(async () => { view.container.querySelector<HTMLAnchorElement>('a[href="/projects/pact"]')!.click(); });
+  expect(view.container.textContent).not.toContain("Flagged:");
+  await act(async () => { view.container.querySelector<HTMLElement>('[data-slot="action"]')!.click(); });
   expect(state.read).toHaveBeenCalledWith("hidden", true, "2026-10-27T00:00:00Z");
+  await view.cleanup();
+ });
+ it("marks a row without a destination as read when its row is clicked", async () => {
+  state.query.mockResolvedValue({ unread_count: 1, items: [{
+   id: "invite", user_id: "me", type: "project_collaboration_invite", group_key: null,
+   activity_at: "2026-10-28T00:00:00Z", created_at: "2026-10-28T00:00:00Z", read_at: null, resolved_at: null,
+   payload: { invite_id: "i1", project_id: "p1", invited_by: "u2" },
+  }] });
+  const view = await mount();
+  await act(async () => { view.container.querySelector<HTMLElement>('[data-slot="action"]')!.click(); });
+  expect(state.read).toHaveBeenCalledWith("invite", true, "2026-10-28T00:00:00Z");
   await view.cleanup();
  });
 });
