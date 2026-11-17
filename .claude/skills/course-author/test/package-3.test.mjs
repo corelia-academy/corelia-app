@@ -198,6 +198,9 @@ test("W-02: mỗi dòng > 25 ký tự của 2 file gốc xuất hiện nguyên v
     "- Curriculum đòi dừng trước nội dung chưa dạy: tìm điểm dừng bằng cue caption đầu tiên nhắc khái niệm chưa dạy (đưa khái niệm đó vào `--query` của `youtube-captions.ts`). Không xác định được thì thử ứng viên kế tiếp của topic. Hết ứng viên thì viết lesson dạng article đầy đủ, `video: null`, và ghi lý do vào báo cáo cho coordinator. Không phát toàn bộ khi toàn bộ video chứa nội dung chưa dạy, và không hỏi user để xác nhận mốc.",
     "- `description_markdown` dưới video gồm: phần mở bài như bài dạy, `## Mục tiêu` (1–2 mục), `## Tóm lược kiến thức`, một dòng ghi kênh gốc. `## Tóm lược kiến thức` là một article gọn về đúng kiến thức của video: khoảng 80–200 từ, có thể kèm một đoạn code ngắn hoặc một bảng nhỏ, lấy từ nguồn research, và người bỏ video vẫn hiểu trọn ý. Không chép transcript, không khẳng định \"video đã nói X\".",
     "- Mọi ứng viên đều không nhúng được thì viết lesson dạng article đầy đủ (kèm sơ đồ) và để khối `video` là `null`.",
+    // L51-L52: Quiz bỏ tiêu chí độ dài phương án; thay bằng câu hỏi có thật, nhiễu có cơ sở, độ khó loại trừ được (roles/05-lesson/quiz.md)
+    "- Phương án nhiễu lấy từ `misconceptions`.",
+    "- Các phương án của một câu có độ dài và mức chi tiết tương đương: đáp án đúng không dài hơn nhiễu, và vị trí đáp án đúng trải đều trong cả bài (không để người học đoán theo độ dài hay vị trí).",
   ]);
 
   const allowedExceptions06 = new Set([
@@ -209,6 +212,9 @@ test("W-02: mỗi dòng > 25 ký tự của 2 file gốc xuất hiện nguyên v
     "- Phát biểu cốt lõi chưa đủ nguồn để xác minh: ghi `unverified` trong `checks`, tạo issue `wrong_source`, `blocking`, nêu phát biểu, bằng chứng còn thiếu và yêu cầu bổ sung research; không khẳng định phát biểu sai chỉ vì thiếu nguồn. Phát biểu phụ thiếu nguồn: ghi `unverified`, yêu cầu bỏ hoặc bổ sung nguồn, không tự nâng thành lỗi thực tế. Khi nguồn đã đọc chứng minh sai, dùng `factual_inaccuracy`, `blocking`.",
     // L67: Gói 1 sửa định nghĩa verdict pass không có unverified và không có issue 5 criteria cốt lõi
     "`verdict` là `pass` khi không có issue blocking hợp lệ.",
+    // L19, L37: Quiz bỏ tiêu chí độ dài phương án; review chấm câu hỏi có cơ sở, nhiễu có lý do loại trừ (roles/06-lesson-review/quiz.md)
+    "| `answers` | Quiz một đáp án đúng, không mơ hồ, giải thích từng phương án nhiễu; các phương án cùng độ dài, đáp án đúng không dài nhất, vị trí đáp án đúng trải đều; mỗi outcome của quiz được kiểm đủ các vế (thiếu một vế: `outcome_mismatch`, `blocking`). Code: một tổ hợp `accepted_answers` không biên dịch được là `wrong_answer`, `blocking`; instructions `fill` hứa app chạy test là `verification_mismatch`, `blocking`. `accepted_answers` và test không từ chối cách viết đã dạy; gợi ý không lộ đáp án. `fill` có 1–5 chỗ điền chỉ ở phần cốt lõi; `edit` chỉ khi test so khớp chuỗi chấm đáng tin (logic nhiều tầng hoặc nhiều lời giải đúng mà test chuỗi không phân biệt được: `unsupported_platform_format`, `blocking`) |",
+    "- Quiz: đáp án đúng dài nhất hoặc ngắn bất thường so với nhiễu, đáp án đúng dồn một vị trí, explanation tự mâu thuẫn, thiếu câu curriculum yêu cầu cho outcome, khẳng định tuyệt đối vượt nguồn hoặc phản ví dụ hiển nhiên.",
   ]);
 
   const missing05 = [];

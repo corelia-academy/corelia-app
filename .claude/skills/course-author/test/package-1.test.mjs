@@ -143,11 +143,15 @@ test("AC1.4: labels.mjs trên bản sao curriculum.json của fixture course-a c
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
-test("AC1.5: lesson-lint trên fixture course-a ra đúng 14 dòng lỗi", () => {
+test("AC1.5: lesson-lint trên fixture course-a ra đúng 12 dòng lỗi, độ dài đáp án quiz chỉ là cảnh báo", () => {
   const res = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} ${path.join(rootDir, ".claude/skills/course-author/test/fixtures/course-a")}`);
   assert.equal(res.status, 1);
   const lines = res.stdout.trim().split("\n");
-  assert.equal(lines.length, 14);
+  assert.equal(lines.length, 12);
+  assert.ok(lines.every((l) => !l.includes("quiz-độ-dài")));
+  const warnings = res.stderr.trim().split("\n").filter((l) => l.startsWith("cảnh báo "));
+  assert.equal(warnings.length, 2);
+  assert.ok(warnings.every((l) => l.includes("quiz-độ-dài")));
 });
 
 test("W-03: review-lint nhận loại bài code_exercise và đòi frame_consistency khi có frame.md", () => {

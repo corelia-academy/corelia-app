@@ -86,6 +86,9 @@ if (fs.existsSync(framePath)) {
 const stripCode = (s) => s.replace(/```[\s\S]*?```/g, " ").replace(/`[^`\n]*`/g, " ");
 const problems = [];
 const add = (id, rule, detail) => problems.push(`${id}: ${rule}: ${detail}`);
+// Cảnh báo không chặn: in ra stderr, không đổi mã thoát, không lẫn với dòng lỗi "<id>: ..." trên stdout.
+const warnings = [];
+const warn = (id, rule, detail) => warnings.push(`cảnh báo ${id}: ${rule}: ${detail}`);
 
 function visibleTexts(rec) {
   const out = [];
@@ -120,9 +123,9 @@ for (const id of ids) {
     const t = stripCode(raw);
     const internal = t.match(/\b(?:L\d+-\d+|M\d+|S\d{2})\b/);
     if (internal) add(id, "mã-nội-bộ", `${where}: "${internal[0]}"`);
-    const ta = [...t.matchAll(/(?<![\p{L}\p{N}])([Tt]a)(?![\p{L}\p{N}])/gu)].find((m) => !/ch[uú]ng\s$/i.test(t.slice(Math.max(0, m.index - 6), m.index)));
-    const pron = t.match(/(?<![\p{L}\p{N}])(?:Mình|(?:mình|ta) (?:sẽ|thử|cùng|đã)|tôi|chúng tôi|các em)(?![\p{L}\p{N}])/u) ?? (ta ? [ta[1]] : null);
-    if (pron) add(id, "xưng-hô", `${where}: "${(pron[1] ?? pron[0]).trim()}" (dùng bạn/chúng ta/hãy)`);
+    // "ta" và "chúng ta" tương đương (principles.md, mục Xưng hô); chỉ chặn đại từ tự xưng.
+    const pron = t.match(/(?<![\p{L}\p{N}])(?:Mình|mình (?:sẽ|thử|cùng|đã)|tôi|chúng tôi|các em)(?![\p{L}\p{N}])/u);
+    if (pron) add(id, "xưng-hô", `${where}: "${pron[0].trim()}" (dùng bạn/chúng ta/ta/hãy)`);
 
     // W-14: Mọi "Bài N" trong chữ người học thấy phải thuộc một trong hai dạng chuẩn:
     // Dạng 1: "Part X, Bài N"
@@ -228,8 +231,9 @@ for (const id of ids) {
       const lens = (q.options ?? []).map((o) => o.text.length);
       const c = lens[q.correct_index], others = lens.filter((_, k) => k !== q.correct_index);
       if (c === undefined) { add(id, "quiz", `q${i + 1}: correct_index ngoài phạm vi`); return; }
-      if (c > Math.max(...others) * 1.25) add(id, "quiz-độ-dài", `q${i + 1}: đáp án đúng dài nhất (${c} so với ${others.join("/")})`);
-      if (c < Math.min(...others) * 0.5) add(id, "quiz-độ-dài", `q${i + 1}: đáp án đúng ngắn bất thường (${c} so với ${others.join("/")})`);
+      // Độ dài phương án không phải tiêu chí chấm (roles/05-lesson/quiz.md); chỉ cảnh báo để người viết tự xem lại.
+      if (c > Math.max(...others) * 1.25) warn(id, "quiz-độ-dài", `q${i + 1}: đáp án đúng dài hơn hẳn nhiễu (${c} so với ${others.join("/")})`);
+      if (c < Math.min(...others) * 0.5) warn(id, "quiz-độ-dài", `q${i + 1}: đáp án đúng ngắn hơn hẳn nhiễu (${c} so với ${others.join("/")})`);
       if (!q.explanation || q.explanation.length < 40) add(id, "quiz", `q${i + 1}: explanation quá ngắn`);
     });
     if (qs.length >= 5) for (const [k, n] of Object.entries(idx)) if (n / qs.length > 0.5) add(id, "quiz-vị-trí", `${n}/${qs.length} câu có đáp án đúng ở vị trí ${k}`);
@@ -288,5 +292,6 @@ for (const id of ids) {
   if (needsRun && !fs.existsSync(path.join(dir, "verification", `${id}.md`))) add(id, "verification", "thiếu verification/<id>.md");
 }
 
+if (warnings.length) console.error(warnings.join("\n"));
 if (problems.length) { console.log(problems.join("\n")); process.exit(1); }
 console.log(`ok: ${ids.length} lesson`);

@@ -61,7 +61,7 @@ Chữ người học thấy phải gọi bài và phần đúng như app hiển 
 - Viết tiếng Việt cho người tự học, như một người hướng dẫn đang nói chuyện trực tiếp với người học. Thuật ngữ kỹ thuật chính xác; thuật ngữ tiếng Anh giữ nguyên khi đó là tên chuẩn (API, struct, commit), giải thích ngắn ở lần đầu xuất hiện.
 - Dùng câu đầy đủ chủ ngữ và vị ngữ, không viết kiểu liệt kê cụt hay ghi chú tóm tắt. Giữa các câu và đoạn dùng từ nối nói rõ quan hệ (vì vậy, nhưng, trong khi đó, nói cách khác, ví dụ, tiếp theo). Mỗi đoạn mở bằng một câu cho biết đoạn sẽ làm gì và kết bằng điều người học mang theo sang đoạn sau. Mục nào cũng nêu lý do trước khi nêu thao tác.
 - Câu dẫn tự nhiên được phép và nên có ở chỗ chuyển mục hoặc chuyển bước ("Giờ ta thử...", "Để ý chỗ này nhé", "Trước khi đi tiếp, hãy..."). Đó là cách dẫn dắt, không phải lời khen.
-- Xưng hô: gọi người học là "bạn". Dùng "chúng ta" (và "cùng ... nhé") khi cả bài cùng phân tích hoặc dựng một ví dụ chung. Dùng câu mệnh lệnh có "hãy" hoặc "bạn thử" khi người học tự thực hành. Không dùng "mình", "tôi", "chúng tôi" để tự xưng; không dùng "mày", "m", "các em".
+- Xưng hô: gọi người học là "bạn". Dùng "chúng ta" hoặc "ta" (hai cách tương đương; và "cùng ... nhé") khi cả bài cùng phân tích hoặc dựng một ví dụ chung. Dùng câu mệnh lệnh có "hãy" hoặc "bạn thử" khi người học tự thực hành. Không dùng "mình", "tôi", "chúng tôi" để tự xưng; không dùng "mày", "m", "các em".
 - Không hứa hẹn, không cổ vũ hay khen sáo rỗng ("tuyệt vời", "rất dễ"), không chép nguyên văn nguồn.
 - Khái niệm dùng lần đầu trong khóa được giải thích ngay tại chỗ bằng lời đơn giản và một ví dụ nhỏ.
 
