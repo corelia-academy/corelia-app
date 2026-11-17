@@ -4,14 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  SHORTLIST_MIN_PROPOSALS,
-  SHORTLIST_MAX_PROPOSALS,
-  SHORTLIST_MIN_DIRECTIONS,
-  SHORTLIST_MIN_ALTERNATIVES,
   SHORTLIST_CRITERIA_KEYS,
-  BACKLOG_MIN_OPEN_PROPOSALS,
-  BACKLOG_MAX_OPEN_PROPOSALS,
-  BACKLOG_MIN_DIRECTIONS,
   VALID_PROPOSAL_STATUSES,
   PROMISE_FORBIDDEN_PREFIX,
   VALID_AXES,
@@ -25,8 +18,6 @@ import {
   KNOWN_BAD_ASSIGNMENT_FIELDS,
   COURSE_MIN_NODES,
   COURSE_MAX_NODES,
-  MAX_OPEN_PROPOSALS_PER_MAP,
-  MIN_MAPS_WITH_OPEN_PROPOSALS,
   TOOLING_KEYWORDS,
   matchesToolingKeyword,
   P1_OBSERVABLE_ACTIONS,
@@ -36,14 +27,7 @@ import {
 } from "./constants.mjs";
 
 export {
-  SHORTLIST_MIN_PROPOSALS,
-  SHORTLIST_MAX_PROPOSALS,
-  SHORTLIST_MIN_DIRECTIONS,
-  SHORTLIST_MIN_ALTERNATIVES,
   SHORTLIST_CRITERIA_KEYS,
-  BACKLOG_MIN_OPEN_PROPOSALS,
-  BACKLOG_MAX_OPEN_PROPOSALS,
-  BACKLOG_MIN_DIRECTIONS,
   VALID_PROPOSAL_STATUSES,
   MAP_KINDS,
   MAP_LAYERS,
@@ -55,8 +39,6 @@ export {
   KNOWN_BAD_ASSIGNMENT_FIELDS,
   COURSE_MIN_NODES,
   COURSE_MAX_NODES,
-  MAX_OPEN_PROPOSALS_PER_MAP,
-  MIN_MAPS_WITH_OPEN_PROPOSALS,
   TOOLING_KEYWORDS,
   P1_OBSERVABLE_ACTIONS,
   P1_CODE_ACTIONS,
@@ -252,11 +234,11 @@ export function validateProposalFields(prop, idx, { catalogBySlug, entriesByAxis
     add(slug, "promise", `promise "${promise}" mở đầu bằng từ cấm (không được mở bằng hiểu, nắm, biết, tìm hiểu, làm quen)`);
   }
 
-  // Kiểm tra alternatives >= 2 và mọi alternative có url
+  // Mọi alternative (nếu có) phải có url
   const alts = prop?.alternatives;
-  if (!Array.isArray(alts) || alts.length < SHORTLIST_MIN_ALTERNATIVES) {
-    add(slug, "alternatives", `cần ít nhất ${SHORTLIST_MIN_ALTERNATIVES} nguồn thay thế (hiện có ${Array.isArray(alts) ? alts.length : 0})`);
-  } else {
+  if (alts != null && !Array.isArray(alts)) {
+    add(slug, "alternatives", "alternatives phải là mảng");
+  } else if (Array.isArray(alts)) {
     alts.forEach((alt, aIdx) => {
       if (!alt?.url || typeof alt.url !== "string" || !alt.url.trim()) {
         add(slug, "alternatives", `nguồn thay thế thứ ${aIdx + 1} thiếu url`);
@@ -1018,8 +1000,8 @@ export function lintBacklogData(backlogData, { catalogData = null, proposalDocCo
             }
           }
         }
-      } else if (prop?.path_node) {
-        add(slug, "path_nodes", `đề xuất ở status "${status}" bắt buộc dùng path_nodes gom 3–7 ô thay vì path_node đơn lẻ`);
+      } else if (prop?.path_node || (focusPaths && focusPaths.length > 0)) {
+        add(slug, "path_nodes", `đề xuất ở status "${status}" bắt buộc có path_nodes gom 3–7 ô của map focus (không dùng path_node đơn lẻ hoặc bỏ trống)`);
       }
     }
 
@@ -1041,122 +1023,10 @@ export function lintBacklogData(backlogData, { catalogData = null, proposalDocCo
     problems.push(`backlog: Có nhiều hơn 1 đề xuất đang ở status "chosen": ${chosenSlugs.join(", ")}`);
   }
 
-  // AC-02 & AC-04: Phân bổ đề xuất open
-  const openByMap = new Map();
-  for (const op of openProposals) {
-    if (op?.path_nodes?.path) {
-      const m = op.path_nodes.path;
-      openByMap.set(m, (openByMap.get(m) || 0) + 1);
-    }
-  }
-
-  for (const [mSlug, count] of openByMap.entries()) {
-    if (count > MAX_OPEN_PROPOSALS_PER_MAP) {
-      problems.push(`backlog: map "${mSlug}" có ${count} đề xuất open (tối đa ${MAX_OPEN_PROPOSALS_PER_MAP} đề xuất mỗi map)`);
-    }
-  }
-
-  if (focusPaths && focusPaths.length > 0) {
-    let readyMapsCount = 0;
-    for (const fMapSlug of focusPaths) {
-      let fMapData = mapsBySlug?.get(fMapSlug);
-      if (!fMapData && pathsDir) {
-        const fPath = path.join(pathsDir, `${fMapSlug}.json`);
-        if (fs.existsSync(fPath)) {
-          try {
-            fMapData = JSON.parse(fs.readFileSync(fPath, "utf8"));
-          } catch {}
-        }
-      }
-      if (fMapData && Array.isArray(fMapData.nodes)) {
-        // Đếm số ô sẵn sàng có thể gom khóa (ref null, coverage != covered, requires thỏa mãn)
-        const readyNodes = fMapData.nodes.filter((n) => {
-          if (n.ref != null || n.coverage === "covered") return false;
-          const reqs = Array.isArray(n.requires) ? n.requires : [];
-          return reqs.every((reqId) => {
-            const rNode = fMapData.nodes.find((x) => x.id === reqId);
-            return isNodeSatisfied(rNode, proposals, fMapSlug);
-          });
-        });
-        if (readyNodes.length >= COURSE_MIN_NODES) {
-          readyMapsCount++;
-        }
-      }
-    }
-    if (readyMapsCount >= MIN_MAPS_WITH_OPEN_PROPOSALS) {
-      if (openByMap.size < MIN_MAPS_WITH_OPEN_PROPOSALS) {
-        problems.push(`backlog: có ${readyMapsCount} map focus có ô sẵn sàng nhưng đề xuất open chỉ trải trên ${openByMap.size} map (yêu cầu ít nhất ${MIN_MAPS_WITH_OPEN_PROPOSALS} map)`);
-      }
-    }
-  } else {
-    if (openProposals.length < BACKLOG_MIN_OPEN_PROPOSALS || openProposals.length > BACKLOG_MAX_OPEN_PROPOSALS) {
-      problems.push(`backlog: Số lượng đề xuất open là ${openProposals.length} (phải từ ${BACKLOG_MIN_OPEN_PROPOSALS} đến ${BACKLOG_MAX_OPEN_PROPOSALS} đề xuất)`);
-    }
-
-    const distinctOpenEntries = new Set();
-    for (const op of openProposals) {
-      const entry = op?.direction?.entry?.trim();
-      if (entry) distinctOpenEntries.add(entry);
-    }
-
-    if (distinctOpenEntries.size < BACKLOG_MIN_DIRECTIONS) {
-      problems.push(`backlog: Đề xuất open chỉ thuộc ${distinctOpenEntries.size} direction.entry khác nhau (yêu cầu ít nhất ${BACKLOG_MIN_DIRECTIONS})`);
-    }
-  }
-
   return {
     ok: problems.length === 0,
     problems,
     warnings,
-  };
-}
-
-export function lintShortlistData(shortlistData, { catalogData = null, proposalDocContent = null } = {}) {
-  const problems = [];
-  const add = (propId, rule, detail) => problems.push(`${propId}: ${rule}: ${detail}`);
-
-  if (!shortlistData || typeof shortlistData !== "object") {
-    problems.push("shortlist: Dữ liệu shortlist bị null hoặc không phải object");
-    return { ok: false, problems };
-  }
-
-  const proposals = shortlistData.shortlist;
-  if (!Array.isArray(proposals)) {
-    problems.push("shortlist: Thiếu trường shortlist hoặc shortlist không phải mảng");
-    return { ok: false, problems };
-  }
-
-  if (proposals.length < SHORTLIST_MIN_PROPOSALS || proposals.length > SHORTLIST_MAX_PROPOSALS) {
-    problems.push(`shortlist: Số lượng đề xuất là ${proposals.length} (phải từ ${SHORTLIST_MIN_PROPOSALS} đến ${SHORTLIST_MAX_PROPOSALS} đề xuất)`);
-  }
-
-  if (!proposalDocContent || typeof proposalDocContent !== "string") {
-    problems.push("shortlist: Thiếu nội dung tài liệu docs/learn/learn-proposal.md để kiểm tra direction.entry");
-  }
-
-  const entriesByAxis = proposalDocContent ? extractProposalEntries(proposalDocContent) : null;
-
-  const catalogCourses = Array.isArray(catalogData)
-    ? catalogData
-    : (catalogData?.courses ?? []);
-  const catalogBySlug = new Map(catalogCourses.map((c) => [c.slug, c]));
-
-  const distinctEntries = new Set();
-
-  proposals.forEach((prop, idx) => {
-    if (prop?.direction?.entry && typeof prop.direction.entry === "string") {
-      distinctEntries.add(prop.direction.entry.trim());
-    }
-    validateProposalFields(prop, idx, { catalogBySlug, entriesByAxis, add });
-  });
-
-  if (distinctEntries.size < SHORTLIST_MIN_DIRECTIONS) {
-    problems.push(`shortlist: Đề xuất chỉ thuộc ${distinctEntries.size} direction.entry khác nhau (yêu cầu ít nhất ${SHORTLIST_MIN_DIRECTIONS})`);
-  }
-
-  return {
-    ok: problems.length === 0,
-    problems,
   };
 }
 
@@ -1437,8 +1307,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
         result = lintEvaluationData(data, { catalogData });
         label = "evaluation";
       } else {
-        result = lintShortlistData(data, { catalogData, proposalDocContent });
-        label = "shortlist";
+        console.error(`[plan-lint] LỖI: không nhận dạng được loại file ${path.basename(resolved)} (backlog, map hoặc evaluation).`);
+        process.exit(1);
       }
 
       if (!result.ok) {

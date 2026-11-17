@@ -1,21 +1,12 @@
 // .claude/skills/course-planner/scripts/constants.mjs
 // Các hằng số định mức và tiêu chí dùng chung cho shortlist, lint và xếp hạng
 
-export const SHORTLIST_MIN_PROPOSALS = 4;
-export const SHORTLIST_MAX_PROPOSALS = 6;
-export const SHORTLIST_MIN_DIRECTIONS = 3;
-export const SHORTLIST_MIN_ALTERNATIVES = 2;
 
-export const BACKLOG_MIN_OPEN_PROPOSALS = 4;
-export const BACKLOG_MAX_OPEN_PROPOSALS = 6;
-export const BACKLOG_MIN_DIRECTIONS = 3;
 export const VALID_PROPOSAL_STATUSES = new Set(["open", "chosen", "rejected", "produced"]);
 
 // Ràng buộc quy mô khóa học gom nhiều ô của map (AC-01 -> AC-07)
 export const COURSE_MIN_NODES = 3;
 export const COURSE_MAX_NODES = 7;
-export const MAX_OPEN_PROPOSALS_PER_MAP = 2;
-export const MIN_MAPS_WITH_OPEN_PROPOSALS = 3;
 
 // Danh sách từ khóa nhận diện ô công cụ/môi trường (V-12: bỏ các từ khóa chung chung, chỉ giữ từ khóa cài đặt/công cụ)
 export const TOOLING_KEYWORDS = [

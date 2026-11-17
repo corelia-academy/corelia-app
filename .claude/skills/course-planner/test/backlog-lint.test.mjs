@@ -213,34 +213,6 @@ test("backlog-lint: có > 1 đề xuất chosen thì lint lỗi", () => {
   );
 });
 
-test("backlog-lint: quy tắc phân bổ đề xuất open theo focus (tối đa 2 đề xuất mỗi map)", () => {
-  const data = getBaseValidBacklog();
-  data.focus = { paths: ["solana", "redis", "backend-engineer"] };
-
-  // Đặt 2 đề xuất open cho map solana
-  data.proposals[0] = makeValidProposal({ slug: "solana-open-1", path: "solana", nodes: ["accounts-model", "rust-basics", "anchor-programs"] });
-  data.proposals[1] = makeValidProposal({ slug: "solana-open-2", path: "solana", nodes: ["token-program", "metaplex-nfts", "node-extra"], modules: [
-    { node: "token-program", mechanism: "SPL Token", app_use: ["Token DEX"], pitfalls: ["Missing ATA"], outcome: "thiết kế tokenomics" },
-    { node: "metaplex-nfts", mechanism: "NFT Core", app_use: ["Vé NFT"], pitfalls: ["Authority override"], outcome: "thiết kế plugin" },
-    { node: "node-extra", mechanism: "Extra node", app_use: ["Extra app use"], pitfalls: ["Extra pitfall"], outcome: "thiết kế extra" }
-  ] });
-  data.proposals = [data.proposals[0], data.proposals[1]];
-
-  // 2 đề xuất cùng map solana -> PASS (<= 2 đề xuất)
-  let res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
-  assert.strictEqual(res.ok, true, "Tối đa 2 đề xuất open cho mỗi map phải pass: " + res.problems.join("; "));
-
-  // Thêm đề xuất thứ 3 vào cùng map solana -> lỗi (> 2 đề xuất)
-  data.proposals.push(makeValidProposal({
-    slug: "solana-open-3",
-    path: "solana",
-    nodes: ["node-a", "node-b", "node-c"]
-  }));
-  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
-  assert.strictEqual(res.ok, false);
-  assert.ok(res.problems.some((p) => p.includes("tối đa 2 đề xuất mỗi map")));
-});
-
 test("backlog-lint: AC-02 - chặn đề xuất vào ô đã covered, ô có ref, hoặc ô chưa sẵn sàng", () => {
   const pathsFixtureDir = path.resolve(".claude/skills/course-planner/test/fixtures/paths");
   const solanaMapFixture = JSON.parse(fs.readFileSync(path.join(pathsFixtureDir, "solana.json"), "utf8"));
@@ -475,7 +447,7 @@ test("backlog-lint: P-07 - đọc docs/learn/learn-proposal.md thật phát hi�
   assert.ok(entries.ecosystem.has("Arbitrum"));
 });
 
-test("backlog-lint: kiểm tra các ràng buộc nội dung đề xuất (promise cấm, alternatives < 2, why_now thiếu quote, kind new trùng catalog)", () => {
+test("backlog-lint: kiểm tra các ràng buộc nội dung đề xuất (promise cấm, alternative thiếu url, why_now thiếu quote, kind new trùng catalog)", () => {
   // 1. Promise cấm
   let data = getBaseValidBacklog();
   data.proposals[0].promise = "Hiểu rõ về cách thức hoạt động của EVM";
@@ -483,12 +455,16 @@ test("backlog-lint: kiểm tra các ràng buộc nội dung đề xuất (promis
   assert.strictEqual(res.ok, false);
   assert.ok(res.problems.some((p) => p.includes("mở đầu bằng từ cấm")));
 
-  // 2. Alternatives < 2
+  // 2. Alternative thiếu url -> lỗi; chỉ 1 alternative có url -> hợp lệ
+  data = getBaseValidBacklog();
+  data.proposals[0].alternatives = [{ name: "One", gap: "G" }];
+  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.problems.some((p) => p.includes("thiếu url")));
   data = getBaseValidBacklog();
   data.proposals[0].alternatives = [{ name: "One", url: "https://example.com", gap: "G" }];
   res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
-  assert.strictEqual(res.ok, false);
-  assert.ok(res.problems.some((p) => p.includes("cần ít nhất 2 nguồn thay thế")));
+  assert.ok(!res.problems.some((p) => p.includes("alternatives")), "1 alternative có url phải hợp lệ: " + res.problems.join("; "));
 
   // 3. Kind new trùng catalog
   data = getBaseValidBacklog();
@@ -692,66 +668,6 @@ test("backlog-lint: AC-04 - kiểm tra toàn diện ràng buộc path_nodes và 
   res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc, mapsBySlug });
   assert.strictEqual(res.ok, false);
   assert.ok(res.problems.some((p) => p.includes("không khớp thứ tự")), "Case 5: modules lệch nodes phải báo lỗi: " + res.problems.join("; "));
-
-  // 6. 3 đề xuất cùng một map -> lỗi (> 2 đề xuất mỗi map)
-  data = {
-    focus: { paths: ["solana"] },
-    proposals: [
-      makeValidProposal({ slug: "prop-1", nodes: ["n1", "n2", "n3"] }),
-      makeValidProposal({ slug: "prop-2", nodes: ["n4", "n5", "n6"] }),
-      makeValidProposal({ slug: "prop-3", nodes: ["n7", "n8", "n9"] })
-    ]
-  };
-  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
-  assert.strictEqual(res.ok, false);
-  assert.ok(res.problems.some((p) => p.includes("tối đa 2 đề xuất mỗi map")), "Case 6: 3 đề xuất cùng map phải báo lỗi: " + res.problems.join("; "));
-
-  // 7. 3 map có ô sẵn sàng mà đề xuất chỉ ở 2 map -> lỗi
-  // Tạo 3 map có >= 3 ô sẵn sàng: solana, redis, backend
-  const mapSolanaReady = {
-    slug: "solana",
-    nodes: [
-      { id: "s1", coverage: "empty", ref: null, requires: [] },
-      { id: "s2", coverage: "empty", ref: null, requires: [] },
-      { id: "s3", coverage: "empty", ref: null, requires: [] }
-    ]
-  };
-  const mapRedisReady = {
-    slug: "redis",
-    nodes: [
-      { id: "r1", coverage: "empty", ref: null, requires: [] },
-      { id: "r2", coverage: "empty", ref: null, requires: [] },
-      { id: "r3", coverage: "empty", ref: null, requires: [] }
-    ]
-  };
-  const mapBackendReady = {
-    slug: "backend",
-    nodes: [
-      { id: "b1", coverage: "empty", ref: null, requires: [] },
-      { id: "b2", coverage: "empty", ref: null, requires: [] },
-      { id: "b3", coverage: "empty", ref: null, requires: [] }
-    ]
-  };
-  const threeReadyMaps = new Map([
-    ["solana", mapSolanaReady],
-    ["redis", mapRedisReady],
-    ["backend", mapBackendReady]
-  ]);
-
-  // Đề xuất chỉ trải trên 2 map (solana và redis), bỏ qua backend
-  data = {
-    focus: { paths: ["solana", "redis", "backend"] },
-    proposals: [
-      makeValidProposal({ slug: "sol-1", path: "solana", nodes: ["s1", "s2", "s3"] }),
-      makeValidProposal({ slug: "red-1", path: "redis", nodes: ["r1", "r2", "r3"] })
-    ]
-  };
-  res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc, mapsBySlug: threeReadyMaps });
-  assert.strictEqual(res.ok, false);
-  assert.ok(
-    res.problems.some((p) => p.includes("có 3 map focus có ô sẵn sàng nhưng đề xuất open chỉ trải trên 2 map")),
-    "Case 7: 3 map sẵn sàng mà đề xuất chỉ 2 map phải báo lỗi: " + res.problems.join("; ")
-  );
 });
 
 test("backlog-lint: AC-05 - từ chối tên trường nộp bài sai chuẩn (testnet_tx_hash, deployed_url)", () => {
@@ -874,4 +790,18 @@ test("backlog-lint: V-13 - focus.paths dạng object { path, kind, entry } (entr
   };
   res = lintBacklogData(dataLegacyString, { proposalDocContent: realDoc, mapsBySlug });
   assert.strictEqual(res.ok, true, "Dạng chuỗi cũ phải đọc được: " + res.problems.join("; "));
+});
+
+test("backlog-lint: có focus thì đề xuất open phải có path_nodes", () => {
+  const data = getBaseValidBacklog();
+  data.focus = { paths: ["solana"] };
+  const noNodes = makeValidProposal({ slug: "no-path-nodes", path: "solana", nodes: ["n1", "n2", "n3"] });
+  delete noNodes.path_nodes;
+  data.proposals = [noNodes];
+  const res = lintBacklogData(data, { catalogData: mockCatalog, proposalDocContent: fixtureDoc });
+  assert.strictEqual(res.ok, false);
+  assert.ok(
+    res.problems.some((p) => p.includes("no-path-nodes") && p.includes("path_nodes")),
+    "Phải báo thiếu path_nodes: " + res.problems.join("; ")
+  );
 });

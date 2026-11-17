@@ -66,11 +66,10 @@ Script quét toàn bộ thư mục `.course-runs/*/` và `.course-plan/catalog-e
 Kiểm tra xem trong `.course-plan/backlog.json` đã có đề xuất nào có `status === "chosen"` mà khóa đó chưa vào sản xuất (`produced`) hay chưa.
 Nếu đã có đề xuất `chosen`: tiếp tục với đề xuất đó, không cần chọn lại.
 Nếu chưa có:
-1. Xác định các ô sẵn sàng trong các map focus (thỏa điều kiện: `ref` null, `coverage` ≠ covered, mọi ô requires đã covered hoặc có đề xuất chosen/produced). Map nào có < 3 ô sẵn sàng liên tiếp thì không đề xuất cho map đó.
+1. Xác định các ô sẵn sàng trong các map focus (thỏa điều kiện: `ref` null, `coverage` ≠ covered, mọi ô requires đã covered hoặc có đề xuất chosen/produced).
 2. Kiểm tra các đề xuất `open` trong `backlog.json`:
-   - Tối đa 2 đề xuất `open` cho mỗi map.
-   - Khi có ≥3 map focus có ô sẵn sàng, các đề xuất `open` phải trải trên ít nhất 3 map khác nhau.
-   - Nếu thiếu đề xuất `open`: Chạy role `roles/00-shortlist.md` để nghiên cứu và bổ sung các đề xuất mới gom 3–7 ô (`path_nodes: { path, nodes }`, `modules: [...]`) vào `proposals` với `status: "open"`, `added_on: "<YYYY-MM-DD>"`, `decided_on: null`, `reject_reason: null`.
+   - Đề xuất `open` không có `path_nodes` hợp lệ (định dạng cũ `path_node` đơn lẻ hoặc thiếu) không xếp hạng được: đặt `status: "rejected"`, `reject_reason: "định dạng cũ, thiếu path_nodes"`, `decided_on: "<YYYY-MM-DD>"`.
+   - Chạy `node .claude/skills/course-planner/scripts/rank.mjs .course-plan/backlog.json --table`. Nếu output có dòng `Bảng xếp hạng rỗng` (không đề xuất `open` nào xếp hạng được): Chạy role `roles/00-shortlist.md` để nghiên cứu và bổ sung các đề xuất mới gom 3–7 ô (`path_nodes: { path, nodes }`, `modules: [...]`) vào `proposals` với `status: "open"`, `added_on: "<YYYY-MM-DD>"`, `decided_on: null`, `reject_reason: null`.
 3. Chạy kiểm tra lint cho backlog và map:
    ```bash
    node .claude/skills/course-planner/scripts/plan-lint.mjs .
@@ -86,7 +85,6 @@ Nếu chưa có:
    Script xếp hạng theo thứ tự: layer thấp nhất của khóa → độ sâu requires → tiêu chí cũ để phá hòa. Bảng hiển thị cột Map và Modules. Bảng tổng quan map được in cho từng map focus.
 6. **Trình Human và DỪNG:**
    Trình bày cho Human gồm đúng output của `rank.mjs --table`.
-   - Nếu có map có < 3 ô sẵn sàng: script in cảnh báo trong tổng quan.
    - Bên dưới bảng chỉ nêu khuyến nghị là dòng rank 1 và các cảnh báo của script.
    **DỪNG LẠI TẠI ĐÂY:** Chờ Human chọn một dòng trong bảng xếp hạng (mỗi lần chạy dừng đúng một lần).
 

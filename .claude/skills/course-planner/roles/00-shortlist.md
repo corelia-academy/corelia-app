@@ -30,9 +30,6 @@ Tham khảo mẫu chuẩn tại `.claude/skills/course-author/references/exempla
    - **Điểm xuất phát (`starting_point`)**: `knowledge` (kiến thức cần có) và `requires` (mảng các slug khóa học trong catalog cung cấp kiến thức đó; để mảng rỗng `[]` khi dành cho người mới bắt đầu).
    - **Tiêu đề khóa học (`title`)**: Nêu năng lực rộng (ví dụ "Thiết kế program Solana với Anchor", "React chuyên sâu"), không đặt tên theo một chủ đề hẹp.
 
-5. **Phân bổ đa dạng lộ trình trong Backlog**:
-   - Tối đa 2 đề xuất `status: "open"` cho mỗi map.
-   - Khi có ≥3 map focus có ô sẵn sàng, các đề xuất `open` phải trải trên ít nhất 3 map khác nhau, không dồn vào một hệ sinh thái.
 
 ---
 

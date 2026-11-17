@@ -5,10 +5,6 @@ import path from "node:path";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
-  SHORTLIST_MIN_PROPOSALS,
-  SHORTLIST_MAX_PROPOSALS,
-  SHORTLIST_MIN_DIRECTIONS,
-  SHORTLIST_MIN_ALTERNATIVES,
   SHORTLIST_CRITERIA_KEYS,
   MAP_LAYERS,
   getFocusPaths,
@@ -16,10 +12,6 @@ import {
 import { isNodeSatisfied } from "./plan-lint.mjs";
 
 export {
-  SHORTLIST_MIN_PROPOSALS,
-  SHORTLIST_MAX_PROPOSALS,
-  SHORTLIST_MIN_DIRECTIONS,
-  SHORTLIST_MIN_ALTERNATIVES,
   SHORTLIST_CRITERIA_KEYS,
 };
 
@@ -158,20 +150,6 @@ export function rankShortlist(shortlistData, catalogData, { toolChecker = defaul
           return a.idx - b.idx;
         });
 
-        // Đếm chuỗi ô sẵn sàng liên tiếp
-        let maxConsecutiveReady = 0;
-        let currentConsecutive = 0;
-        for (const item of overview) {
-          if (item.status === "sẵn sàng") {
-            currentConsecutive++;
-            if (currentConsecutive > maxConsecutiveReady) {
-              maxConsecutiveReady = currentConsecutive;
-            }
-          } else {
-            currentConsecutive = 0;
-          }
-        }
-
         const mapEntry = {
           missing: false,
           slug: fMapSlug,
@@ -179,7 +157,6 @@ export function rankShortlist(shortlistData, catalogData, { toolChecker = defaul
           mapNodes: mNodes,
           getNodeDepth: getDepth,
           mapOverview: overview,
-          maxConsecutiveReady,
         };
         loadedMaps.set(fMapSlug, mapEntry);
         allMapOverviews.push(mapEntry);
@@ -508,11 +485,6 @@ export function formatShortlistTable(rankedResult) {
           mapSeparatorLine,
           ...mapRowLines,
         ];
-
-        // Edge case: Map focus có < 3 ô sẵn sàng liên tiếp -> báo trong bảng tổng quan
-        if (mapEntry.maxConsecutiveReady < 3) {
-          overviewSection.push("", `⚠️ Map "${fMapSlug}" có < 3 ô sẵn sàng liên tiếp: không đề xuất khóa cho map này.`);
-        }
 
         sections.push(overviewSection.join("\n"));
       }
