@@ -66,7 +66,7 @@ Mỗi child nhận:
 3. Đường dẫn tuyệt đối tới các file đầu vào và file đầu ra nó được ghi.
 4. Với bước 5 và 6: child nhận output của `node .claude/skills/course-author/scripts/lesson-context.mjs .course-runs/<slug> <lesson_id>` thay cho `curriculum.json` và `research.json` nguyên file. Không đưa mã nội bộ vào chữ người học.
 
-Coordinator gọi `node .claude/skills/course-author/scripts/run-log.mjs .course-runs/<slug> <step> <lesson_id|-> <role> <model> start` trước khi gọi child, và gọi lại với `end [result]` (`ok`, `needs_fix` hoặc `rerun`) sau khi child kết thúc.
+Coordinator gọi `node .claude/skills/course-author/scripts/run-log.mjs .course-runs/<slug> <step> <lesson_id|-> <role> <model> start` trước khi gọi child, và gọi lại với `end [result]` (`ok`, `needs_fix` hoặc `rerun`) sau khi child kết thúc. Ở lệnh `end`, thêm `--tokens <N> --tool-uses <N> --duration-ms <N>` bằng đúng số liệu sử dụng mà kết quả của child báo về. Nền tảng không báo số nào thì bỏ cờ đó; không ước lượng. `node .claude/skills/course-author/scripts/cost-summary.mjs .course-runs/<slug>` in bảng chi phí theo bước và model; `run-report.md` có sẵn mục này.
 
 Child không gọi child khác, không sửa file ngoài file đầu ra của mình, không ghi lên DB.
 

@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { summarizeRunLog, renderCostSection } from "./cost-lib.mjs";
 
 const JWT_KEY_PATTERN = /eyJ[a-zA-Z0-9_\-]{20,}\.[a-zA-Z0-9_\-]{20,}\.[a-zA-Z0-9_\-]{20,}/;
 const SERVICE_KEY_WORDS = /service_role\s*key\s*[:=]\s*[^\s]+/i;
@@ -224,6 +225,10 @@ export function generateRunReport(courseDir, options = {}) {
       lines.push(`- ${idStr}${textStr}Toàn bộ bài kiểm chứng bị kẹt không publish (${lessonsStr}).`);
     }
   }
+  lines.push("");
+
+  lines.push("## 8. Chi phí đo được (child)");
+  lines.push(...renderCostSection(summarizeRunLog(dir)));
   lines.push("");
 
   const content = sanitizeReport(lines.join("\n"));
