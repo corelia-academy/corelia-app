@@ -331,14 +331,14 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
           console.error(`    tại: ${err.file} (${err.field})`);
           if (err.error) console.error(`    chi tiết: ${err.error}`);
         }
-        process.exit(1);
+        process.exitCode = 1;
       } else {
         console.log(`[evidence-check] ĐẠT: Toàn bộ ${res.total} URL đều trả mã 2xx và bằng chứng hợp lệ.`);
-        process.exit(0);
+        process.exitCode = 0;
       }
     })
     .catch((err) => {
       console.error(`[evidence-check] Lỗi hệ thống:`, err);
-      process.exit(1);
+      process.exitCode = 1;
     });
 }
