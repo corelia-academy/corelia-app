@@ -3,7 +3,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { isNodeSatisfied } from "./plan-lint.mjs";
+import { isNodeProduced, isNodeSatisfied } from "./plan-lint.mjs";
+import { lockDir, withLock, writeFileAtomic } from "./lock.mjs";
 
 export function decideNext({
   repoRoot = ".",
@@ -161,9 +162,12 @@ export function decideNext({
       continue;
     }
 
-    // Điều kiện E (AC-02 & AC-07): mọi ô trong requires đã covered hoặc đã có đề xuất chosen/produced
+    // Điều kiện E (AC-02 & AC-07): mọi ô trong requires đã covered hoặc đã có đề xuất produced.
+    // Ô tiên quyết mới "chosen" (đang sản xuất, có thể ở app khác) chưa đủ: khóa kế thừa cần
+    // provided_prerequisites.json của khóa đó.
     const allRequires = [];
     const unmetRequires = [];
+    const inProductionRequires = [];
 
     for (const node of matchedNodes) {
       const nodeRequires = Array.isArray(node.requires) ? node.requires : [];
@@ -186,20 +190,25 @@ export function decideNext({
           }
         }
 
-        // V-05: requires chỉ thỏa khi ô tiên quyết covered hoặc có đề xuất chosen/produced
-        if (!isNodeSatisfied(reqNode, proposals, mapSlug)) {
+        if (!isNodeProduced(reqNode, proposals, mapSlug)) {
           unmetRequires.push(reqId);
+          if (isNodeSatisfied(reqNode, proposals, mapSlug)) inProductionRequires.push(reqId);
         }
       }
     }
 
     if (unmetRequires.length > 0) {
-      blocked.push({
+      const entry = {
         slug: cand.slug,
         title: cand.title,
         path_slug: mapSlug,
         blocked_by: Array.from(new Set(unmetRequires)).sort(),
-      });
+      };
+      if (inProductionRequires.length > 0) {
+        entry.in_production = Array.from(new Set(inProductionRequires)).sort();
+        entry.reason = "Khóa tiên quyết đang sản xuất (chosen), chưa produced; chờ khóa đó xong rồi chạy lại.";
+      }
+      blocked.push(entry);
       continue;
     }
 
@@ -418,23 +427,26 @@ export function saveDecision(decision, repoRoot = ".", customDate = null) {
   const d = customDate ? new Date(customDate) : new Date();
   const dateStr = d.toISOString().slice(0, 10); // YYYY-MM-DD
 
-  const existingFiles = fs.readdirSync(decisionsDir);
-  const regex = new RegExp(`^${dateStr}-(\\d+)\\.json$`);
-  let maxN = 0;
-  for (const f of existingFiles) {
-    const m = f.match(regex);
-    if (m) {
-      const n = parseInt(m[1], 10);
-      if (n > maxN) maxN = n;
+  // Đánh số và ghi trong khóa "plan" để hai app chạy cùng lúc không lấy trùng số file.
+  return withLock(lockDir(root, "plan"), () => {
+    const existingFiles = fs.readdirSync(decisionsDir);
+    const regex = new RegExp(`^${dateStr}-(\\d+)\\.json$`);
+    let maxN = 0;
+    for (const f of existingFiles) {
+      const m = f.match(regex);
+      if (m) {
+        const n = parseInt(m[1], 10);
+        if (n > maxN) maxN = n;
+      }
     }
-  }
 
-  const nextN = maxN + 1;
-  const fileName = `${dateStr}-${nextN}.json`;
-  const filePath = path.join(decisionsDir, fileName);
+    const nextN = maxN + 1;
+    const fileName = `${dateStr}-${nextN}.json`;
+    const filePath = path.join(decisionsDir, fileName);
 
-  fs.writeFileSync(filePath, JSON.stringify(decision, null, 2) + "\n", "utf8");
-  return { fileName, filePath };
+    writeFileAtomic(filePath, JSON.stringify(decision, null, 2) + "\n");
+    return { fileName, filePath };
+  });
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {

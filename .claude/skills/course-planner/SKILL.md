@@ -63,7 +63,8 @@ Script quét toàn bộ thư mục `.course-runs/*/` và `.course-plan/catalog-e
    - Nếu `status === "draft"` có sẵn: coordinator không tự duyệt và báo giữ lại.
 
 ### Bước 3: Quản lý Backlog và Xếp hạng Đề xuất
-Kiểm tra xem trong `.course-plan/backlog.json` đã có đề xuất nào có `status === "chosen"` mà khóa đó chưa vào sản xuất (`produced`) hay chưa.
+Khi Human chỉ định một khóa cụ thể (slug hoặc tên một dòng trong bảng rank): chỉ làm khóa đó, đi thẳng Bước 4 với dòng đó, chạy `next.mjs --only <slug>`; không tiếp tục đề xuất `chosen` nào khác (khóa đó có thể đang được app khác sản xuất, xem mục Chạy song song nhiều app).
+Khi Human không chỉ định khóa: kiểm tra xem trong `.course-plan/backlog.json` đã có đề xuất nào có `status === "chosen"` mà khóa đó chưa vào sản xuất (`produced`) hay chưa.
 Nếu đã có đề xuất `chosen`: tiếp tục với đề xuất đó, không cần chọn lại.
 Nếu chưa có:
 1. Xác định các ô sẵn sàng trong các map focus (thỏa điều kiện: `ref` null, `coverage` ≠ covered, mọi ô requires đã covered hoặc có đề xuất chosen/produced).
@@ -90,9 +91,9 @@ Nếu chưa có:
 
 ### Bước 4: Tiếp nhận Lựa chọn của Human
 Sau khi Human phản hồi và chốt một dòng:
-1. Coordinator cập nhật vào `.course-plan/backlog.json`:
-   - Dòng Human chọn: đặt `status: "chosen"` và `decided_on: "<YYYY-MM-DD>"`.
-   - Dòng Human loại kèm lý do: đặt `status: "rejected"`, `reject_reason: "<lý do>"`, và `decided_on: "<YYYY-MM-DD>"`.
+1. Coordinator cập nhật vào `.course-plan/backlog.json` bằng `node .claude/skills/course-planner/scripts/plan-update.mjs` (không sửa tay file, để app khác chạy song song không bị ghi đè):
+   - Dòng Human chọn: `plan-update.mjs status <slug> chosen` (đặt `status: "chosen"` và `decided_on`).
+   - Dòng Human loại kèm lý do: `plan-update.mjs status <slug> rejected --reason "<lý do>"`.
    - Các dòng Human không nhắc tới: giữ nguyên `status: "open"`, không bị loại hàng loạt.
 
 ### Bước 5: Đánh giá Candidate Sẵn sàng
@@ -128,9 +129,9 @@ Xử lý kết quả:
 3. Sau khi `course-author` hoàn thành hoặc dừng, ghi báo cáo tổng hợp cuối phiên tại `.course-runs/<slug>/run-report.md`.
 4. **Cập nhật trạng thái Backlog và Skill Map (AC-08 & AC-06)**:
    - Sau khi `course-author` import local thành công, coordinator:
-     - Đặt `status: "produced"` và `decided_on: "<YYYY-MM-DD>"` cho đề xuất trong `.course-plan/backlog.json`.
-     - Cập nhật toàn bộ các ô trong `path_nodes.nodes` của map: đặt `course_slug` = slug khóa vừa sản xuất và `coverage: "covered"`.
-   - Nếu import dừng hoặc khóa bị loại sau review thì đặt `status: "rejected"` kèm `reject_reason` và `decided_on`.
+     - `plan-update.mjs status <slug> produced` (đặt `status: "produced"` và `decided_on`).
+     - `plan-update.mjs cover <slug>` (các ô trong `path_nodes.nodes` của map: `course_slug` = slug khóa, `coverage: "covered"`).
+   - Nếu import dừng hoặc khóa bị loại sau review: `plan-update.mjs status <slug> rejected --reason "<lý do>"`.
 
 ---
 
@@ -146,6 +147,17 @@ Khi người dùng chủ động đưa vào một chủ đề hoặc tên khóa,
    Chỉ ra khóa học hoặc bài học cụ thể trong catalog hiện tại (`catalog.json`) đã phủ nội dung này.
 4. **Cần cập nhật khóa có sẵn:**
    Chỉ ra khóa hiện có cần bổ sung hoặc sửa đổi, đưa vào danh sách `updates`.
+
+---
+
+## Chạy song song nhiều app
+
+Nhiều app (Claude Code, Codex, ...) có thể chạy cùng lúc trên cùng máy và cùng thư mục repo, mỗi app một khóa khác nhau. Quy ước:
+
+- Mỗi app nhận một khóa cụ thể đã có trong bảng rank (Human chỉ định slug). Không giao một slug cho hai app; không chạy role `00-shortlist` hay `01-path` khi có app khác đang chạy.
+- Khóa tiên quyết phải `produced` (hoặc ô đã `covered`) thì khóa kế thừa mới qua gate của `next.mjs`. Khóa tiên quyết còn `chosen` (đang sản xuất) làm khóa kế thừa nằm trong `blocked` với `in_production`; chờ khóa đó xong rồi chạy lại.
+- Mọi thay đổi `backlog.json` và `paths/*.json` đi qua `plan-update.mjs`. `next.mjs --write`, `catalog-snapshot.mjs` và `plan-update.mjs` ghi trong khóa `.course-plan/.locks/plan`; `export-catalog.mjs` và `import-local.ts` dùng khóa `.course-plan/.locks/local-db`. Khóa quá hạn (app chết giữa chừng) tự được gỡ.
+- Không sửa file skill (`.claude/skills/`) khi có app khác đang chạy khóa; khi commit, chỉ add đúng file của khóa hoặc thay đổi mình làm.
 
 ---
 

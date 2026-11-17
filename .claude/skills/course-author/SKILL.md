@@ -55,7 +55,7 @@ Mỗi file chỉ do một child ghi. Child đọc file của bước trước, k
 | 6 | `roles/06-lesson-review/` (`common.md` + file loại bài) | lesson, output `lesson-context.mjs`, `verification/<id>.md` | `reviews/<id>.json` |
 | 7 | `roles/07-course-review.md` | `brief.json`, `curriculum.json`, digest, `frame.md` (nếu có) | `reviews/course.json` |
 
-Bước 5 và 6 chạy theo từng lesson. Các lesson không phụ thuộc nhau có thể chạy song song, mỗi lesson một child. Bài nối tiếp nội dung bài trước hoặc dùng lại khung code của bài trước phải chờ bài trước viết xong (để đọc `prev_lesson_path`).
+Bước 5 và 6 chạy theo từng lesson. Các lesson không phụ thuộc nhau có thể chạy song song, mỗi lesson một child; mỗi coordinator chạy tối đa 4 child cùng lúc, vì quota model dùng chung giữa các app chạy song song. Bài nối tiếp nội dung bài trước hoặc dùng lại khung code của bài trước phải chờ bài trước viết xong (để đọc `prev_lesson_path`).
 
 ## Gọi child
 
@@ -75,6 +75,8 @@ Việc user gọi skill này là cho phép coordinator spawn child theo bảng M
 ## Khóa nền tảng và khóa kế thừa
 
 Khóa basic đầu path (`brief.is_foundation`) và khóa dựng trên nó (`brief.prerequisite_courses`) theo `references/foundation.md`: tách nguyên lý khỏi công cụ, thuật ngữ chuẩn nhất quán, hợp đồng `provided_prerequisites.json` ở bước 3, khóa kế thừa đọc hợp đồng thay vì dạy lại. Khi có `handoff.json`, `is_foundation` và `prerequisite_courses` lấy từ handoff; khi không có handoff, hỏi user khi chưa rõ khóa có phải nền tảng không, vì nó đổi yêu cầu của cả path.
+
+Trước bước 1, với mỗi thư mục trong `prerequisite_courses`: phải có `provided_prerequisites.json` và `course-status.mjs` của khóa đó báo review cấp khóa `đạt`. Thiếu một trong hai (khóa tiên quyết chưa làm, hoặc đang được app khác sản xuất) thì DỪNG, không bắt đầu khóa này, báo slug khóa tiên quyết còn thiếu; không hỏi user và không tự làm khóa tiên quyết.
 
 ## Khung chuẩn cho khóa có code
 
@@ -176,6 +178,8 @@ Mỗi lesson có ví dụ chạy được, `code_exercise` hoặc `practice` ph�
   - Không dùng ví, private key, tài khoản hay tiền thật. Chỉ các bước cần tài nguyên ngoài/dịch vụ chưa có trên máy hoặc DB thực hành riêng mới ghi `not_run` kèm lý do cụ thể; không lấy lý do thiếu DB/dịch vụ ngoài để bỏ qua kiểm chứng biên dịch ở Tầng 1.
 
 Nếu user chọn tự chạy, child chỉ chuẩn bị danh sách bước cần chạy; user điền kết quả vào cùng file.
+
+**Tài nguyên riêng của khóa.** Trước khi giao bước kiểm chứng đầu tiên, coordinator chạy `node .claude/skills/course-author/scripts/resources.mjs <slug>` và đưa JSON in ra cho mọi child kiểm chứng: validator cục bộ dùng `rpc_port`, `faucet_port`, `dynamic_port_range`; server ví dụ của bài thực hành dùng cổng trong `app_ports`; database Postgres tạm (trong container `supabase_db_corelia-app`) dùng tên `temp_db`, tạo khi cần và `DROP` khi xong. Không dùng cổng mặc định (8899, 3000...) hay tên DB tự đặt khi chạy kiểm chứng, vì app khác có thể đang chạy khóa khác cùng lúc; trong chữ người học vẫn ghi cổng mặc định, ghi là substitution trong `verification/<id>.md`. Khi khóa xong (hoặc dừng hẳn), chạy `resources.mjs <slug> --release`.
 
 Kết quả thật khác với kết quả mong đợi trong bài thì lesson không đạt, child sửa bài theo kết quả thật.
 

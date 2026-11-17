@@ -27,6 +27,7 @@ import {
   validateQuestion,
   validateResources,
 } from "../../../../supabase/functions/corelia-api/studio/lesson_ports.ts";
+import { acquireLock, lockDir } from "../../course-planner/scripts/lock.mjs";
 
 const rawArgs = Deno.args.filter((a) => !a.startsWith("--"));
 const isDryRun = Deno.args.includes("--dry-run");
@@ -447,21 +448,31 @@ if (isDryRun) {
   Deno.exit(0);
 }
 
-// 7. Chạy thật trên local stack
+// 7. Chạy thật trên local stack, trong khóa "local-db" để hai app không import hay export catalog cùng lúc.
+// Thư mục khóa nằm ở <repo>/.course-runs/<slug>, nên gốc repo là hai cấp trên.
 const key = serviceKey!;
-for (const image of images) {
-  const response = await fetch(`http://127.0.0.1:54321/storage/v1/object/app/${image.path}`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      apikey: key,
-      "Content-Type": "image/png",
-      "x-upsert": "false",
-    },
-    body: new Blob([new Uint8Array(image.bytes)]),
-  });
-  if (!response.ok) throw new Error(`Upload ảnh ${image.path} thất bại: ${response.status} ${await response.text()}`);
-}
+const releaseDbLock = acquireLock(lockDir(path.resolve(targetDir, "..", ".."), "local-db"), {
+  timeoutMs: 600_000,
+  staleMs: 1_800_000,
+  owner: `import-local ${brief.slug}`,
+});
+try {
+  for (const image of images) {
+    const response = await fetch(`http://127.0.0.1:54321/storage/v1/object/app/${image.path}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        apikey: key,
+        "Content-Type": "image/png",
+        "x-upsert": "false",
+      },
+      body: new Blob([new Uint8Array(image.bytes)]),
+    });
+    if (!response.ok) throw new Error(`Upload ảnh ${image.path} thất bại: ${response.status} ${await response.text()}`);
+  }
 
-await execSql(fullSql);
+  await execSql(fullSql);
+} finally {
+  releaseDbLock();
+}
 console.log(JSON.stringify({ success: true, ...summary }, null, 2));

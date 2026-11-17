@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { lockDir, withLock } from "./lock.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -47,7 +48,8 @@ export function exportCatalog(repoRoot = ".", options = {}) {
 
   let rawOutput = "";
   try {
-    rawOutput = runner(sqlContent);
+    // Khóa "local-db": không đọc catalog trong lúc app khác đang import khóa vào DB local.
+    rawOutput = withLock(lockDir(root, "local-db"), () => runner(sqlContent), { timeoutMs: 600_000, staleMs: 1_800_000 });
   } catch (err) {
     const warnMsg = `Container local không chạy hoặc lệnh docker lỗi: ${err.message}. Giữ catalog-export.json cũ nếu có.`;
     console.warn(`[export-catalog] Cảnh báo: ${warnMsg}`);

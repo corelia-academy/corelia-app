@@ -73,6 +73,16 @@ export function isNodeSatisfied(reqNode, proposals = [], mapSlug = null) {
   return false;
 }
 
+// Dùng cho gate sản xuất: ô tiên quyết chỉ đủ khi đã covered hoặc có đề xuất đã produced.
+// Khác isNodeSatisfied (dùng khi xếp hạng): đề xuất mới "chosen" chưa có file bàn giao
+// (provided_prerequisites.json) cho khóa kế thừa đọc, nên chưa được tính là đủ.
+export function isNodeProduced(reqNode, proposals = [], mapSlug = null) {
+  if (!reqNode) return false;
+  if (reqNode.coverage === "covered") return true;
+  const onlyProduced = Array.isArray(proposals) ? proposals.filter((p) => p?.status === "produced") : [];
+  return isNodeSatisfied(reqNode, onlyProduced, mapSlug);
+}
+
 export function parseCommaSeparatedList(text) {
   if (!text || typeof text !== "string") return [];
   let cleaned = text.trim().replace(/\.+$/, "").trim();

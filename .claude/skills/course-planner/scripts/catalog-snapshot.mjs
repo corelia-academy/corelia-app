@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { lockDir, withLock, writeJsonAtomic } from "./lock.mjs";
 
 export function calculateContentState(modules) {
   let lessons_total = 0;
@@ -350,7 +351,7 @@ export function takeCatalogSnapshot(repoRoot = ".", options = {}) {
     fs.mkdirSync(coursePlanDir, { recursive: true });
   }
 
-  fs.writeFileSync(catalogOutputFile, JSON.stringify(catalog, null, 2) + "\n", "utf8");
+  withLock(lockDir(root, "plan"), () => writeJsonAtomic(catalogOutputFile, catalog));
   return catalog;
 }
 
