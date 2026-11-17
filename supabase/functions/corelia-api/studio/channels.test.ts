@@ -1,19 +1,23 @@
 import { describe, expect, it } from "vitest";
 import {
   ALLOWED_CHANNELS,
+  channelsForTrack,
   extractChannelHandle,
   findAllowedChannelByName,
   findChannelByHandle,
   isAllowedChannel,
-  normalizeChannelName,
 } from "./channels.ts";
 
 describe("studio channels configuration", () => {
-  it("contains exactly the 17 approved channels with valid handles", () => {
-    expect(ALLOWED_CHANNELS).toHaveLength(17);
+  it("contains unique approved channels with valid lowercase handles and tracks", () => {
+    expect(ALLOWED_CHANNELS).toHaveLength(49);
+    const handles = new Set<string>();
     for (const c of ALLOWED_CHANNELS) {
       expect(c.name).toBeTruthy();
-      expect(c.handle).toMatch(/^@[a-zA-Z0-9_.-]+$/);
+      expect(c.handle).toMatch(/^@[a-z0-9_.-]+$/);
+      expect(c.tracks.length).toBeGreaterThan(0);
+      expect(handles.has(c.handle)).toBe(false);
+      handles.add(c.handle);
     }
     const names = ALLOWED_CHANNELS.map((c) => c.name);
     expect(names).toContain("freeCodeCamp.org");
@@ -33,6 +37,25 @@ describe("studio channels configuration", () => {
     expect(names).toContain("NeetCode");
     expect(names).toContain("GitHub");
     expect(names).toContain("CNCF [Cloud Native Computing Foundation]");
+    expect(names).toContain("Anthropic");
+    expect(names).toContain("Hussein Nasser");
+    expect(names).toContain("Solana");
+    expect(names).toContain("Cyfrin Audits");
+    expect(names).toContain("Vercel");
+  });
+
+  it("filters approved channels by track and falls back to all channels when track is missing or unknown", () => {
+    const backend = channelsForTrack("backend").map((c) => c.handle);
+    expect(backend).toContain("@hnasr");
+    expect(backend).toContain("@bytebytego");
+    expect(backend).not.toContain("@solana");
+
+    const ai = channelsForTrack("ai-engineer").map((c) => c.handle);
+    expect(ai).toContain("@anthropic-ai");
+    expect(ai).toContain("@deeplearningai");
+
+    expect(channelsForTrack()).toHaveLength(ALLOWED_CHANNELS.length);
+    expect(channelsForTrack("non-existent-track")).toHaveLength(ALLOWED_CHANNELS.length);
   });
 
   it("matches channel names case-insensitively, normalizes quotes/spaces, and handles aliases", () => {

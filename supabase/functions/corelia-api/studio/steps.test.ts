@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { ALLOWED_CHANNELS } from "./channels.ts";
 import { readResponse } from "./openai.ts";
 import { SEEDED_PROMPTS } from "./prompt_seed_test_helper.ts";
 import { A4_REVIEW_CRITERIA } from "./review_policy.ts";
@@ -857,14 +858,14 @@ describe("studio acceptance", () => {
 
   it("provides allowed_channels from channels.ts to A2 research and A3 curriculum inputs", () => {
     const researchInput = STEP_SPECS.research!.buildInput({ outputs: { brief: {} }, today: "2026-11-01" } as never) as any;
-    expect(researchInput.allowed_channels).toHaveLength(17);
+    expect(researchInput.allowed_channels).toHaveLength(ALLOWED_CHANNELS.length);
     const researchNames = researchInput.allowed_channels.map((c: any) => c.name);
     expect(researchNames).toContain("freeCodeCamp.org");
     expect(researchNames).toContain("Let's Get Rusty");
     expect(researchNames).toContain("CNCF [Cloud Native Computing Foundation]");
 
     const curriculumInput = STEP_SPECS.curriculum!.buildInput({ outputs: { brief: {}, research: {} } } as never) as any;
-    expect(curriculumInput.allowed_channels).toHaveLength(17);
+    expect(curriculumInput.allowed_channels).toHaveLength(ALLOWED_CHANNELS.length);
     const curriculumNames = curriculumInput.allowed_channels.map((c: any) => c.name);
     expect(curriculumNames).toContain("freeCodeCamp.org");
     expect(curriculumNames).toContain("Let's Get Rusty");

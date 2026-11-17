@@ -1,7 +1,7 @@
 // Finds YouTube videos on the approved channels (supabase/functions/corelia-api/studio/channels.ts) for one
 // research topic, so an external CLI coordinator can fill A2's `videos` with videos it actually saw.
-// Usage: deno run -A --no-config scripts/studio/youtube-search.ts --query "<topic and outcome>" [--channels @a,@b] [--per-channel 3]
-import { ALLOWED_CHANNELS } from "../../supabase/functions/corelia-api/studio/channels.ts";
+// Usage: deno run -A --no-config scripts/studio/youtube-search.ts --query "<topic and outcome>" [--track <slug>] [--channels @a,@b] [--per-channel 3]
+import { ALLOWED_CHANNELS, channelsForTrack, type AllowedChannel } from "../../supabase/functions/corelia-api/studio/channels.ts";
 
 export interface VideoCandidate {
   video_id: string;
@@ -23,6 +23,34 @@ export interface SearchResult {
 const CHANNEL_TIMEOUT_MS = 60_000;
 const CONCURRENCY = 4;
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
+const IDEAL_MIN_DURATION_SECONDS = 120;
+const IDEAL_MAX_DURATION_SECONDS = 1800;
+
+/** Selects approved channels by optional track slug and optional explicit handle allowlist. */
+export function selectApprovedChannels(handles: string[] | null, track?: string | null): readonly AllowedChannel[] {
+  const base = track ? channelsForTrack(track) : ALLOWED_CHANNELS;
+  if (!handles || handles.length === 0) return base;
+  const wanted = new Set(handles.map((handle) => handle.trim().toLowerCase()));
+  return base.filter((channel) => wanted.has(channel.handle));
+}
+
+/** Prioritizes ideal-length videos (2-30 min) ahead of longer lectures, unknown durations, and <2 min clips. */
+export function prioritizeByDuration(
+  candidates: VideoCandidate[],
+  minSec = IDEAL_MIN_DURATION_SECONDS,
+  maxSec = IDEAL_MAX_DURATION_SECONDS,
+): VideoCandidate[] {
+  const rankBucket = (d: number | null): number => {
+    if (d === null) return 2;
+    if (d >= minSec && d <= maxSec) return 0;
+    if (d > maxSec) return 1;
+    return 3;
+  };
+  return candidates
+    .map((candidate, index) => ({ candidate, index, bucket: rankBucket(candidate.duration_seconds) }))
+    .sort((a, b) => a.bucket - b.bucket || a.index - b.index)
+    .map((item) => item.candidate);
+}
 
 /** One `yt-dlp --flat-playlist --dump-json` line of a channel search, or null when it is not a usable video. */
 export function parseSearchLine(line: string, channel: { name: string; handle: string }): VideoCandidate | null {
@@ -73,9 +101,13 @@ async function searchChannel(
   }
 }
 
-export async function searchApprovedChannels(query: string, handles: string[] | null, perChannel: number): Promise<SearchResult> {
-  const wanted = handles ? new Set(handles.map((handle) => handle.toLowerCase())) : null;
-  const channels = ALLOWED_CHANNELS.filter((channel) => !wanted || wanted.has(channel.handle));
+export async function searchApprovedChannels(
+  query: string,
+  handles: string[] | null,
+  perChannel: number,
+  track?: string | null,
+): Promise<SearchResult> {
+  const channels = selectApprovedChannels(handles, track);
   const candidates: VideoCandidate[] = [];
   const failures: SearchResult["failures"] = [];
   let next = 0;
@@ -94,7 +126,7 @@ export async function searchApprovedChannels(query: string, handles: string[] | 
   }
   const seen = new Set<string>();
   const unique = candidates.filter((video) => !seen.has(video.video_id) && seen.add(video.video_id));
-  return { ok: true, query, candidates: unique, failures };
+  return { ok: true, query, candidates: prioritizeByDuration(unique), failures };
 }
 
 const FILLER_WORDS = new Set(["about", "after", "and", "are", "beginners", "beginner", "explain", "for", "from", "how", "into", "that", "the", "their", "this", "what", "when", "which", "with", "your"]);
@@ -106,11 +138,16 @@ export function keywordQuery(query: string, maxWords = 3): string {
 }
 
 /** Searches the full query first; when no approved channel has a match, retries with its leading keywords. */
-export async function searchWithFallback(query: string, handles: string[] | null, perChannel: number): Promise<SearchResult & { query_used: string }> {
-  const first = await searchApprovedChannels(query, handles, perChannel);
+export async function searchWithFallback(
+  query: string,
+  handles: string[] | null,
+  perChannel: number,
+  track?: string | null,
+): Promise<SearchResult & { query_used: string }> {
+  const first = await searchApprovedChannels(query, handles, perChannel, track);
   const fallback = keywordQuery(query);
   if (!first.ok || first.candidates.length > 0 || !fallback || fallback === query.toLowerCase()) return { ...first, query_used: query };
-  const second = await searchApprovedChannels(fallback, handles, perChannel);
+  const second = await searchApprovedChannels(fallback, handles, perChannel, track);
   return { ...second, query_used: fallback };
 }
 
@@ -127,9 +164,10 @@ async function main(args: string[]) {
     );
     return;
   }
+  const track = readOption(args, "--track")?.trim() || null;
   const channels = readOption(args, "--channels")?.split(",").map((handle) => handle.trim()).filter(Boolean) ?? null;
   const perChannel = Math.min(Math.max(Number.parseInt(readOption(args, "--per-channel") ?? "3", 10) || 3, 1), 10);
-  console.log(JSON.stringify(await searchWithFallback(query, channels, perChannel)));
+  console.log(JSON.stringify(await searchWithFallback(query, channels, perChannel, track)));
 }
 
 if (import.meta.main && typeof Deno !== "undefined") {

@@ -1,4 +1,4 @@
-import { keywordQuery, parseSearchLine } from "./youtube-search.ts";
+import { keywordQuery, parseSearchLine, prioritizeByDuration, selectApprovedChannels } from "./youtube-search.ts";
 
 function assertEquals<T>(actual: T, expected: T, message: string) {
   const a = JSON.stringify(actual);
@@ -29,4 +29,32 @@ Deno.test("parseSearchLine drops lines that are not a usable video", () => {
 Deno.test("keywordQuery keeps the leading meaningful words of a long topic", () => {
   assertEquals(keywordQuery("Wallets receiving address private key recovery phrase safety for beginners"), "wallets receiving address", "long query");
   assertEquals(keywordQuery("What is the gas fee"), "gas fee", "filler removed");
+});
+
+Deno.test("selectApprovedChannels narrows channels by track and optional handles", () => {
+  const backendHandles = selectApprovedChannels(null, "backend").map((c) => c.handle);
+  if (!backendHandles.includes("@hnasr") || backendHandles.includes("@solana")) {
+    throw new Error(`unexpected backend channels: ${backendHandles.join(",")}`);
+  }
+  const narrowed = selectApprovedChannels(["@hnasr", "@solana"], "backend").map((c) => c.handle);
+  assertEquals(narrowed, ["@hnasr"], "track + handle intersection");
+});
+
+Deno.test("prioritizeByDuration ranks 2-30m videos before long videos, unknown durations, and shorts", () => {
+  const sample = (id: string, duration_seconds: number | null) => ({
+    video_id: id,
+    url: `https://www.youtube.com/watch?v=${id}`,
+    title: id,
+    channel: "ByteByteGo",
+    handle: "@bytebytego",
+    duration_seconds,
+  });
+  const ordered = prioritizeByDuration([
+    sample("short", 45),
+    sample("long", 3600),
+    sample("unknown", null),
+    sample("ideal1", 600),
+    sample("ideal2", 1500),
+  ]).map((c) => c.video_id);
+  assertEquals(ordered, ["ideal1", "ideal2", "long", "unknown", "short"], "duration bucket order");
 });
