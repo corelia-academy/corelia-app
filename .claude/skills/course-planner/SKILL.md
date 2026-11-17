@@ -151,4 +151,12 @@ Khi người dùng chủ động đưa vào một chủ đề hoặc tên khóa,
 
 ## Bảng Model cho Subagents
 
-Coordinator chạy bằng model của session, không dừng, không báo trước; ghi tên model coordinator vào `run-log.jsonl` và `run-report.md`. Session chạy skill này dùng `sonnet` (`terra`) với effort `low`; không dùng `haiku` (`luna`) cho coordinator.
+Coordinator chạy bằng model của session, không dừng, không báo trước; ghi tên model coordinator vào `run-log.jsonl` và `run-report.md`. Session chạy skill này dùng `sonnet` (`terra`) với effort `low`, hoặc chạy ở chế độ 1 model `hydrogen` với effort `medium`; không dùng `haiku` (`luna`) cho coordinator.
+
+Khi chạy chế độ 1 model (`hydrogen`), Coordinator và các role của `course-planner` đều dùng `hydrogen` (`Model: "inherit"` trên Antigravity) theo hai mức effort:
+- Coordinator (session): `medium`
+- `roles/00-shortlist.md`: `medium` (khảo sát ô sẵn sàng và đề xuất backlog)
+- `roles/01-path.md`: `high` (dựng skill map chuẩn từ tài liệu chính thức)
+- `roles/02-candidate.md`: `high` (thẩm định trùng lặp catalog, tính khả thi và soạn `handoff.json`)
+
+Nếu nền tảng không hỗ trợ truyền effort riêng cho từng child, giữ `Model: "inherit"` theo effort của session và ghi chú trong `run-report.md`.

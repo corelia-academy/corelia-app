@@ -313,3 +313,55 @@ test("W-14: lesson-lint báo lỗi tham chiếu bài ngoài dạng chuẩn", () 
 
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
+
+
+test("review-lint: cấm code_exercise dùng not_run và cấm pass khi verification có bước fail", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "review-lint-two-tier-"));
+  const revDir = path.join(tmpDir, "reviews");
+  const verDir = path.join(tmpDir, "verification");
+  fs.mkdirSync(revDir, { recursive: true });
+  fs.mkdirSync(verDir, { recursive: true });
+
+  const baseChecks = [
+    "factual_accuracy",
+    "tool_versions",
+    "outcome_and_level",
+    "lesson_flow",
+    "verification",
+    "language",
+    "tone_and_flow",
+  ].map((c) => ({ criterion: c, result: c === "verification" ? "unverified" : "ok" }));
+
+  // 1. verification có status: fail cùng not_run -> lỗi
+  fs.writeFileSync(
+    path.join(revDir, "failed_plus_not_run.json"),
+    JSON.stringify({ verdict: "pass", checks: baseChecks, issues: [] })
+  );
+  fs.writeFileSync(
+    path.join(verDir, "failed_plus_not_run.md"),
+    "# Verification\n\n| v1 | compile | fail | lỗi cú pháp |\n| v2 | api | not_run: thiếu key |\n"
+  );
+  const resMixedFail = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} failed_plus_not_run`);
+  assert.equal(resMixedFail.status, 1);
+  assert.match(resMixedFail.stdout, /unverified: check "verification"/);
+
+  // 2. code_exercise để verification unverified dù có not_run -> lỗi
+  fs.writeFileSync(
+    path.join(tmpDir, "curriculum.json"),
+    JSON.stringify({ modules: [{ module_id: "M1", lessons: [{ lesson_id: "code_not_run", type: "code_exercise" }] }] })
+  );
+  const codeChecks = [...baseChecks, { criterion: "answers", result: "ok" }];
+  fs.writeFileSync(
+    path.join(revDir, "code_not_run.json"),
+    JSON.stringify({ verdict: "pass", checks: codeChecks, issues: [] })
+  );
+  fs.writeFileSync(
+    path.join(verDir, "code_not_run.md"),
+    "# Verification\n\nnot_run: thiếu DB ngoài\n"
+  );
+  const resCodeNotRun = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} code_not_run`);
+  assert.equal(resCodeNotRun.status, 1);
+  assert.match(resCodeNotRun.stdout, /code_not_run: unverified: check "verification"/);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});

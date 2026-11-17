@@ -130,6 +130,15 @@ test("AC2.4: bảng Các bước và bảng Model trong SKILL.md nhất quán v�
 
   // File role 07 tồn tại
   assert.ok(fs.existsSync(path.join(rootDir, ".claude/skills/course-author/roles/07-course-review.md")));
+
+  // Kiểm tra chế độ 1 model hydrogen với hai mức effort medium / high
+  assert.match(skillContent, /Chế độ 1 model \(`hydrogen`\)/);
+  assert.match(skillContent, /\| Bước 2: research \| `hydrogen` \| `medium` \|/);
+  assert.match(skillContent, /\| Bước 3: curriculum \| `hydrogen` \| `high` \|/);
+  assert.match(skillContent, /\| Bước 5: viết lesson \| `hydrogen` \| `high` \|/);
+  assert.match(skillContent, /\| Bước 5: chạy kiểm chứng \(`verification\/<id>\.md`\) \| `hydrogen` \| `medium` \|/);
+  assert.match(skillContent, /\| Bước 6: review lesson \| `hydrogen` \| `medium` \|/);
+  assert.match(skillContent, /\| Bước 7: review cấp khóa \| `hydrogen` \| `high` \|/);
 });
 
 test("Edge case 2.3: course-digest thoát mã 1 khi curriculum có lesson thiếu", () => {

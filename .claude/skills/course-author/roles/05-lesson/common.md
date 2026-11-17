@@ -38,6 +38,10 @@ Lesson có ví dụ chạy được, `code_exercise` hoặc `practice` thì tr�
 
 Coordinator giao plan cho child kiểm chứng; child đó ghi `verification/<lesson_id>.md` (lệnh hoặc thao tác, output thật, `pass` / `fail` / `not_run`). Khi nhận lại kết quả có `fail`, sửa bài theo output thật.
 
+Phân tách bắt buộc 2 tầng trong `verification_plan`:
+- **Tầng 1 — Biên dịch / kiểm tra tĩnh cô lập (BẮT BUỘC `pass`, CẤM `not_run`):** mọi snippet code trong bài viết và toàn bộ `reference_solution` / tổ hợp `accepted_answers` của `code_exercise` phải được biên dịch hoặc kiểm tra cú pháp-kiểu trong thư mục tạm (`os.tmpdir()`) bằng toolchain có sẵn trên máy (như `tsc`, `node --check`, `cargo check`, `python -m py_compile`). Nếu thiếu tool biên dịch trên máy mới ghi `not_run` kèm tên tool thiếu; với bài `code_exercise` trên ngôn ngữ đã bật thì bắt buộc chạy kiểm chứng bằng toolchain, không được gộp chung vào `not_run` của dịch vụ ngoài.
+- **Tầng 2 — Dịch vụ ngoài / tài khoản thật / DB thực hành riêng (được `not_run` kèm lý do):** chỉ những bước đòi API key trả phí, ví thật, tiền thật, giao diện GUI không chạy được, hoặc DB server ngoài phạm vi máy (khi không có container/engine cô lập) mới được đánh dấu `not_run` kèm lý do cụ thể. Không bỏ qua kiểm tra biên dịch tĩnh chỉ vì bước chạy dịch vụ ngoài là `not_run`.
+
 ## Video xem thêm
 
 Với lesson không phải video: `suggested_videos` là mảng `video_id` từ `research.videos` liên quan mật thiết tới lesson, tối đa 2, có thể rỗng. Không đặt link YouTube trong markdown. Bỏ qua video, người học vẫn hiểu trọn lesson. Lesson video để `suggested_videos: []`.

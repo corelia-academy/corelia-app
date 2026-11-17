@@ -27,6 +27,7 @@ Mọi lựa chọn dưới đây chỉ dùng các dạng bài đã có, không �
 - `fill` có từ 1 đến 5 chỗ trống. Chỉ để chỗ trống ở phần là trọng tâm và có giá trị cốt lõi của outcome; phần còn lại (khung hàm, import, đoạn lặp, đoạn đã dạy ở bài trước) cho sẵn trong `starter_source`. Một bài cần hơn 5 chỗ điền thì thu hẹp trọng tâm hoặc tách thành hai bài.
 - `edit` chỉ khi lời giải có chữ ký và khung cố định, và tập cách viết đúng đủ nhỏ để test so khớp chuỗi (`contains`, `not_contains`, `equals`) vừa chấp nhận mọi cách viết đúng thường gặp vừa không cho qua code sai. Test chuỗi không kiểm được logic nhiều tầng hay thứ tự thực thi.
 - Logic nhiều tầng hoặc nhiều cách giải hợp lệ (ví dụ lan truyền lỗi qua nhiều hàm) dùng `fill` cho phần cốt lõi. Phần "tự viết trọn vẹn" luyện bằng `practice` tự chạy trên máy người học và kiểm bằng bài cuối khóa do giảng viên chấm; ghi rõ phần nào do bài tự chấm kiểm, phần nào do giảng viên chấm.
+- Khi `brief.code_language != null`: mỗi module dạy logic/cơ chế thể hiện được bằng mã nguồn dùng `code_exercise` (`fill` 1–5 chỗ trống hoặc `edit` khung cố định) để kiểm tra phần cốt lõi tự chấm trên app, thay vào vị trí quiz thừa hoặc đứng làm bước đệm trước `practice`.
 
 ## Đoạn phát của video
 
@@ -55,8 +56,8 @@ Người chấm là instructor; cách chấm nằm ngoài phạm vi skill này.
 ## Công cụ cục bộ
 
 - Kiểm sơ đồ của một lesson (chữ đè đường hoặc node, cạnh xuyên node, quá lưới, cùng các gợi ý bố cục ở trên): `deno run -A --no-config scripts/studio/diagram-lint.ts <lessons/<lesson_id>.json>`. Thoát mã 1 và in lý do khi có lỗi.
-- Tìm video trên kênh được phép: `deno run -A --no-config scripts/studio/youtube-search.ts --query "<2-4 từ khóa>"`
-- Đọc dàn ý video cho bước research: `deno run -A --no-config scripts/studio/youtube-captions.ts --url "<URL>" --outline [--range <start>-<end>]`. Trả về thời lượng (`duration_seconds`, `duration_source`), track (`language`, `track`), danh sách các đoạn (`segments`) và `truncated: true` kèm phạm vi đã trả nếu chạm trần kích thước.
+- Tìm video trên kênh được phép: `deno run -A --no-config scripts/studio/youtube-search.ts --query "<2-4 từ khóa>" [--track <slug>]` (cờ `--track` lọc đúng các kênh của track từ `channels.ts`; kết quả tự xếp video 120–1800 giây lên trước).
+- Đọc dàn ý video cho bước research: `deno run -A --no-config scripts/studio/youtube-captions.ts --url "<URL>" --outline [--range <start>-<end>]`. Trả về thời lượng (`duration_seconds`, `duration_source`), track (`language`, `track`), danh sách các đoạn (`segments`) và `truncated: true` kèm phạm vi đã trả nếu chạm trần kích thước. Với video dài hơn 1800 giây, chạy `--query` trước để xác định vùng timestamp rồi mới chạy `--outline --range <start>-<end>`.
 - Đọc caption theo truy vấn: `deno run -A --no-config scripts/studio/youtube-captions.ts --url "<URL>" --query "<tiêu đề bài và outcome>"`
 - Lấy bằng chứng cho một đoạn dạy (đã chọn ranh giới từ outline, tối đa 720 giây): `deno run -A --no-config scripts/studio/youtube-captions.ts --url "<URL>" --range <start>-<end>`. Kết quả tái lập được: cùng đoạn cho cùng `cue_text_sha256`.
 - Kiểm tra các ràng buộc tất định về bài video trong curriculum: `node .claude/skills/course-author/scripts/curriculum-lint.mjs <thư-mục-khóa>`.

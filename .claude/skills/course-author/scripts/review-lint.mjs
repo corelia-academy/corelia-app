@@ -169,12 +169,17 @@ function hasValidNotRun(id) {
     return false;
   }
   const lines = content.split("\n");
+  let hasNotRunReason = false;
   for (const line of lines) {
+    // Nếu có bước fail rõ ràng trong verification thì không hợp lệ để pass qua ngoại lệ not_run
+    if (/(?:status\s*:\s*`?fail`?|\|\s*`?fail`?\s*\|)/i.test(line)) {
+      return false;
+    }
     if (!/not_run/i.test(line)) continue;
     if (/không có bước not_run/i.test(line)) continue;
     // Dòng not_run có lý do tách bạch: sau dấu hai chấm hoặc trong ngoặc
-    if (/not_run\s*:\s*\S+/i.test(line)) return true;
-    if (/not_run\s*\([^)]+\)/i.test(line)) return true;
+    if (/not_run\s*:\s*\S+/i.test(line)) hasNotRunReason = true;
+    if (/not_run\s*\([^)]+\)/i.test(line)) hasNotRunReason = true;
     // Ô bảng riêng có ô mô tả kèm theo
     if (/\|/.test(line)) {
       const cells = line.split("|").map((c) => c.trim()).filter(Boolean);
@@ -182,12 +187,12 @@ function hasValidNotRun(id) {
       if (notRunIdx !== -1) {
         const otherCells = cells.filter((_, i) => i !== notRunIdx);
         if (otherCells.some((c) => c.length > 3 && !/^(pass|fail|shell|gui|v\d+)$/i.test(c))) {
-          return true;
+          hasNotRunReason = true;
         }
       }
     }
   }
-  return false;
+  return hasNotRunReason;
 }
 
 const problems = [];
@@ -257,7 +262,8 @@ for (const id of ids) {
   if (verdict === "pass") {
     for (const c of checks) {
       if (c.result === "unverified") {
-        if (c.criterion === "verification" && hasValidNotRun(id)) {
+        // code_exercise kiểm mã nguồn tĩnh cục bộ nên không bao giờ được bỏ qua verification bằng not_run
+        if (c.criterion === "verification" && type !== "code" && hasValidNotRun(id)) {
           // Ngoại lệ hợp lệ: verification có bước not_run kèm lý do tách bạch
           continue;
         }

@@ -100,9 +100,9 @@ Khi KHÔNG có handoff: hỏi khi thiếu tên khóa hoặc đối tượng, thi
 
 ## Model
 
-Coordinator chạy bằng model của session, không dừng, không báo trước; ghi tên model coordinator vào `run-log.jsonl` và `run-report.md`. Session chạy skill này dùng `sonnet` (`terra`) với effort `low`; không dùng `haiku` (`luna`) cho coordinator.
+Coordinator chạy bằng model của session, không dừng, không báo trước; ghi tên model coordinator vào `run-log.jsonl` và `run-report.md`. Session chạy skill này dùng `sonnet` (`terra`) với effort `low` (hoặc `hydrogen` với effort `medium` khi chạy chế độ 1 model); không dùng `haiku` (`luna`) cho coordinator.
 
-Bảng model child có hai cột: Claude và ChatGPT. Quy ước: `haiku` → `luna`, `sonnet` → `terra`, `opus` → `astra`. Coordinator dùng cột ứng với nền tảng đang chạy và truyền đúng effort của bảng khi spawn child. Nền tảng không cho chọn model hoặc effort của child: chạy bằng giá trị mặc định và ghi điều đó vào báo cáo.
+Bảng model child có hai cột đa model (Claude và ChatGPT) và một chế độ 1 model (`hydrogen`). Quy ước đa model: `haiku` → `luna`, `sonnet` → `terra`, `opus` → `astra`. Coordinator dùng cột ứng với nền tảng đang chạy và truyền đúng effort của bảng khi spawn child. Nền tảng không cho chọn model hoặc effort của child: chạy bằng giá trị mặc định và ghi điều đó vào báo cáo.
 
 | Child | Model (Claude) | Model (ChatGPT) | Effort |
 |---|---|---|---|
@@ -115,7 +115,26 @@ Bảng model child có hai cột: Claude và ChatGPT. Quy ước: `haiku` → `l
 | Bước 6: review lesson | `sonnet` | `terra` | `medium` |
 | Bước 7: review cấp khóa | `sonnet` | `terra` | `medium` |
 
-Ở bước 5, child viết lesson soạn danh sách bước cần chạy. Một child `haiku` riêng chạy các bước đó và ghi `verification/<id>.md`. Child viết lesson đọc kết quả rồi sửa bài nếu output thật khác `expected`.
+### Chế độ 1 model (`hydrogen`) — quy ước gọi child `medium` / `high`
+
+Khi chạy trên một model duy nhất (`hydrogen` / Gemini 4 Hydrogen), toàn bộ Coordinator và mọi Child dùng chung `hydrogen` (trên Antigravity truyền `Model: "inherit"` khi gọi `invoke_subagent`, không tự hạ xuống `flash`/`flash_lite` trừ khi user yêu cầu). Thay vì dùng `low`/`xhigh`, chỉ dùng hai mức effort **`medium`** và **`high`** theo vai trò:
+
+| Vai trò | Model | Effort (`hydrogen`) | Lý do phân mức |
+|---|---|---|---|
+| Coordinator (session) | `hydrogen` | `medium` | Điều phối luồng, chạy lint scripts, kiểm tra định dạng |
+| Bước 1: metadata, brief | `hydrogen` | `medium` | Trích xuất cấu trúc từ handoff/catalog |
+| Bước 2: research | `hydrogen` | `medium` | Chạy `youtube-search.ts`, `youtube-captions.ts`, đọc nguồn và phân loại `fit` |
+| Bước 3: curriculum | `hydrogen` | `high` | Thiết kế cấu trúc, `outcomes`, `mental_models`, `code_exercise` và `final_assignment` |
+| Bước 4: review curriculum | `hydrogen` | `high` | Cổng kiến trúc chặn lỗi flow/format trước khi sinh bài |
+| Bước 5: viết lesson | `hydrogen` | `high` | Viết bài dạy đầy đủ, ví dụ chạy thật, sơ đồ, blank/test `code_exercise`, quiz |
+| Bước 5: chạy kiểm chứng (`verification/<id>.md`) | `hydrogen` | `medium` | Chạy shell kiểm chứng theo `verification_plan` và ghi output thật |
+| Bước 6: review lesson | `hydrogen` | `medium` | Đối chiếu từng tiêu chí cố định trên 1 lesson và file verification |
+| Bước 7: review cấp khóa | `hydrogen` | `high` | Tổng hợp chéo toàn khóa qua digest, bắt mâu thuẫn và sai thứ tự khái niệm |
+
+- Nếu nền tảng hỗ trợ chỉ định effort theo từng child: truyền đúng `medium` hoặc `high` như bảng trên và ghi `<model>` vào `run-log.jsonl` dưới dạng `hydrogen-medium` / `hydrogen-high`.
+- Nếu nền tảng chạy `hydrogen` theo effort chung của session (như Antigravity `invoke_subagent` với `Model: "inherit"`, không có tham số effort riêng cho từng child): giữ `Model: "inherit"`, ghi `hydrogen` vào `run-log.jsonl` và ghi chú trong `run-report.md` rằng mọi child kế thừa chung effort của session.
+
+Ở bước 5, child viết lesson soạn danh sách bước cần chạy. Một child kiểm chứng riêng (`haiku` / `luna` ở mức `low`, hoặc `hydrogen` ở mức `medium`) chạy các bước đó và ghi `verification/<id>.md`. Child viết lesson đọc kết quả rồi sửa bài nếu output thật khác `expected`.
 
 Child viết lesson chỉ nhận phần research thuộc `source_ids` của lesson và các `misconceptions`, `setup_steps`, `videos` của topic liên quan (kèm hồ sơ nội dung video và đoạn phát được chọn nếu là bài video), không nhận toàn bộ `research.json`.
 
@@ -149,11 +168,12 @@ Khi lesson hoặc lesson review chỉ ra kiến thức nền hay hướng dẫn 
 
 ## Kiểm chứng bước thực hành
 
-Mỗi lesson có ví dụ chạy được hoặc practice phải có `verification/<id>.md`. Mặc định AI tự chạy:
+Mỗi lesson có ví dụ chạy được, `code_exercise` hoặc `practice` phải có `verification/<id>.md`. Mặc định AI tự chạy theo hai tầng:
 
-- Bước dùng lệnh (cài đặt, chạy, build, test): chạy bằng shell trong một thư mục tạm riêng của lesson, ghi lệnh và output thật.
-- Bước cần giao diện (trình duyệt, IDE, ví): dùng computer use, ghi lại thao tác và kết quả quan sát được.
-- Không dùng ví, private key, tài khoản hay tiền thật. Bước cần những thứ đó ghi `not_run` kèm lý do.
+- **Tầng 1 — Biên dịch / kiểm tra tĩnh cô lập (BẮT BUỘC `pass`, cấm `not_run`):** Mọi snippet code và toàn bộ tổ hợp `accepted_answers` của `code_exercise` phải được biên dịch/kiểm tra cú pháp-kiểu bằng toolchain của khóa trong thư mục tạm riêng của lesson, ghi lệnh và output thật. Nếu là `code_exercise`, kiểm tra gộp các tổ hợp trong một lượt shell.
+- **Tầng 2 — Dịch vụ ngoài / tài khoản thật / giao diện (được `not_run` kèm lý do):**
+  - Bước cần giao diện (trình duyệt, IDE, ví): dùng computer use, ghi lại thao tác và kết quả quan sát được.
+  - Không dùng ví, private key, tài khoản hay tiền thật. Chỉ các bước cần tài nguyên ngoài/dịch vụ chưa có trên máy hoặc DB thực hành riêng mới ghi `not_run` kèm lý do cụ thể; không lấy lý do thiếu DB/dịch vụ ngoài để bỏ qua kiểm chứng biên dịch ở Tầng 1.
 
 Nếu user chọn tự chạy, child chỉ chuẩn bị danh sách bước cần chạy; user điền kết quả vào cùng file.
 

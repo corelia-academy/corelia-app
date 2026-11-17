@@ -246,3 +246,24 @@ test("A-08 / V-11: curriculum hợp lệ đầy đủ model_ref, mental_model v�
   const problems = lintCurriculumData(curr, null, { brief });
   assert.strictEqual(problems.length, 0, "Curriculum hợp lệ phải pass: " + problems.join("; "));
 });
+
+test("khóa có brief.code_language khác null nhưng 0 code_exercise và thiếu no_code_reason -> lỗi; có no_code_reason -> pass", () => {
+  const curr = getBaseCurriculum();
+  curr.modules[0].lessons[1] = {
+    lesson_id: "L1-2",
+    title: "Chọn câu trả lời đúng",
+    type: "quiz",
+    purpose: "supported_practice",
+  };
+  const brief = { ...getBaseBrief(), code_language: "typescript" };
+
+  const problemsFail = lintCurriculumData(curr, null, { brief });
+  assert.ok(
+    problemsFail.some((p) => p.includes("thiếu-code-exercise") && p.includes("typescript")),
+    "Phải báo thiếu-code-exercise: " + problemsFail.join("; ")
+  );
+
+  curr.no_code_reason = "Khóa lý thuyết chỉ kiểm chứng khái niệm bằng quiz tình huống";
+  const problemsOk = lintCurriculumData(curr, null, { brief });
+  assert.strictEqual(problemsOk.length, 0, "Có no_code_reason phải pass: " + problemsOk.join("; "));
+});

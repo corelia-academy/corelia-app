@@ -51,6 +51,7 @@ export function lintCurriculumData(curriculum, research, options = {}) {
   const videoFirstUsedIn = new Map();
   const usedVideoIds = new Set();
   let totalVideoLessons = 0;
+  let totalCodeExercises = 0;
 
   let forbiddenPrefixRegex;
   try {
@@ -188,8 +189,9 @@ export function lintCurriculumData(curriculum, research, options = {}) {
       }
 
       // A-08: Kiểm tra reinforces của code_exercise (chỉ khi brief.mental_models có giá trị)
-      if (hasMentalModels && l.type === "code_exercise") {
-        if (typeof l.reinforces !== "string" || !l.reinforces.trim()) {
+      if (l.type === "code_exercise") {
+        totalCodeExercises++;
+        if (hasMentalModels && (typeof l.reinforces !== "string" || !l.reinforces.trim())) {
           add(l.lesson_id, "thiếu-reinforces", "bài code_exercise thiếu trường reinforces");
         }
       }
@@ -335,6 +337,18 @@ export function lintCurriculumData(curriculum, research, options = {}) {
           `mô hình tư duy "${mm}" trong brief.mental_models không có module nào dạy`,
         );
       }
+    }
+  }
+
+  // Bắt buộc code_exercise cho khóa có brief.code_language khác null (trừ khi có no_code_reason)
+  const codeLanguage = typeof brief?.code_language === "string" ? brief.code_language.trim() : "";
+  if (codeLanguage && totalCodeExercises === 0) {
+    if (!curriculum?.no_code_reason || typeof curriculum.no_code_reason !== "string" || !curriculum.no_code_reason.trim()) {
+      add(
+        "curriculum",
+        "thiếu-code-exercise",
+        `khóa có code_language "${codeLanguage}" nhưng không có bài code_exercise nào (bổ sung bài code hoặc giải trình trong no_code_reason)`,
+      );
     }
   }
 

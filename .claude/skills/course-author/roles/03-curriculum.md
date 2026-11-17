@@ -71,10 +71,12 @@ Quy tắc:
 ## Loại bài
 
 - `code_exercise` chỉ khi `brief.code_language` khác `null`; dùng đúng ngôn ngữ đó cho toàn khóa. `code_mode` mặc định: `fill` cho `supported_practice`, `edit` cho `independent_practice` và `final_check`. Chọn khác mặc định được, nhưng mô tả lesson phải nêu rõ điền chỗ nào hoặc viết/sửa gì.
+- **Bắt buộc `code_exercise` với khóa có `brief.code_language`:** khi `brief.code_language` khác `null`, toàn khóa BẮT BUỘC có bài `code_exercise` (trừ khi có `no_code_reason` ở cấp khóa giải trình vì sao không bài nào kiểm được bằng `code_exercise`); mọi module dạy logic/cơ chế thể hiện được bằng mã nguồn phải có ít nhất một bài `code_exercise` củng cố mô hình tư duy (ưu tiên `fill` 1–5 chỗ trống ở dòng quyết định mô hình tư duy, hoặc `edit` trên chữ ký cố định). Nếu module có bài `practice` chạy trên máy người học, đặt `code_exercise` làm bước `supported_practice` ngay trước `practice`, thay vào slot quiz thừa để giữ nguyên quy mô 3–6 bài/module mà không phình tổng số bài.
 - Chọn dạng theo mục "Chọn dạng `code_exercise`" trong `platform.md`. Mô tả mỗi bài `fill` liệt kê các chỗ điền (tối đa 5, chỉ phần cốt lõi) và phần cho sẵn; mô tả mỗi bài `edit` nêu chữ ký cố định và lý do test so khớp chuỗi đủ để chấm. Không chắc chấm được đáng tin thì dùng `fill` hoặc `practice`, không chọn `edit`.
 - Bỏ yêu cầu khung code xuyên suốt: `frame.md` chỉ bắt buộc khi nhiều bài code thật sự dùng chung một đoạn code. Mỗi bài code ngắn, chỉ đủ để thấy mô hình. Lesson `code_exercise` có trường `reinforces`: một câu nêu mô hình tư duy nó củng cố và lập luận người học phải làm (dự đoán, sửa chỗ vi phạm mô hình, điền đúng dòng thể hiện mô hình).
 - `video`:
   - Chỉ được tạo từ ứng viên `fit: "primary"` trong `research.videos`, mang purpose `explanation` hoặc `worked_example`, và LÀ bài dạy chính của kiến thức đó. Lesson ghi `video_id` và đoạn đã chọn từ `segments` (hoặc cả video). Một video chỉ làm bài `primary` một lần trong toàn khóa.
+  - Chỉ chọn ứng viên `fit: "primary"` thật sự khớp trực tiếp `mental_model` và `outcome` của module và không làm đứt mạch tình huống của khóa; tuyệt đối không gượng ép nhét video tệ hoặc lệch ngữ cảnh. Khi không dùng ứng viên `primary` hoặc hạ về `article`, ghi rõ lý do trong `unused_primary_videos`; khóa có 0 bài video ghi lý do cụ thể ở mức khóa trong `no_video_reason` (căn cứ trên kết quả khảo sát của `research.videos`).
   - Ứng viên `supplement` chỉ dùng qua `suggested_videos` của bài liên quan, không thành bài riêng.
   - Ngân sách: tối đa 1 bài video mỗi module (`MAX_VIDEOS_PER_MODULE = 1`). Không có số tối thiểu.
   - Giải trình bắt buộc ghi trong `curriculum.json`: mỗi ứng viên `primary` không được dùng có một dòng lý do trong `unused_primary_videos`; khóa có 0 bài video có lý do ở mức khóa trong `no_video_reason`.
@@ -97,6 +99,7 @@ Chỉ dùng chủ đề và `source_id` có trong research. Thiếu nguồn cho 
 { "status": "draft|needs_research",
   "outcomes": [{ "outcome_id": "O1", "text": "", "check_lesson_ids": ["L1-3"] }],
   "no_video_reason": null,
+  "no_code_reason": null,
   "unused_primary_videos": [{ "video_id": "", "reason": "" }],
   "modules": [{ "module_id": "M1", "title": "", "model_ref": "", "mental_model": "", "description": "", "size_reason": null,
     "lessons": [{ "lesson_id": "L1-1", "title": "", "description": "", "type": "article|video|quiz|code_exercise|practice",
