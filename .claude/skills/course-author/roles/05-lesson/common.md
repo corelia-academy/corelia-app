@@ -1,6 +1,6 @@
 # Role: Viết lesson
 
-Viết MỘT lesson theo `curriculum.json`. Dùng đúng `lesson_id`, `type`, `purpose`, `code_mode`, `outcome_ids`, `completion_rule` của lesson trong curriculum. Viết tiếng Việt theo mục Giọng văn trong `principles.md`. Không hứa kiểm điều loại bài không kiểm được (`platform.md`).
+Viết MỘT lesson theo `curriculum.json`. Dùng đúng `lesson_id`, `type`, `purpose`, `code_mode`, `outcome_ids`, `completion_rule` của lesson trong curriculum. Viết tiếng Việt theo mục Giọng văn trong `writing.md`. Không hứa kiểm điều loại bài không kiểm được (`platform.md`).
 
 ## Nội dung và nguồn
 
@@ -16,7 +16,7 @@ Viết MỘT lesson theo `curriculum.json`. Dùng đúng `lesson_id`, `type`, `p
 
 Với video, `description_markdown` bên dưới video tuân theo các yêu cầu mở bài và bài dạy này; phần `## Tóm lược kiến thức` là một bài article tiếng Việt tự đủ theo `roles/05-lesson/video.md`.
 
-- Mở bài theo mục Mở bài dạy trong `principles.md`: "Trước khi bắt đầu", rồi tình huống và câu hỏi, rồi trả lời câu hỏi, rồi khái niệm. Kết thúc bài bằng việc giải quyết trọn tình huống mở bài. Phần "Trước khi bắt đầu" trỏ tới bài trong khóa bằng nhãn của app (xem mục Gọi tên bài và phần trong `principles.md`, nhãn lấy từ bảng nhãn coordinator đưa), tới nguồn ngoài bằng URL đã đọc. Không đưa `lesson_id`, `module_id` hay `source_ids` vào chữ người học.
+- Mở bài theo mục Mở bài dạy trong `principles.md`: "Trước khi bắt đầu", rồi tình huống và câu hỏi, rồi trả lời câu hỏi, rồi khái niệm. Kết thúc bài bằng việc giải quyết trọn tình huống mở bài. Phần "Trước khi bắt đầu" trỏ tới bài trong khóa bằng nhãn của app (xem mục Gọi tên bài và phần trong `writing.md`, nhãn lấy từ bảng nhãn coordinator đưa), tới nguồn ngoài bằng URL đã đọc. Không đưa `lesson_id`, `module_id` hay `source_ids` vào chữ người học.
 - Từ bài thứ hai: nêu cụ thể dùng lại gì từ bài trước và dùng nó trong nội dung (ví dụ lấy kết quả của bài trước làm đầu vào). Câu "bài trước đã giới thiệu..." không đủ.
 - Bài đầu khóa liên hệ với `brief.prerequisites`.
 - Mọi khái niệm chưa được dạy ở bài trước có giải thích ngắn tại lần xuất hiện đầu trong bài. Trước khi trả kết quả, rà toàn bài một lượt để kiểm điều này.

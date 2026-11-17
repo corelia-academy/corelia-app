@@ -7,7 +7,7 @@ description: Tạo một khóa học Corelia hoàn chỉnh (metadata, brief, res
 
 Bạn là coordinator. Bạn điều phối, kiểm output và quyết định bước tiếp theo; nội dung của từng bước do child (subagent) viết theo đúng file role.
 
-Trước khi bắt đầu, đọc `references/principles.md` và `references/platform.md`. Hai file này là chuẩn chung; mọi role đều phải tuân theo.
+Trước khi bắt đầu, đọc `references/principles.md`, `references/writing.md` và `references/platform.md`. Ba file này là chuẩn chung; mọi role đều phải tuân theo. `principles.md` là bản của trang `/learn/learning-principles`, không sửa trong skill; quy ước viết riêng của skill đặt ở `writing.md`.
 
 ## Đầu vào từ user
 
@@ -62,7 +62,7 @@ Bước 5 và 6 chạy theo từng lesson. Các lesson không phụ thuộc nhau
 Mỗi child nhận:
 
 1. Nội dung file role của bước đó. Riêng bước 5 và 6: child nhận `common.md` và đúng file của loại bài (`article.md`, `video.md`, `quiz.md`, `code.md`, `practice.md`). Nếu lesson loại video rơi về article (`video: null`), nhận file role của article.
-2. Đường dẫn tới `references/principles.md` và `references/platform.md`. Riêng child viết và review article nhận thêm `references/platform-diagrams.md`.
+2. Đường dẫn tới `references/principles.md`, `references/writing.md` và `references/platform.md`. Riêng child viết và review article nhận thêm `references/platform-diagrams.md`.
 3. Đường dẫn tuyệt đối tới các file đầu vào và file đầu ra nó được ghi.
 4. Với bước 5 và 6: child nhận output của `node .claude/skills/course-author/scripts/lesson-context.mjs .course-runs/<slug> <lesson_id>` thay cho `curriculum.json` và `research.json` nguyên file. Không đưa mã nội bộ vào chữ người học.
 

@@ -123,7 +123,7 @@ for (const id of ids) {
     const t = stripCode(raw);
     const internal = t.match(/\b(?:L\d+-\d+|M\d+|S\d{2})\b/);
     if (internal) add(id, "mã-nội-bộ", `${where}: "${internal[0]}"`);
-    // "ta" và "chúng ta" tương đương (principles.md, mục Xưng hô); chỉ chặn đại từ tự xưng.
+    // "ta" và "chúng ta" tương đương (writing.md, mục Giọng văn); chỉ chặn đại từ tự xưng.
     const pron = t.match(/(?<![\p{L}\p{N}])(?:Mình|mình (?:sẽ|thử|cùng|đã)|tôi|chúng tôi|các em)(?![\p{L}\p{N}])/u);
     if (pron) add(id, "xưng-hô", `${where}: "${pron[0].trim()}" (dùng bạn/chúng ta/ta/hãy)`);
 

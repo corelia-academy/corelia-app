@@ -1,6 +1,6 @@
 # Role: Review lesson
 
-Review MỘT lesson độc lập với tác giả. Không viết lại lesson. Chuẩn đối chiếu là `principles.md`, `platform.md`, lesson tương ứng trong `curriculum.json`, `research.json` và `verification/<lesson_id>.md`.
+Review MỘT lesson độc lập với tác giả. Không viết lại lesson. Chuẩn đối chiếu là `principles.md`, `writing.md`, `platform.md`, lesson tương ứng trong `curriculum.json`, `research.json` và `verification/<lesson_id>.md`.
 
 Chỉ review các `outcome_ids` của lesson này; module và các lesson khác chỉ là ngữ cảnh. Giới hạn cố định của nền tảng (validator không biên dịch, file code là tên trần) không phải lỗi; chỉ báo lỗi khi lesson hứa vượt giới hạn đó.
 
@@ -15,7 +15,7 @@ Mỗi tiêu chí có đúng một mục trong `checks`:
 | `outcome_and_level` | Lesson dạy/kiểm đủ outcome của nó, đúng trình độ, dễ hiểu |
 | `frame_consistency` | Khóa có dùng `frame.md` (nếu các bài code dùng chung khung) hoặc bài kề: tên file/module, kiểu, biến thể, chữ ký, chuỗi in ra và import khớp `frame.md` (khi có khung) và các bài kề; code và output trong bài ghép được với bài trước (đặt file ghép thử nếu cần). Lệch làm người học viết hoặc đọc code không biên dịch hay ra output khác bài kề: `flow_violation`, `blocking`; chỉ lệch chữ: `minor` |
 | `verification` | Mọi bước có kết quả `pass`, hoặc `not_run` kèm lý do hợp lệ; kết quả trong bài khớp output thật |
-| `language` | Tiếng Việt rõ, thuật ngữ nhất quán, xưng hô đúng mục Giọng văn (bạn / chúng ta / hãy; không "mình", "tôi", "chúng tôi"). Nhắc bài khác đúng nhãn app ("Part A, Bài 2") và khớp bảng nhãn; không có mã nội bộ (`lesson_id`, `module_id`, `source_ids`) trong chữ người học (vi phạm: `minor`, `style_or_wording`) |
+| `language` | Tiếng Việt rõ, thuật ngữ nhất quán, xưng hô đúng mục Giọng văn trong `writing.md` (bạn / chúng ta / ta / hãy; không "mình", "tôi", "chúng tôi"). Nhắc bài khác đúng nhãn app ("Part A, Bài 2") và khớp bảng nhãn; không có mã nội bộ (`lesson_id`, `module_id`, `source_ids`) trong chữ người học (vi phạm: `minor`, `style_or_wording`) |
 | `tone_and_flow` | Văn đọc như người hướng dẫn nói chuyện: câu đủ chủ vị, có từ nối giữa câu và đoạn, mỗi đoạn có câu mở và câu chuyển, nêu lý do trước thao tác. Không có chuỗi ba câu cụt liên tiếp, không có đoạn chỉ là danh sách cụt thiếu câu dẫn |
 
 `result` là `ok`, `issue` hoặc `unverified`. `basis` tối đa 160 ký tự. `refs` là đường dẫn field có thật trong lesson (ví dụ `quiz.questions[2].options`). `verified_by` là `tool`, `source` hoặc `reasoning`.
@@ -24,7 +24,7 @@ Mỗi tiêu chí có đúng một mục trong `checks`:
 
 Mỗi issue có `location` (một đường dẫn field), `criterion`, `problem`, `fix`, `category`, `severity`, `verified_by`.
 
-**Phân loại.** Mọi vi phạm một quy tắc viết bằng chữ trong `principles.md`, `platform.md`, `roles/05-lesson/` hoặc `frame.md` là `blocking`, bất kể category (chọn category đúng nhất, kể cả `style_or_wording`, `insufficient_description`, `other`). `minor` chỉ còn cho `language`, `tone_and_flow` và bố cục sơ đồ (gợi ý không vi phạm quy tắc nào và không làm người học hiểu sai, làm sai hay đọc sai). Nghi ngờ giữa hai mức thì chọn `blocking`.
+**Phân loại.** Mọi vi phạm một quy tắc viết bằng chữ trong `principles.md`, `writing.md`, `platform.md`, `roles/05-lesson/` hoặc `frame.md` là `blocking`, bất kể category (chọn category đúng nhất, kể cả `style_or_wording`, `insufficient_description`, `other`). `minor` chỉ còn cho `language`, `tone_and_flow` và bố cục sơ đồ (gợi ý không vi phạm quy tắc nào và không làm người học hiểu sai, làm sai hay đọc sai). Nghi ngờ giữa hai mức thì chọn `blocking`.
 
 Luôn là `blocking`:
 
