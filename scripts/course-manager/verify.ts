@@ -197,7 +197,9 @@ export function verifyLesson(
       ? lesson.lesson_type
       : typeof lesson.type === "string"
         ? lesson.type
-        : "article";
+        : lesson.practice && typeof lesson.practice === "object"
+          ? "practice"
+          : "article";
 
   const checks: VerifyCheck[] = [];
   if (lessonType === "code_exercise") {
@@ -256,6 +258,22 @@ export function verifyLesson(
 
     const editCheck = evaluateEditTests(lesson);
     if (editCheck) checks.push(editCheck);
+  }
+
+  const practice = lesson.practice as { checklist_items?: unknown[] } | null | undefined;
+  if (practice && Array.isArray(practice.checklist_items)) {
+    for (const [idx, item] of practice.checklist_items.entries()) {
+      const step = item as { id?: unknown; snippet?: { language?: unknown; code?: unknown } };
+      if (!step?.snippet || typeof step.snippet !== "object") continue;
+      const lang = typeof step.snippet.language === "string" ? step.snippet.language.trim() : "";
+      const code = typeof step.snippet.code === "string" ? step.snippet.code : "";
+      const stepId = typeof step.id === "string" && step.id.trim() ? step.id.trim() : `p${idx + 1}`;
+      if (!lang || !code.trim()) {
+        checks.push({ id: `practice_${stepId}_snippet`, status: "fail", detail: "snippet thiếu language hoặc code" });
+        continue;
+      }
+      checks.push(compileSource(repoRoot, lang, code, `practice_${stepId}_snippet`));
+    }
   }
 
   const lintScript = path.join(

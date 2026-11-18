@@ -7,7 +7,7 @@ import { extractJson, mergeJsonPatch } from "./adapter.ts";
 import { extractQueueSlugs, proposalToHandoff } from "./planner.ts";
 import { normalizeStepKey, parseAgentTarget } from "./profile.ts";
 import { inspectCourse } from "./state.ts";
-import { evaluateEditTests, generateBoundedCombos } from "./verify.ts";
+import { evaluateEditTests, generateBoundedCombos, verifyLesson } from "./verify.ts";
 
 test("profile: parses agent specs and normalizes step keys", () => {
   const parsed = parseAgentTarget("codex:gpt-6-luna:xhigh");
@@ -112,4 +112,41 @@ test("planner: maps backlog proposal to handoff and extracts queue slugs", () =>
   assert.equal(handoff.path, "devops");
   assert.equal(handoff.is_foundation, true);
   assert.deepEqual(extractQueueSlugs({ queue: ["a", { slug: "b" }] }), ["a", "b"]);
+});
+
+test("verify: checks practice checklist_items snippets for syntax errors", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "cm-verify-practice-"));
+  try {
+    const courseDir = path.join(tmp, ".course-runs", "demo");
+    fs.mkdirSync(path.join(courseDir, "lessons"), { recursive: true });
+
+    const writeLesson = (id: string, items: unknown[]) => {
+      fs.writeFileSync(
+        path.join(courseDir, "lessons", `${id}.json`),
+        JSON.stringify({
+          lesson_id: id,
+          practice: { mode: "checklist", instructions_markdown: "Test", checklist_items: items },
+        }),
+      );
+    };
+
+    writeLesson("L1-1", [
+      { id: "p1", title: "JS hop le", action: "Chay", expected: "OK", snippet: { language: "javascript", code: "const x = 1 + 2;" } },
+      { id: "p2", title: "SQL bo qua tinh", action: "Chay", expected: "OK", snippet: { language: "sql", code: "SELECT 1;" } },
+    ]);
+    const okRep = verifyLesson(tmp, "demo", "L1-1", false);
+    assert.equal(okRep.lesson_type, "practice");
+    assert.equal(okRep.passed, true);
+    assert.equal(okRep.checks.find((c) => c.id === "practice_p1_snippet")?.status, "pass");
+    assert.equal(okRep.checks.find((c) => c.id === "practice_p2_snippet")?.status, "skipped");
+
+    writeLesson("L1-2", [
+      { id: "p1", title: "JS loi cu phap", action: "Chay", expected: "OK", snippet: { language: "javascript", code: "const x = ;" } },
+    ]);
+    const badRep = verifyLesson(tmp, "demo", "L1-2", false);
+    assert.equal(badRep.passed, false);
+    assert.equal(badRep.checks.find((c) => c.id === "practice_p1_snippet")?.status, "fail");
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });
