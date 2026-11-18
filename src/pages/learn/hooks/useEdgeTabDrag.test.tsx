@@ -3,7 +3,7 @@ import { act } from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { rubberBand } from "../utils/dockPhysics"
+import { rubberBand } from "../utils/edgeTabPhysics"
 import { useEdgeTabDrag } from "./useEdgeTabDrag"
 
 type SpringCall = {
@@ -15,14 +15,14 @@ type SpringCall = {
 
 const physics = vi.hoisted(() => ({ runSpring: vi.fn() }))
 
-vi.mock("../utils/dockPhysics", async importOriginal => ({
-  ...(await importOriginal<typeof import("../utils/dockPhysics")>()),
+vi.mock("../utils/edgeTabPhysics", async importOriginal => ({
+  ...(await importOriginal<typeof import("../utils/edgeTabPhysics")>()),
   runSpring: physics.runSpring,
 }))
 
 ;(globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
-const STORAGE_KEY = "learn-dock-tab-v1"
+const STORAGE_KEY = "learn-edge-tab-v1"
 const LAYOUT = { parentHeight: 800, tabHeight: 40, defaultTop: 20 }
 
 let root: Root

@@ -418,9 +418,7 @@
       },
       "noLessonSelected": "커리큘럼에서 레슨을 선택해 시작하세요.",
       "toggleCurriculum": "커리큘럼 전환",
-      "openCurriculum": "커리큘럼 열기",
-      "moveBar": "작업 표시줄 이동(드래그 또는 화살표 키)",
-      "resetBar": "표시줄 위치 초기화"
+      "openCurriculum": "커리큘럼 열기"
     }
   },
   "filters": {
@@ -538,8 +536,6 @@
     "markIncompleteShort": "미완료",
     "noHints": "이 연습에는 아직 힌트가 없습니다.",
     "outline": "목차",
-    "footerToDock": "플로팅 바로 전환",
-    "footerToBar": "바를 하단에 고정",
     "redoShort": "다시 하기",
     "nextShort": "다음",
     "redoFromStart": "처음부터 다시",

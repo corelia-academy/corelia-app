@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { clamp, isSettled, readStored, rubberBand, runSpring, springStep, writeStored } from "./dockPhysics"
+import { clamp, isSettled, readStored, rubberBand, runSpring, springStep, writeStored } from "./edgeTabPhysics"
 
 const originalStorage = Object.getOwnPropertyDescriptor(window, "localStorage")
 
