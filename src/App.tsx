@@ -357,9 +357,11 @@ function ApplicationRoutes() {
             <Route
               path="study"
               element={
-                <Suspense fallback={<LearnFallback />}>
-                  <LearnLayout />
-                </Suspense>
+                <RequireAuth>
+                  <Suspense fallback={<LearnFallback />}>
+                    <LearnLayout />
+                  </Suspense>
+                </RequireAuth>
               }
             >
               <Route
