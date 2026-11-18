@@ -126,6 +126,16 @@ try {
 const quote = (val: unknown) => `'${String(val ?? "").replaceAll("'", "''")}'`;
 const json = (val: unknown) => `${quote(JSON.stringify(val))}::jsonb`;
 
+// Bước practice có thể kèm snippet {language, code}: dựng thành code fence, dùng fence dài hơn mọi dãy backtick trong code.
+const renderSnippet = (snippet: any, lessonId: string, stepNo: number): string => {
+  if (typeof snippet?.language !== "string" || !snippet.language.trim() || typeof snippet?.code !== "string" || !snippet.code.trim()) {
+    throw new Error(`${lessonId}: bước ${stepNo}: snippet phải có language và code là chuỗi không rỗng`);
+  }
+  const longest = Math.max(0, ...(snippet.code.match(/`+/g) ?? []).map((m: string) => m.length));
+  const fence = "`".repeat(Math.max(3, longest + 1));
+  return `${fence}${snippet.language.trim()}\n${snippet.code.replace(/\n+$/, "")}\n${fence}`;
+};
+
 const execSql = async (sql: string): Promise<string> => {
   const proc = new Deno.Command("docker", {
     args: ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-v", "ON_ERROR_STOP=1", "-At"],
@@ -244,6 +254,7 @@ for (const module of curriculum.modules ?? []) {
           [
             `### Bước ${index + 1}: ${s.title ?? s.action}`,
             `**Làm:** ${s.action}`,
+            ...(s.snippet ? [renderSnippet(s.snippet, cl.lesson_id, index + 1)] : []),
             `**Bạn sẽ thấy:** ${s.expected}`,
             ...(s.record ? [`**Ghi vào ghi chú:** ${s.record}`] : []),
             ...((s.common_errors ?? []).length

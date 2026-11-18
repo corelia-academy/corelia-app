@@ -37,7 +37,7 @@ Mọi lựa chọn dưới đây chỉ dùng các dạng bài đã có, không �
 
 `PracticeConfig.mode` có `instruction`, `checklist`, `submission`, `guided_project`.
 
-- `checklist`: `checklist_items` là `{ id, label }`, chỉ có một dòng chữ cho mỗi mục.
+- `checklist`: `checklist_items` là `{ id, label }`, chỉ có một dòng chữ cho mỗi mục. Nội dung chi tiết từng bước (`action`, `snippet`, `expected`, ...) không đi qua trường này: `import-local.ts` ghép vào `description_markdown` dưới mục "Các bước". `action` là một chuỗi một dòng (không xuống dòng được); mã nhiều dòng phải nằm trong `snippet {language, code}`, được dựng thành code fence.
 - `guided_project`: mỗi bước là `{ id, title, instructions_markdown, verification: "self_check" | "artifact_required", order }`.
 
 Mỗi bước practice cần chứa việc cần làm, kết quả mong đợi, lỗi hay gặp và cách sửa. Người học tự đánh dấu từng bước; bước practice không khóa bài tiếp theo.

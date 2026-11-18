@@ -5,6 +5,7 @@ import path from "node:path";
 
 const WORDS_PER_MINUTE = 200;
 const LENGTH_TOLERANCE = 1.3;
+const ACTION_MAX = 300; // practice.action là lời dẫn; mã dài nằm trong snippet
 
 const dir = path.resolve(process.argv[2] ?? ".");
 const only = process.argv.slice(3);
@@ -250,6 +251,9 @@ for (const id of ids) {
   if (rec.practice) (rec.practice.checklist_items ?? []).forEach((s, i) => {
     if ((s.title ?? "").length > 60) add(id, "practice", `p${i + 1}: title > 60 ký tự`);
     if (!s.action || !s.expected) add(id, "practice", `p${i + 1}: thiếu action hoặc expected`);
+    if ((s.action ?? "").length > ACTION_MAX) add(id, "practice", `p${i + 1}: action ${s.action.length} ký tự > ${ACTION_MAX} (tách mã vào snippet, giữ action là lời dẫn)`);
+    if ((s.action ?? "").includes("```")) add(id, "practice", `p${i + 1}: action chứa code fence (đưa mã vào snippet)`);
+    if (s.snippet !== undefined && (typeof s.snippet?.language !== "string" || !s.snippet.language.trim() || typeof s.snippet?.code !== "string" || !s.snippet.code.trim())) add(id, "practice", `p${i + 1}: snippet phải có language và code là chuỗi không rỗng`);
   });
 
   if (frameStrings.length > 0) {
