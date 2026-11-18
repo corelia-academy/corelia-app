@@ -304,8 +304,7 @@ export default function AdminSelectionComponentPage({
                       return (
                         <div key={cellId} data-testid={`selection-radio-state-${cellId}`} className="flex min-w-0 items-center justify-center border-b border-border-subtle py-3 last:border-b-0">
                           <RadioGroup
-                            key={`${cellId}-${radioMatrix[cellId] ? "selected" : "empty"}`}
-                            defaultValue={radioMatrix[cellId] ? cellId : undefined}
+                            value={radioMatrix[cellId] ? cellId : ""}
                             onValueChange={() => handleRadioMatrixChange(cellId)}
                           >
                             <Radio
