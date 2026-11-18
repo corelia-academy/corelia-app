@@ -13,6 +13,7 @@
     "functions:serve:cron-jobs": "supabase functions serve cron-jobs --env-file supabase/functions/.env",
     "functions:serve:cron-email-center": "supabase functions serve cron-email-center --env-file supabase/functions/.env",
     "studio:tick": "node scripts/studio/tick.mjs",
+    "cm": "node scripts/course-manager/cli.ts",
     "functions:deploy": "supabase functions deploy corelia-api",
     "functions:deploy:cron-learning-reminders": "supabase functions deploy cron-learning-reminders",
     "functions:deploy:cron-jobs": "supabase functions deploy cron-jobs",
@@ -126,5 +127,6 @@
       "postcss": "8.5.29",
       "source-map-js": "1.2.2"
     }
-  }
+  },
+  "workspaces": [".", "landing", "packages/*"]
 }
