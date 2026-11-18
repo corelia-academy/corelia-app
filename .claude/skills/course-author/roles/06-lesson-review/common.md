@@ -47,6 +47,8 @@ Category `blocking` hợp lệ gồm cả `factual_inaccuracy`, `wrong_source`, 
 
 Liệt kê mọi issue blocking trong một lần review. Khi nhận `previous_review`: kiểm từng issue blocking cũ đã được xử lý chưa; issue mới chỉ báo khi do bản sửa gây ra hoặc vòng trước bỏ sót, bắt đầu `problem` bằng "Mới ở vòng này:".
 
+Để các vòng viết–review hội tụ: ở vòng 1, rà trọn một lượt toàn văn các tiêu chí hay sót (`lesson_flow` thuật ngữ/ký hiệu xuất hiện lần đầu, `factual_accuracy` nguồn của phát biểu, `verification` kết quả thật) để tránh vòng sau mới phát hiện lỗi đã có từ đầu. Ở vòng `N > 1`, tập trung xác minh lỗi cũ đã đóng và kiểm phần vừa sửa không phát sinh lỗi mới; chỉ báo issue mới ngoài phần vừa sửa nếu là sai sót thực tế hoặc vi phạm `blocking` làm người học hiểu sai hoặc làm sai.
+
 ## Output
 
 `reviews/<lesson_id>.json`:

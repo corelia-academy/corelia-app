@@ -93,7 +93,13 @@ export function getCourseStatus(courseDir, options = {}) {
       for (const line of lines) {
         try {
           const entry = JSON.parse(line);
-          if (entry.step === 6 && entry.event === "end" && entry.lesson_id && entry.lesson_id !== "-") {
+          if (
+            entry.step === 6 &&
+            (entry.action === "end" || entry.event === "end") &&
+            entry.result !== "rerun" &&
+            entry.lesson_id &&
+            entry.lesson_id !== "-"
+          ) {
             cyclesMap.set(entry.lesson_id, (cyclesMap.get(entry.lesson_id) ?? 0) + 1);
           }
         } catch {}
@@ -130,7 +136,8 @@ export function getCourseStatus(courseDir, options = {}) {
       } else {
         const rec = readJson(lessonFile);
         const md = rec?.article?.description_markdown ?? "";
-        const needsRun = /```/.test(md) || rec?.code || rec?.practice;
+        const hasVerificationPlan = Array.isArray(rec?.verification_plan) && rec.verification_plan.length > 0;
+        const needsRun = /```/.test(md) || rec?.code || rec?.practice || hasVerificationPlan;
 
         if (needsRun && !hasVerification) {
           status = "chờ_kiểm_chứng";

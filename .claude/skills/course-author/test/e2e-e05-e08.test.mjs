@@ -339,3 +339,109 @@ test("E-08: lesson-lint báo lỗi rõ ràng và thoát 1 khi thư mục lessons
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test("E-05: course-status đọc action=end từ run-log.mjs, bỏ qua rerun và đòi verify cho quiz có verification_plan", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "author-status-action-"));
+  try {
+    fs.mkdirSync(path.join(tmpDir, "lessons"), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, "reviews"), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, "verification"), { recursive: true });
+
+    fs.writeFileSync(
+      path.join(tmpDir, "curriculum.json"),
+      JSON.stringify({
+        modules: [
+          {
+            module_id: "M1",
+            title: "Module 1",
+            lessons: [
+              { lesson_id: "L1-1", title: "Bài kẹt action", type: "article" },
+              { lesson_id: "L1-2", title: "Bài chưa kẹt vì rerun", type: "article" },
+              { lesson_id: "L1-3", title: "Quiz có kiểm chứng", type: "quiz" },
+            ],
+          },
+        ],
+      })
+    );
+
+    const makeArticle = (id) => ({
+      lesson_id: id,
+      title: id,
+      article: { description_markdown: "Bạn hãy học bài này." },
+    });
+    const makeNeedsFix = () => ({
+      verdict: "needs_fix",
+      issues: [{ category: "factual_accuracy", severity: "blocking", description: "Cần sửa" }],
+    });
+
+    fs.writeFileSync(path.join(tmpDir, "lessons", "L1-1.json"), JSON.stringify(makeArticle("L1-1")));
+    fs.writeFileSync(path.join(tmpDir, "verification", "L1-1.md"), "# V\n## Tự review\nok");
+    fs.writeFileSync(path.join(tmpDir, "reviews", "L1-1.json"), JSON.stringify(makeNeedsFix()));
+
+    fs.writeFileSync(path.join(tmpDir, "lessons", "L1-2.json"), JSON.stringify(makeArticle("L1-2")));
+    fs.writeFileSync(path.join(tmpDir, "verification", "L1-2.md"), "# V\n## Tự review\nok");
+    fs.writeFileSync(path.join(tmpDir, "reviews", "L1-2.json"), JSON.stringify(makeNeedsFix()));
+
+    // Quiz có verification_plan nhưng chưa có verification/L1-3.md -> chờ_kiểm_chứng
+    fs.writeFileSync(
+      path.join(tmpDir, "lessons", "L1-3.json"),
+      JSON.stringify({
+        lesson_id: "L1-3",
+        title: "Quiz có kiểm chứng",
+        quiz: {
+          questions: [
+            {
+              id: "q1",
+              prompt: "Câu hỏi kiểm tra số 1?",
+              options: [
+                { id: "a", text: "Phương án đúng số một" },
+                { id: "b", text: "Phương án sai số hai" },
+                { id: "c", text: "Phương án sai số ba" },
+              ],
+              correct_index: 0,
+              explanation: "Bạn chọn A vì giải thích chi tiết hơn bốn mươi ký tự để qua được kiểm tra chất lượng của lesson-lint.",
+            },
+          ],
+        },
+        verification_plan: [{ id: "v1", kind: "shell", action: "echo ok", expected: "ok", not_run_reason: null }],
+      })
+    );
+
+    const runLogs = [
+      // L1-1: 3 vòng review thật + 1 rerun -> cycles = 3, capped = true
+      JSON.stringify({ step: 6, lesson_id: "L1-1", action: "end", result: "needs_fix" }),
+      JSON.stringify({ step: 6, lesson_id: "L1-1", action: "end", result: "needs_fix" }),
+      JSON.stringify({ step: 6, lesson_id: "L1-1", action: "end", result: "rerun" }),
+      JSON.stringify({ step: 6, lesson_id: "L1-1", action: "end", result: "needs_fix" }),
+      // L1-2: 2 vòng thật + 1 rerun -> cycles = 2, capped = false
+      JSON.stringify({ step: 6, lesson_id: "L1-2", action: "end", result: "needs_fix" }),
+      JSON.stringify({ step: 6, lesson_id: "L1-2", action: "end", result: "needs_fix" }),
+      JSON.stringify({ step: 6, lesson_id: "L1-2", action: "end", result: "rerun" }),
+    ].join("\n");
+    fs.writeFileSync(path.join(tmpDir, "run-log.jsonl"), runLogs);
+
+    let res = run(`node ${path.join(scriptsDir, "course-status.mjs")} ${tmpDir} --json`);
+    assert.equal(res.status, 0);
+    let data = JSON.parse(res.stdout);
+    assert.equal(data.summary.quá_trần, 1);
+    assert.equal(data.summary.chờ_kiểm_chứng, 1);
+
+    const l11 = data.lessons.find((l) => l.lesson_id === "L1-1");
+    const l12 = data.lessons.find((l) => l.lesson_id === "L1-2");
+    const l13 = data.lessons.find((l) => l.lesson_id === "L1-3");
+    assert.equal(l11.cycles, 3);
+    assert.equal(l11.capped, true);
+    assert.equal(l12.cycles, 2);
+    assert.equal(l12.capped, false);
+    assert.equal(l13.status, "chờ_kiểm_chứng");
+
+    // Khi có verification/L1-3.md -> chuyển sang chờ_review
+    fs.writeFileSync(path.join(tmpDir, "verification", "L1-3.md"), "# V\n## Tự review\nok");
+    res = run(`node ${path.join(scriptsDir, "course-status.mjs")} ${tmpDir} --json`);
+    assert.equal(res.status, 0);
+    data = JSON.parse(res.stdout);
+    assert.equal(data.lessons.find((l) => l.lesson_id === "L1-3").status, "chờ_review");
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});

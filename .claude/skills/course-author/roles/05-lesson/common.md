@@ -54,6 +54,7 @@ Trước khi báo hoàn tất, tự review bài như một reviewer độc lập
 2. Đọc lại bài từ vị trí người học đúng trình độ: đích bài có rõ không, ví dụ có chạy ra kết quả đã ghi không, mỗi mục có kết luận không, mọi khái niệm mới đã giải thích chưa, mọi nhãn và tên khớp `frame.md` và bài kề không.
 3. Duyệt từng tiêu chí trong bảng của `roles/06-lesson-review/common.md` (cùng file loại bài tương ứng) và từng mục luôn-`blocking`. Chỗ nào vi phạm thì sửa bài, không ghi chú để reviewer bắt.
 4. Ghi mục `## Tự review` ở cuối `verification/<lesson_id>.md`: mỗi tiêu chí một dòng `criterion: ok` hoặc `criterion: đã sửa — <điều đã sửa>`, kèm kết quả `lesson-lint` (`ok`) và số vòng sửa. Có tiêu chí không tự kiểm được thì ghi `chưa kiểm` và lý do; không ghi `ok` cho điều chưa kiểm.
+5. Khi sửa theo review (`fixreview`): kiểm tra lại riêng toàn bộ câu và đoạn vừa thêm hoặc viết lại — bảo đảm không đưa vào thuật ngữ, cú pháp, ký hiệu mới chưa giải thích tại lần xuất hiện đầu và mọi phát biểu mới đều có `key_point` trong `ctx` hoặc output thật đã chạy, tránh vá một lỗi lại tạo lỗi mới ở vòng sau.
 
 Bài thiếu mục `## Tự review`, hoặc `lesson-lint` còn báo, bị coordinator trả lại, chưa chuyển cho reviewer.
 
