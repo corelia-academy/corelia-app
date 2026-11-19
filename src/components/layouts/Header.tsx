@@ -4,22 +4,17 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
-import {
-  Award,
-  GraduationCap,
-  IdCard,
-  LogOut,
-  MenuIcon,
-  Search,
-  Settings,
-  UserCircle,
-} from "lucide-react";
+import { MenuIcon, Search } from "lucide-react";
+import { UserCircle, Shield, Gear, UserSwitch, Sun, Moon, CircleHalf } from "@phosphor-icons/react";
+import { IconToggle } from "@/components/ui/toggle";
 import { UserAvatar } from "@/components/UserAvatar";
 import { User } from "@/components/ui/user";
-import { XpRankBadge } from "@/features/xp/XpRankBadge";
-import { XpBadge } from "@/features/xp/XpBadge";
-import { getXpTotals } from "@/lib/xp";
+// import { XpRankBadge } from "@/features/xp/XpRankBadge";
+// import { XpBadge } from "@/features/xp/XpBadge";
+// import { getXpTotals } from "@/lib/xp";
 import { useAuth } from "@/stores/authStore";
+import { ShowForRole } from "@/components/auth/ShowForRole";
+import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
 // import { useOCAuth } from "@opencampus/ocid-connect-js";
 // import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
@@ -94,7 +89,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   const { t, i18n } = useTranslation("common");
   const { t: tAccount } = useTranslation("account");
   // const { isInitialized, authState, ocAuth } = useOCAuth();
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme, theme, setTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
   const isSearchRoute = location.pathname === "/search" || location.pathname === "/search/";
   const searchRouteKey = isSearchRoute ? `${location.pathname}${location.search}` : null;
@@ -162,14 +157,15 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
     "U"
   ).charAt(0);
   const isOcidConnected = Boolean(profile?.ocid);
-  const xpQuery = useQuery({
-    queryKey: ["xp", "total", user?.id],
-    queryFn: async () => {
-      return getXpTotals([user!.id]);
-    },
-    enabled: Boolean(user?.id),
-    staleTime: 60_000,
-  });
+  // TODO(figma-menu): Figma menu không có hàng XP, bỏ tạm; bật lại cùng JSX bên dưới
+  // const xpQuery = useQuery({
+  //   queryKey: ["xp", "total", user?.id],
+  //   queryFn: async () => {
+  //     return getXpTotals([user!.id]);
+  //   },
+  //   enabled: Boolean(user?.id),
+  //   staleTime: 60_000,
+  // });
 
   const accountDropdownItems = useMemo(
     () => [
@@ -181,42 +177,18 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
             : profile?.id
               ? `/@${profile.id}`
               : "/account",
-        label: t("header.publicProfile"),
-        icon: <UserCircle aria-hidden />,
+        label: t("header.personalProfile"),
+        icon: <UserCircle weight="duotone" aria-hidden />,
       },
       {
         to: "/account/profile",
-        label: tAccount("nav.profile.title"),
-        icon: <UserCircle aria-hidden />,
-      },
-      ...(profile?.role === "instructor"
-        ? [
-          {
-            to: "/account/instructor",
-            label: tAccount("nav.instructor.title"),
-            icon: (
-              <GraduationCap aria-hidden />
-            ),
-          },
-        ]
-        : []),
-      {
-        to: "/account/cv",
-        label: tAccount("nav.cv.title"),
-        icon: <IdCard aria-hidden />,
+        label: t("nav.account"),
+        icon: <Shield weight="duotone" aria-hidden />,
       },
       {
-        to: "/achievements",
-        label: tAccount("nav.achievements.title"),
-        icon: <Award aria-hidden />,
-      },
-      {
-        // "Cài đặt" trong menu hồ sơ là lối vào khu vực tài khoản; route gốc
-        // sẽ mở tab Thông tin cá nhân trước. Tab /account/settings vẫn dành cho
-        // các deep link có chủ đích như unsubscribe hoặc đổi mật khẩu.
-        to: "/account",
+        to: "/account/settings",
         label: tAccount("nav.settings.title"),
-        icon: <Settings aria-hidden />,
+        icon: <Gear weight="duotone" aria-hidden />,
       },
     ],
     [profile, t, tAccount],
@@ -729,8 +701,8 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                     </User>
                   }
                 />
-                <DropdownMenuContent align="end" className="z-20 min-w-64">
-                  {user?.id ? <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm"><span className="truncate font-medium">{displayName}</span><span className="flex shrink-0 flex-col items-end gap-1"><XpBadge total={xpQuery.data?.[user.id]} /><XpRankBadge total={xpQuery.data?.[user.id]} /></span></div> : null}
+                <DropdownMenuContent align="end" sideOffset={8} className="z-20 w-60 rounded-3xl border-dropdown-container-border bg-dropdown-surface p-2 shadow-sm">
+                  {/* {user?.id ? <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm"><span className="truncate font-medium">{displayName}</span><span className="flex shrink-0 flex-col items-end gap-1"><XpBadge total={xpQuery.data?.[user.id]} /><XpRankBadge total={xpQuery.data?.[user.id]} /></span></div> : null} */}
                   {accountDropdownItems.map((item) => (
                     <Action
                       key={item.to}
@@ -741,7 +713,6 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                       label={item.label}
                       showActive={false}
                       showPressed
-                      className="min-h-[50px]"
                       render={<NavLink to={item.to} />}
                       nativeButton={false}
                       onPointerEnter={() => prefetchRouteChunk(item.to)}
@@ -749,14 +720,43 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                       onClick={() => setAccountMenuOpen(false)}
                     />
                   ))}
-                  <DropdownMenuSeparator className="mx-0" />
+                  <DropdownMenuSeparator className="mx-0 my-md" />
+                  <div className="flex items-center justify-between gap-lg px-2md py-2md font-body text-label-medium leading-5 tracking-[-0.005em] text-action-text">
+                    {tAccount("settings.appearance.themeLabel")}
+                    <span className="flex items-center gap-md">
+                      {([["light", Sun], ["dark", Moon], ["system", CircleHalf]] as const).map(([option, Icon]) => (
+                        <IconToggle
+                          key={option}
+                          className="size-5 text-toggle-icon data-[pressed]:bg-transparent data-[pressed]:text-foreground"
+                          aria-label={tAccount(`settings.appearance.${option}`)}
+                          pressed={(theme ?? "system") === option}
+                          onPressedChange={() => setTheme(option)}
+                          icon={<Icon className="size-full" weight="duotone" aria-hidden />}
+                        />
+                      ))}
+                    </span>
+                  </div>
+                  <ShowForRole roles={ROLE_GROUPS.admin}>
+                    <Action
+                      role="menuitem"
+                      variant="default"
+                      size="small"
+                      label={t("header.switchToAdmin")}
+                      trailingGroup={<UserSwitch className="size-5" weight="duotone" aria-hidden />}
+                      showActive={false}
+                      showPressed
+                      render={<NavLink to="/admin" />}
+                      nativeButton={false}
+                      onPointerEnter={() => prefetchRouteChunk("/admin")}
+                      onFocus={() => prefetchRouteChunk("/admin")}
+                      onClick={() => setAccountMenuOpen(false)}
+                    />
+                  </ShowForRole>
                   <Action
                     role="menuitem"
                     type="button"
                     variant="destructive"
                     size="small"
-                    className="min-h-[50px]"
-                    icon={<LogOut aria-hidden />}
                     label={t("tabs.signOut")}
                     isActive={false}
                     showActive={false}

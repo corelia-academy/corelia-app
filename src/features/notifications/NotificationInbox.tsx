@@ -298,42 +298,26 @@ export function NotificationInbox({ compact = false, drawer = false, onNavigate,
                     icon={n.group_key
                       ? <SocialNotificationAvatar notification={n} />
                       : isInvite
-                        ? <NotificationInviteAvatar type={n.type} imageUrl={inviteCtx?.logoUrl} />
+                        ? <NotificationInviteAvatar type={n.type} imageUrl={inviteCtx?.logoUrl} loading={inviteContextQuery.isLoading} />
                         : isCoInstructorInvite
-                          ? <NotificationInviteAvatar type={n.type} imageUrl={courseCtx?.thumbnailUrl} />
+                          ? <NotificationInviteAvatar type={n.type} imageUrl={courseCtx?.thumbnailUrl} loading={courseContextQuery.isLoading} />
                           : <NotificationTypeIcon type={n.type} />}
                     label={n.group_key ? <SocialNotification notification={n} /> : isInvite ? (
-                      <>
-                        <div className="font-medium text-action-text">
-                          {t("notifications.projectInviteTitle")}
-                          {inviteCtx?.projectTitle ? (
-                            <>{" · "}<span className="text-primary">{inviteCtx.projectTitle}</span></>
-                          ) : inviteContextQuery.isSuccess ? (
-                            <span className="font-normal text-foreground-muted"> · {t("notifications.projectInviteUnavailable")}</span>
-                          ) : null}
-                        </div>
-                        {!inviteCtx?.projectTitle && !inviteContextQuery.isSuccess ? (
-                          <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
-                            {t("notifications.projectInviteBody")}
-                          </p>
+                      <div className="font-medium text-action-text">
+                        {t("notifications.projectInviteTitle")}
+                        {inviteCtx?.projectTitle ? (
+                          <>{" · "}<span className="text-primary">{inviteCtx.projectTitle}</span></>
+                        ) : inviteContextQuery.isSuccess ? (
+                          <span className="font-normal text-foreground-muted"> · {t("notifications.projectInviteUnavailable")}</span>
                         ) : null}
-                      </>
+                      </div>
                     ) : isCoInstructorInvite ? (
-                      <>
-                        <div className="font-medium text-action-text">
-                          {t("notifications.coInstructorInviteTitle")}
-                          {inviteCourseTitle ? (
-                            <>{" · "}<span className="text-primary">{inviteCourseTitle}</span></>
-                          ) : null}
-                        </div>
-                        {!inviteCourseTitle ? (
-                          <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
-                            {t("notifications.coInstructorInviteBody", {
-                              course: t("notifications.coInstructorInviteCourseFallback"),
-                            })}
-                          </p>
+                      <div className="font-medium text-action-text">
+                        {t("notifications.coInstructorInviteTitle")}
+                        {inviteCourseTitle ? (
+                          <>{" · "}<span className="text-primary">{inviteCourseTitle}</span></>
                         ) : null}
-                      </>
+                      </div>
                     ) : isHackathonRegistrationReview ? (
                       <>
                         <div className="font-medium text-action-text">

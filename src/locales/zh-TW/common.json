@@ -145,6 +145,8 @@
   },
   "header": {
     "publicProfile": "公開資料",
+    "personalProfile": "個人資料",
+    "switchToAdmin": "切換到管理後台",
     "feedAria": "開啟動態",
     "notifications": "通知",
     "notificationsAria": "開啟通知",
