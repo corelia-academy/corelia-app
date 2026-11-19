@@ -198,7 +198,7 @@ export default function App() {
   if (import.meta.env.VITE_MAINTENANCE_MODE === "true") {
     return (
       <PageTitleProvider>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <MaintenancePage />
         </ThemeProvider>
       </PageTitleProvider>
@@ -208,7 +208,7 @@ export default function App() {
   return (
     <PageTitleProvider>
       <ErrorBoundary>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LoadingBar />
           <Toaster />
           <AuthSync />

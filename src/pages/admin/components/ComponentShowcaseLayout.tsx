@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useTheme } from "next-themes";
+import { setThemeWithTransition } from "@/lib/themeTransition";
 import { NavLink } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
@@ -50,7 +51,7 @@ export function ComponentShowcaseLayout({
                 size="small"
                 variant="cta" hierarchy="secondary"
                 aria-pressed={resolvedTheme === theme}
-                onClick={() => setTheme(theme)}
+                onClick={() => setThemeWithTransition(setTheme, theme)}
               >
                 {theme === "light" ? "Light" : "Dark"}
               </Button>

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { MenuIcon, Search } from "lucide-react";
 import { UserCircle, Shield, Gear, UserSwitch, Sun, Moon, CircleHalf } from "@phosphor-icons/react";
 import { IconToggle } from "@/components/ui/toggle";
+import { setThemeWithTransition } from "@/lib/themeTransition";
 import { UserAvatar } from "@/components/UserAvatar";
 import { User } from "@/components/ui/user";
 // import { XpRankBadge } from "@/features/xp/XpRankBadge";
@@ -730,7 +731,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                           className="size-5 text-toggle-icon data-[pressed]:bg-transparent data-[pressed]:text-foreground"
                           aria-label={tAccount(`settings.appearance.${option}`)}
                           pressed={(theme ?? "system") === option}
-                          onPressedChange={() => setTheme(option)}
+                          onPressedChange={() => setThemeWithTransition(setTheme, option)}
                           icon={<Icon className="size-full" weight="duotone" aria-hidden />}
                         />
                       ))}
