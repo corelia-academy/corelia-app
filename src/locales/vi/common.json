@@ -145,6 +145,8 @@
   },
   "header": {
     "publicProfile": "Hồ sơ công khai",
+    "personalProfile": "Hồ sơ cá nhân",
+    "switchToAdmin": "Chuyển sang Admin",
     "feedAria": "Mở Feed",
     "notifications": "Thông báo",
     "notificationsAria": "Mở thông báo",

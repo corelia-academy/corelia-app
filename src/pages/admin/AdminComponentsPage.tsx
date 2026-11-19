@@ -8,6 +8,7 @@ import {
 } from "react";
 import { gsap } from "gsap";
 import { useTheme } from "next-themes";
+import { setThemeWithTransition } from "@/lib/themeTransition";
 import { useLocation, useNavigate } from "react-router";
 
 import AdminActionComponentPage from "./components/AdminActionComponentPage";
@@ -534,7 +535,7 @@ export default function AdminComponentsPage() {
           activeIndicatorRef={activeIndicatorRef}
           resolvedTheme={resolvedTheme}
           onBack={() => navigate("/")}
-          onThemeChange={setTheme}
+          onThemeChange={(theme) => setThemeWithTransition(setTheme, theme)}
           onSelectComponent={(slug) => {
             setActiveComponent(slug);
             if (

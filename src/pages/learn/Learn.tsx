@@ -842,7 +842,8 @@ function LearnWorkspace() {
               minSize={40}
               className="min-w-0 bg-background"
             >
-              <div className="relative flex h-full min-w-0 flex-col">
+              {/* <div className="relative flex h-full min-w-0 flex-col"> */}
+              <div className="@container relative flex h-full min-w-0 flex-col">
                 <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} contentClassName="flex min-h-full min-w-0! flex-col">
                   {lessonContent}
                 </ScrollArea>

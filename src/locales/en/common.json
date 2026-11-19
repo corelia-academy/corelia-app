@@ -145,6 +145,8 @@
   },
   "header": {
     "publicProfile": "Public profile",
+    "personalProfile": "Profile",
+    "switchToAdmin": "Switch to Admin",
     "feedAria": "Open Feed",
     "notifications": "Notifications",
     "notificationsAria": "Open notifications",

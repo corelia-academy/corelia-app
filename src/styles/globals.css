@@ -348,6 +348,7 @@
   --color-toggle-supporting-text: var(--toggle-supporting-text);
   --color-toggle-pressed-background: var(--toggle-pressed-background);
   --color-toggle-pressed-foreground: var(--toggle-pressed-foreground);
+  --color-toggle-icon: var(--toggle-icon);
   --color-toggle-icon-disabled: var(--toggle-icon-disabled);
   --color-toggle-pressed-disabled-background: var(--toggle-pressed-disabled-background);
   --color-toggle-pressed-disabled-foreground: var(--toggle-pressed-disabled-foreground);
@@ -1082,6 +1083,7 @@
   --toggle-supporting-text: var(--text-secondary);
   --toggle-pressed-background: var(--blue-700);
   --toggle-pressed-foreground: var(--neutral-50);
+  --toggle-icon: var(--neutral-400);
   --toggle-icon-disabled: var(--neutral-500);
   --toggle-pressed-disabled-background: var(--neutral-500);
   --toggle-pressed-disabled-foreground: var(--neutral-800);
@@ -1469,6 +1471,7 @@
   --toggle-supporting-text: #cdd5df;
   --toggle-pressed-background: var(--blue-700);
   --toggle-pressed-foreground: var(--neutral-50);
+  --toggle-icon: var(--neutral-500);
   --toggle-icon-disabled: var(--neutral-500);
   --toggle-pressed-disabled-background: var(--neutral-500);
   --toggle-pressed-disabled-foreground: var(--neutral-800);
@@ -1596,6 +1599,11 @@
 @layer base {
   * {
     @apply border-border outline-primary/40;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 
   body {

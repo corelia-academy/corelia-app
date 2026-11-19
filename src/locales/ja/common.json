@@ -145,6 +145,8 @@
   },
   "header": {
     "publicProfile": "公開プロフィール",
+    "personalProfile": "プロフィール",
+    "switchToAdmin": "管理画面に切り替え",
     "feedAria": "フィードを開く",
     "notifications": "通知",
     "notificationsAria": "通知を開く",

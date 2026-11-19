@@ -145,6 +145,8 @@
   },
   "header": {
     "publicProfile": "공개 프로필",
+    "personalProfile": "내 프로필",
+    "switchToAdmin": "관리자로 전환",
     "feedAria": "피드 열기",
     "notifications": "알림",
     "notificationsAria": "알림 열기",

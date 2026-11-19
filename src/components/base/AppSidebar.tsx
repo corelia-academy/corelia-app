@@ -4,7 +4,6 @@ import {
   BookOpen,
   GraduationCap,
   FolderSimple,
-  Gear,
   House,
   Newspaper,
   MedalMilitary,
@@ -275,31 +274,6 @@ export default function AppSidebar({
                           aria-hidden
                         />
                         <span>{t("nav.instructor")}</span>
-                      </NavLink>
-                    }
-                  />
-                </SidebarMenuItem>
-              </ShowForRole>
-              <ShowForRole roles={ROLE_GROUPS.admin}>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    size="appNav"
-                    className="rounded-md min-h-0! p-2md"
-                    tooltip={t("nav.admin")}
-                    isActive={pathname.startsWith("/admin")}
-                    render={
-                      <NavLink
-                        to="/admin"
-                        className="flex w-full items-center gap-2"
-                        onPointerEnter={() => prefetchRouteChunk("/admin")}
-                        onFocus={() => prefetchRouteChunk("/admin")}
-                      >
-                        <Gear
-                          className="size-5! shrink-0"
-                          weight="duotone"
-                          aria-hidden
-                        />
-                        <span>{t("nav.admin")}</span>
                       </NavLink>
                     }
                   />
