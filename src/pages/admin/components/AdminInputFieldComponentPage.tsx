@@ -15,10 +15,11 @@ import {
   DropdownMenuItemContent,
   DropdownMenuList,
   DropdownMenuSearch,
+  DropdownMenuSearchInput,
   DropdownMenuTrigger,
   DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
-import { Field, FieldContextReset } from "@/components/ui/field";
+import { Field } from "@/components/ui/field";
 import {
   Input,
   type InputProps,
@@ -218,21 +219,13 @@ function InputShowcaseSelector({
         </DropdownMenuTriggerWithIndicator>
         <DropdownMenuContent layout="multiple-list" className="w-max min-w-32">
           <DropdownMenuSearch>
-            <FieldContextReset>
-              <Input
-                type="search"
-                variant="icon-leading"
-                disabled={disabled}
-                leadingIconClassName="text-dropdown-supporting"
-                statusIcon={null}
-                value={search}
-                onChange={(event) => setSearch(event.currentTarget.value)}
-                placeholder="Search"
-                aria-label={`Search ${ariaLabel}`}
-                controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
-                className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
-              />
-            </FieldContextReset>
+            <DropdownMenuSearchInput
+              disabled={disabled}
+              value={search}
+              onChange={(event) => setSearch(event.currentTarget.value)}
+              placeholder="Search"
+              aria-label={`Search ${ariaLabel}`}
+            />
           </DropdownMenuSearch>
           <DropdownMenuList>
             {filteredOptions.length > 0 ? (
@@ -240,7 +233,8 @@ function InputShowcaseSelector({
                 <DropdownMenuItem
                   key={option.value}
                   disabled={disabled || option.disabled}
-                  className="min-h-[42px] whitespace-nowrap"
+                  size="large"
+                  className="whitespace-nowrap"
                   onClick={() => setValue(option.value)}
                 >
                   <DropdownMenuItemContent>
@@ -276,21 +270,13 @@ function InputShowcaseTagMenu({ menu }: { menu: InputTagMenuState }) {
         className="w-max min-w-32"
       >
         <DropdownMenuSearch>
-          <FieldContextReset>
-            <Input
-              type="search"
-              variant="icon-leading"
-              disabled={menu.disabled}
-              leadingIconClassName="text-dropdown-supporting"
-              statusIcon={null}
-              value={search}
-              onChange={(event) => setSearch(event.currentTarget.value)}
-              placeholder="Search"
-              aria-label="Search tags"
-              controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
-              className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
-            />
-          </FieldContextReset>
+          <DropdownMenuSearchInput
+            disabled={menu.disabled}
+            value={search}
+            onChange={(event) => setSearch(event.currentTarget.value)}
+            placeholder="Search"
+            aria-label="Search tags"
+          />
         </DropdownMenuSearch>
         <DropdownMenuList>
           {filteredOptions.length > 0 ? (
@@ -299,7 +285,7 @@ function InputShowcaseTagMenu({ menu }: { menu: InputTagMenuState }) {
                 key={option.value}
                 checked={menu.selectedValues.includes(option.value)}
                 disabled={menu.disabled || option.disabled}
-                size="compact"
+                size="large"
                 className="whitespace-nowrap"
                 onCheckedChange={(checked, eventDetails) => {
                   eventDetails.cancel();

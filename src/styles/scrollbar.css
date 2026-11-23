@@ -12,6 +12,11 @@
   --scrollbar-thumb-hover: var(--foreground-muted);
 }
 
+/* Dropdown list: thumb colour from the Figma Dropdown List scroll bar. */
+.scrollbar-design[data-slot="dropdown-menu-list"] {
+  --scrollbar-thumb: var(--dropdown-scrollbar-thumb);
+}
+
 /* Below md: same thumb proportions at half scale (4px track, 2px thumb). */
 @media (max-width: 767px) {
   .scrollbar-design,

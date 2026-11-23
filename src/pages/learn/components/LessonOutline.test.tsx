@@ -103,9 +103,9 @@ it("lists the headings, indents them by level and scrolls the lesson to the chos
   const host = mount(three);
   const items = open(host);
   expect(items.map(item => item.textContent)).toEqual(["Goal", "Setup", "Install"]);
-  expect(items[0].className).not.toContain("pl-xl");
-  expect(items[1].className).toContain("pl-xl");
-  expect(items[2].className).toContain("pl-3xl");
+  expect(items[0].parentElement?.className).not.toContain("pl-2xl");
+  expect(items[1].parentElement?.className).toContain("pl-2xl");
+  expect(items[2].parentElement?.className).toContain("pl-6xl");
   act(() => items[1].click());
   const target = host.querySelector("h3");
   expect(gsapTo).toHaveBeenCalledWith(host.querySelector("main"), expect.objectContaining({ scrollTo: { y: target, offsetY: 24 }, duration: 0.6 }));

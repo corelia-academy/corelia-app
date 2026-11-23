@@ -914,24 +914,24 @@ describe("admin component detail pages", () => {
     expect(container.textContent).not.toContain("Each Figma use case is an independent closed-by-default dropdown");
     expect(container.textContent).not.toContain("Five title-only selectable items");
     expect(container.textContent).not.toContain("Default and Warning, each with six Figma states");
-    expect(baseItems?.querySelectorAll('[data-slot="dropdown-menu-trigger"]')).toHaveLength(2);
+    expect(baseItems?.querySelectorAll('[data-slot="dropdown-menu-trigger"]')).toHaveLength(12);
     expect(useCasesContainer).not.toBeNull();
     expect(useCasesContainer?.querySelectorAll('[data-slot="dropdown-menu-trigger"]')).toHaveLength(6);
     expect(document.body.querySelector('[data-layout="multiple-list"]')).toBeNull();
 
     const noLeadingTrigger = container.querySelector<HTMLButtonElement>(
-      '[data-testid="dropdown-menu-base-items-no-leading-trigger"]',
+      '[data-testid="dropdown-menu-base-items-large-checkbox-no-leading-trigger"]',
     );
     expect(noLeadingTrigger).not.toBeNull();
 
     await act(async () => noLeadingTrigger?.click());
 
-    expect(document.body.querySelector('input[aria-label="Search Leading icon = No"]')).not.toBeNull();
-    expect(document.body.querySelectorAll('[data-testid^="dropdown-menu-base-item-no-leading-"]')).toHaveLength(12);
-    expect(document.body.querySelector('[data-testid="dropdown-menu-base-item-no-leading-warning-default"]')).not.toBeNull();
+    expect(document.body.querySelector('input[type="search"]')).toBeNull();
+    expect(document.body.querySelectorAll('[data-testid^="dropdown-menu-base-item-large-checkbox-no-leading-"]')).toHaveLength(8);
+    expect(document.body.querySelector('[data-testid="dropdown-menu-base-item-large-checkbox-no-leading-warning-default"]')).not.toBeNull();
 
     const warningDefaultRow = document.body.querySelector<HTMLElement>(
-      '[data-testid="dropdown-menu-base-item-no-leading-warning-default"]',
+      '[data-testid="dropdown-menu-base-item-large-checkbox-no-leading-warning-default"]',
     );
     expect(warningDefaultRow?.getAttribute("aria-checked")).toBe("false");
     expect(warningDefaultRow?.className).not.toContain("ring-2 ring-dropdown-focus");
@@ -941,37 +941,70 @@ describe("admin component detail pages", () => {
     expect(warningDefaultRow?.getAttribute("aria-checked")).toBe("true");
 
     const disabledBaseRow = document.body.querySelector<HTMLElement>(
-      '[data-testid="dropdown-menu-base-item-no-leading-warning-disabled"]',
+      '[data-testid="dropdown-menu-base-item-large-checkbox-no-leading-warning-disabled"]',
     );
     expect(disabledBaseRow?.hasAttribute("data-disabled")).toBe(true);
     expect(disabledBaseRow?.className).toContain("data-disabled:cursor-not-allowed");
 
     const activeDisabledBaseRow = document.body.querySelector<HTMLElement>(
-      '[data-testid="dropdown-menu-base-item-no-leading-warning-active-disabled"]',
+      '[data-testid="dropdown-menu-base-item-large-checkbox-no-leading-warning-active-disabled"]',
     );
     expect(activeDisabledBaseRow?.hasAttribute("data-disabled")).toBe(true);
     expect(activeDisabledBaseRow?.getAttribute("aria-checked")).toBe("true");
 
-    const hoverBaseRow = document.body.querySelector<HTMLElement>(
-      '[data-testid="dropdown-menu-base-item-no-leading-default-hover"]',
-    );
-    const focusBaseRow = document.body.querySelector<HTMLElement>(
-      '[data-testid="dropdown-menu-base-item-no-leading-default-focus"]',
-    );
-    expect(hoverBaseRow?.classList.contains("bg-dropdown-hover")).toBe(false);
-    expect(hoverBaseRow?.classList.contains("ring-2")).toBe(false);
-    expect(focusBaseRow?.classList.contains("ring-2")).toBe(false);
-    expect(focusBaseRow?.getAttribute("data-preview-state")).toBe("focus");
-
     await act(async () => noLeadingTrigger?.click());
 
     const leadingTrigger = container.querySelector<HTMLButtonElement>(
-      '[data-testid="dropdown-menu-base-items-leading-trigger"]',
+      '[data-testid="dropdown-menu-base-items-large-checkbox-leading-trigger"]',
     );
     await act(async () => leadingTrigger?.click());
-    expect(document.body.querySelector('input[aria-label="Search Leading icon = Yes"]')).not.toBeNull();
-    expect(document.body.querySelectorAll('[data-testid^="dropdown-menu-base-item-leading-"]')).toHaveLength(12);
+    expect(document.body.querySelector('input[type="search"]')).toBeNull();
+    expect(document.body.querySelectorAll('[data-testid^="dropdown-menu-base-item-large-checkbox-leading-"]')).toHaveLength(8);
     await act(async () => leadingTrigger?.click());
+
+    const smallTrigger = container.querySelector<HTMLButtonElement>(
+      '[data-testid="dropdown-menu-base-items-small-checkbox-leading-trigger"]',
+    );
+    expect(smallTrigger).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="dropdown-menu-base-items-size-small"]'),
+    ).not.toBeNull();
+    await act(async () => smallTrigger?.click());
+    const smallRows = document.body.querySelectorAll<HTMLElement>(
+      '[data-testid^="dropdown-menu-base-item-small-checkbox-leading-"]',
+    );
+    expect(smallRows).toHaveLength(8);
+    expect(smallRows[0]?.getAttribute("data-size")).toBe("small");
+    await act(async () => smallTrigger?.click());
+
+    const radioTrigger = container.querySelector<HTMLButtonElement>(
+      '[data-testid="dropdown-menu-base-items-small-radio-no-leading-trigger"]',
+    );
+    expect(radioTrigger).not.toBeNull();
+    await act(async () => radioTrigger?.click());
+    const radioRows = document.body.querySelectorAll<HTMLElement>(
+      '[data-testid^="dropdown-menu-base-item-small-radio-no-leading-"]',
+    );
+    expect(radioRows).toHaveLength(3);
+    expect(radioRows[0]?.getAttribute("data-size")).toBe("small");
+    expect(
+      document.body
+        .querySelector('[data-testid="dropdown-menu-base-item-small-radio-no-leading-default-selected"]')
+        ?.getAttribute("aria-checked"),
+    ).toBe("true");
+    await act(async () => radioTrigger?.click());
+
+    const itemTrigger = container.querySelector<HTMLButtonElement>(
+      '[data-testid="dropdown-menu-base-items-large-item-leading-trigger"]',
+    );
+    expect(itemTrigger).not.toBeNull();
+    await act(async () => itemTrigger?.click());
+    const itemRows = document.body.querySelectorAll<HTMLElement>(
+      '[data-testid^="dropdown-menu-base-item-large-item-leading-"]',
+    );
+    expect(itemRows).toHaveLength(2);
+    expect(itemRows[0]?.getAttribute("data-size")).toBe("large");
+    await act(async () => itemTrigger?.click());
 
     const useCases = [
       { id: "common-use", label: "Common use", rowCount: 5 },

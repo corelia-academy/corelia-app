@@ -309,6 +309,7 @@
   --color-dropdown-checkbox-disabled-active: var(--dropdown-checkbox-disabled-active);
   --color-dropdown-checkbox-disabled-mark: var(--dropdown-checkbox-disabled-mark);
   --color-dropdown-focus: var(--dropdown-focus);
+  --color-dropdown-icon: var(--dropdown-icon);
   --color-dropdown-warning: var(--dropdown-warning);
   --color-dropdown-warning-supporting: var(--dropdown-warning-supporting);
   --shadow-dropdown: var(--dropdown-shadow);
@@ -1165,6 +1166,8 @@
   --dropdown-input-border: var(--neutral-500);
   --dropdown-divider: var(--neutral-300);
   --dropdown-checkbox-unchecked: var(--neutral-600);
+  --dropdown-icon: var(--neutral-500);
+  --dropdown-scrollbar-thumb: var(--neutral-400);
   --dropdown-checkbox-active: var(--blue-700);
   --dropdown-checkbox-mark: var(--blue-100);
   --dropdown-checkbox-disabled-active: var(--selection-disabled);
@@ -1558,12 +1561,14 @@
   --dropdown-container-border: var(--neutral-400);
   --dropdown-input-border: var(--neutral-500);
   --dropdown-divider: var(--neutral-600);
-  --dropdown-checkbox-unchecked: var(--blue-100);
+  --dropdown-checkbox-unchecked: var(--neutral-50);
+  --dropdown-icon: var(--neutral-50);
+  --dropdown-scrollbar-thumb: #e3e8ef;
   --dropdown-checkbox-active: var(--blue-700);
   --dropdown-checkbox-mark: var(--blue-100);
   --dropdown-checkbox-disabled-active: var(--selection-disabled);
   --dropdown-checkbox-disabled-mark: var(--selection-disabled-mark);
-  --dropdown-focus: var(--blue-500);
+  --dropdown-focus: var(--blue-400);
   --dropdown-warning: var(--error-400);
   --dropdown-warning-supporting: var(--error-300);
   --dropdown-shadow: 0 -1px 12px -2px #10182814, 0 4px 4px -2px #1018280f;
@@ -1711,9 +1716,12 @@
     --dropdown-supporting: var(--dropdown-warning-supporting);
   }
 
-  [data-slot="dropdown-menu-checkbox-item"][data-disabled] {
+  [data-slot="dropdown-menu-checkbox-item"][data-disabled],
+  [data-slot="dropdown-menu-radio-item"][data-disabled],
+  [data-slot="dropdown-menu-item"][data-size][data-disabled] {
     --dropdown-title: var(--dropdown-disabled);
     --dropdown-supporting: var(--dropdown-disabled);
+    --dropdown-icon: var(--dropdown-disabled);
   }
 
   /* Input Code: Monaco decorations mark a wrong line, and a disabled editor dims its text. */

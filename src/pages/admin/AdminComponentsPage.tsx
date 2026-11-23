@@ -86,7 +86,7 @@ const components = [
   {
     slug: "dropdown-menu",
     title: "Dropdown Menu",
-    criterion: "Figma Base Items with five real states, two leading-icon variants, and six independent dropdown use cases with search, Select All, warning, disabled, and nested-list behavior.",
+    criterion: "Large and Small Checkbox, Radio, and Item rows, plus six dropdown use cases.",
   },
   {
     slug: "input-field",

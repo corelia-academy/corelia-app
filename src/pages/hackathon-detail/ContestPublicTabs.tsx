@@ -525,10 +525,10 @@ export function HackathonProjectsTab() {
                       setParams(next, { preventScrollReset: true });
                     }}
                   >
-                    <DropdownMenuRadioItem className="text-body-large" value="newest">
+                    <DropdownMenuRadioItem size="large" value="newest">
                       <DropdownMenuItemContent>{t("public.projects.newest")}</DropdownMenuItemContent>
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem className="text-body-large" value="oldest">
+                    <DropdownMenuRadioItem size="large" value="oldest">
                       <DropdownMenuItemContent>{t("public.projects.oldest")}</DropdownMenuItemContent>
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>

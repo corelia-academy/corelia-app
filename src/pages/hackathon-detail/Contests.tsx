@@ -183,13 +183,13 @@ export default function Contests() {
                       }
                     }}
                   >
-                    <DropdownMenuRadioItem className="text-body-large" value="newest">
+                    <DropdownMenuRadioItem size="large" value="newest">
                       <DropdownMenuItemContent>{commonT("projects.sort.newest")}</DropdownMenuItemContent>
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem className="text-body-large" value="oldest">
+                    <DropdownMenuRadioItem size="large" value="oldest">
                       <DropdownMenuItemContent>{commonT("projects.sort.oldest")}</DropdownMenuItemContent>
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem className="text-body-large" value="deadlineSoonest">
+                    <DropdownMenuRadioItem size="large" value="deadlineSoonest">
                       <DropdownMenuItemContent>{t("catalog.sort.deadlineSoonest")}</DropdownMenuItemContent>
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
