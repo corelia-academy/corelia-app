@@ -7,10 +7,11 @@ import { LessonColumn, LESSON_MEDIA_MAX_HEIGHT } from "./lessonLayout";
 import { loadYoutubePlayerApi, type YoutubePlayerApi } from "@/lib/youtubePlayerApi";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-vi.mock("./useLearningTranslation", () => ({ useLearningTranslation: () => ({ t: (key: string) => key }) }));
+const locale = vi.hoisted(() => ({ language: "vi" }));
+vi.mock("./useLearningTranslation", () => ({ useLearningTranslation: () => ({ t: (key: string) => key, i18n: locale }) }));
 vi.mock("@/lib/youtubePlayerApi", () => ({ loadYoutubePlayerApi: vi.fn() }));
 let cleanup: (() => void) | undefined;
-afterEach(() => { cleanup?.(); vi.clearAllMocks(); vi.useRealTimers(); });
+afterEach(() => { cleanup?.(); locale.language = "vi"; vi.clearAllMocks(); vi.useRealTimers(); });
 
 it("keeps segment/no-autoplay, handles player errors, and recreates the player when the URL changes", async () => {
   const host = document.createElement("div");
@@ -26,6 +27,8 @@ it("keeps segment/no-autoplay, handles player errors, and recreates the player w
   expect(url.searchParams.get("start")).toBe("5");
   expect(url.searchParams.get("end")).toBe("15");
   expect(url.searchParams.get("autoplay")).toBe("0");
+  expect(url.searchParams.get("cc_load_policy")).toBe("1");
+  expect(url.searchParams.get("cc_lang_pref")).toBe("vi");
   expect(url.searchParams.get("origin")).toBe(window.location.origin);
   expect(frame.referrerPolicy).toBe("strict-origin-when-cross-origin");
   expect(frame.className).toContain("h-full");
@@ -38,6 +41,23 @@ it("keeps segment/no-autoplay, handles player errors, and recreates the player w
   expect(host.querySelector("iframe")).not.toBe(frame);
   expect(host.querySelector('[role="alert"]')).toBeNull();
   expect(Player).toHaveBeenCalledTimes(2);
+});
+
+it("updates the caption preference when the app language changes", async () => {
+  const host = document.createElement("div");
+  const root = createRoot(host);
+  const destroy = vi.fn();
+  vi.mocked(loadYoutubePlayerApi).mockResolvedValue({ Player: vi.fn(() => ({ destroy })) } as unknown as YoutubePlayerApi);
+  cleanup = () => act(() => root.unmount());
+  const video = <YoutubeLessonVideo url="https://www.youtube.com/embed/M7lc1UVf-VE?start=5&end=15" title="Fixture" />;
+  await act(async () => root.render(video));
+  locale.language = "zh-TW";
+  await act(async () => root.render(<YoutubeLessonVideo url="https://www.youtube.com/embed/M7lc1UVf-VE?start=5&end=15" title="Fixture" />));
+  const url = new URL(host.querySelector("iframe")!.src);
+  expect(url.searchParams.get("cc_lang_pref")).toBe("zh-TW");
+  expect(url.searchParams.get("start")).toBe("5");
+  expect(url.searchParams.get("end")).toBe("15");
+  expect(destroy).toHaveBeenCalledOnce();
 });
 
 it("caps a flush video at the same height the lesson column derives its width from", async () => {

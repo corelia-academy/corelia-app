@@ -6,9 +6,11 @@ import { LESSON_MEDIA_MAX_HEIGHT } from "./lessonLayout";
 
 type Props = { url: string; title: string; flush?: boolean };
 export function YoutubeLessonVideo(props: Props) {
-  return <Player key={props.url} {...props} />;
+  const { i18n } = useLearningTranslation();
+  const language = i18n.language;
+  return <Player key={`${props.url}:${language}`} {...props} language={language} />;
 }
-function Player({ url, title, flush = false }: Props) {
+function Player({ url, title, flush = false, language }: Props & { language: string }) {
   const { t } = useLearningTranslation();
   const container = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
@@ -20,6 +22,8 @@ function Player({ url, title, flush = false }: Props) {
     src.searchParams.set("origin", window.location.origin);
     src.searchParams.set("autoplay", "0");
     src.searchParams.set("playsinline", "1");
+    src.searchParams.set("cc_load_policy", "1");
+    src.searchParams.set("cc_lang_pref", language);
     frame.referrerPolicy = "strict-origin-when-cross-origin";
     frame.src = src.toString();
     frame.title = title;
@@ -46,7 +50,7 @@ function Player({ url, title, flush = false }: Props) {
       player?.destroy();
       host.replaceChildren();
     };
-  }, [url, title]);
+  }, [url, title, language]);
   return <div className={flush ? "border-b border-border" : "space-y-3"}>
     <div ref={container} className={cn("aspect-video w-full overflow-hidden bg-background", !flush && "rounded-xl")} style={flush ? { maxHeight: LESSON_MEDIA_MAX_HEIGHT } : undefined} />
     {failed && <p role="alert" className={flush ? "px-4 py-3 sm:px-6 md:px-8xl" : undefined}>{t("learning.videoError")}</p>}
