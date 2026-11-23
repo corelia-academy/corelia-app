@@ -79,8 +79,9 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     if (nextLesson && lesson && ["article","video","practice"].includes(getLessonFormat(lesson))) onNavigateToLesson(nextLesson.id);
   }, [mode, onMarkComplete, lesson, queryClient, nextLesson, onNavigateToLesson, t]);
   if (!lesson || !courseId) return <LessonDataError />;
-  const resources = validateLessonResources(lesson.resources ?? [], lesson.id, "vi", true).length ? [] : lesson.resources ?? [];
   const format = getLessonFormat(lesson);
+  const showsResources = format === "video" || format === "article";
+  const resources = showsResources && !validateLessonResources(lesson.resources ?? [], lesson.id, "vi", true).length ? lesson.resources ?? [] : [];
   const isExercise = format === "quiz" || format === "code_exercise";
   // An exercise shows Hint until it has a result, then swaps to Ask AI; other lessons always show Ask AI.
   // A quiz is an assessment: Ask AI never carries its questions or answers.

@@ -13,14 +13,14 @@ vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: { id: "learner" }
 vi.mock("@/lib/xp", () => ({ getLessonXpState: vi.fn().mockResolvedValue({ lesson: false, quiz: false, course: false }) }));
 const routeNavigate = vi.hoisted(() => vi.fn());
 vi.mock("react-router", () => ({ useNavigate: () => routeNavigate }));
-vi.mock("@/features/learning/LessonRenderer", () => ({ LessonRenderer: ({ lesson, onAction, onComplete }: LessonRendererProps) => {
+vi.mock("@/features/learning/LessonRenderer", () => ({ LessonRenderer: ({ lesson, onAction, onComplete, contentFrame }: LessonRendererProps) => {
   const title = lesson.title;
   useEffect(() => {
     const summary = title === "Scored" ? { correct: 2, total: 5 } : title === "Failed" ? { correct: 2, total: 5, passed: false } : title === "Passed" ? { correct: 5, total: 5, passed: true } : undefined;
     onAction({ label: "Complete", run: onComplete, ...(summary ? { summary } : {}), ...(title === "HintCode" ? { hint: { items: ["Try mut"] } } : {}), ...(title === "CheckedCode" ? { checked: true } : {}) });
     return () => onAction(null);
   }, [onAction, onComplete, title]);
-  return <div>{title === "Long" ? <><h2>Goal</h2><h3>Setup</h3></> : "Lesson content"}</div>;
+  return <div>{title === "Long" ? <><h2>Goal</h2><h3>Setup</h3></> : "Lesson content"}{contentFrame?.resources}</div>;
 } }));
 const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 function TestCard(props: ComponentProps<typeof LessonPlayerCard>) { return <QueryClientProvider client={client}><LessonPlayerCard {...props} /></QueryClientProvider>; }
@@ -53,6 +53,15 @@ it.each(["article", "quiz"] as const)("puts the %s footer in the lesson column",
     <TestCard {...props} lesson={{ ...lesson, lesson_format: format }} courseId="c" onMarkComplete={vi.fn()} onNavigateToLesson={vi.fn()} actionSlot={document.createElement("div")} />,
   ));
   expect(host.querySelectorAll("[data-lesson-column]")).toHaveLength(1);
+});
+
+it.each([["video", true], ["article", true], ["quiz", false], ["practice", false], ["code_exercise", false]] as const)("shows in-body resources for %s: %s", (format, shown) => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  act(() => root.render(
+    <TestCard {...props} lesson={{ ...lesson, lesson_format: format, resources: [{ title: "Doc link", url: "https://example.com/doc" }] }} courseId="c" onMarkComplete={vi.fn()} onNavigateToLesson={vi.fn()} />,
+  ));
+  expect(host.textContent?.includes("Doc link")).toBe(shown);
 });
 
 it("keeps a failed completion on the same lesson and clears its error for another course", async () => {

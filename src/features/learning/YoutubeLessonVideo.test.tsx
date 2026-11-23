@@ -12,7 +12,7 @@ vi.mock("@/lib/youtubePlayerApi", () => ({ loadYoutubePlayerApi: vi.fn() }));
 let cleanup: (() => void) | undefined;
 afterEach(() => { cleanup?.(); vi.clearAllMocks(); vi.useRealTimers(); });
 
-it("keeps segment/no-autoplay, handles player errors, and recreates the player when the URL changes", async () => {
+it("keeps segment, autoplays, handles player errors, and recreates the player when the URL changes", async () => {
   const host = document.createElement("div");
   const root = createRoot(host);
   const destroy = vi.fn();
@@ -25,9 +25,10 @@ it("keeps segment/no-autoplay, handles player errors, and recreates the player w
   const url = new URL(frame.src);
   expect(url.searchParams.get("start")).toBe("5");
   expect(url.searchParams.get("end")).toBe("15");
-  expect(url.searchParams.get("autoplay")).toBe("0");
+  expect(url.searchParams.get("autoplay")).toBe("1");
   expect(url.searchParams.get("origin")).toBe(window.location.origin);
   expect(frame.referrerPolicy).toBe("strict-origin-when-cross-origin");
+  expect(frame.allow).toContain("autoplay");
   expect(frame.className).toContain("h-full");
   expect(frame.parentElement?.className).toContain("aspect-video");
   expect(host.querySelector("button, a")).toBeNull();
