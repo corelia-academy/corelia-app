@@ -814,3 +814,33 @@ test("rank: AC-05 - hiện đề xuất open của mọi map trong focus.paths, 
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test("rank: ưu tiên priority số nhỏ trước khi phá hòa bằng slug", () => {
+  const mk = (slug, priority) => ({
+    slug,
+    title: slug,
+    direction: { axis: "skill", entry: "Rust" },
+    level: "beginner",
+    kind: "new",
+    promise: "Tạo CLI tool bằng Rust",
+    starting_point: { knowledge: "Cơ bản", requires: [] },
+    final_product: "Repo CLI",
+    feasibility: "feasible",
+    why_now: { kind: "direct", urls: ["https://d1.com"] },
+    ...(priority !== undefined ? { priority } : {}),
+    criteria: {
+      continues_catalog: { met: false, basis: "Mới", refs: [] },
+      fills_direction: { met: true, basis: "Đạt", refs: ["r1"] },
+      timely: { met: true, basis: "Đạt", refs: ["r2"] },
+      differentiated: { met: true, basis: "Đạt", refs: ["r3"] },
+      showable_product: { met: true, basis: "Đạt", refs: ["r4"] },
+    },
+  });
+  const ranked = rankShortlist({
+    proposals: [mk("alpha-unprioritized"), mk("zeta-prio-1", 1), mk("beta-prio-2", 2)],
+  }, []);
+  assert.deepStrictEqual(
+    ranked.rows.map((r) => [r.rank, r.slug]),
+    [[1, "zeta-prio-1"], [2, "beta-prio-2"], [3, "alpha-unprioritized"]],
+  );
+});

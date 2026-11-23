@@ -357,15 +357,21 @@ export function rankShortlist(shortlistData, catalogData, { toolChecker = defaul
 
   // AC-05: Sắp xếp theo:
   // 1. Nhóm eligible đứng trước
-  // 2. Layer thấp nhất của khóa (minLayerOrder tăng dần)
-  // 3. Độ sâu requires (requiresDepth tăng dần)
-  // 4. Tiêu chí cũ để phá hòa: metCount giảm dần -> directUrlCount giảm dần -> slug tăng dần
+  // 2. Priority tường minh do Human chốt (số nhỏ đứng trước; không có xếp sau)
+  // 3. Layer thấp nhất của khóa (minLayerOrder tăng dần)
+  // 4. Độ sâu requires (requiresDepth tăng dần)
+  // 5. Tiêu chí cũ để phá hòa: metCount giảm dần -> directUrlCount giảm dần -> slug tăng dần
   processed.sort((a, b) => {
     if (a.eligible !== b.eligible) {
       return a.eligible ? -1 : 1;
     }
 
     if (a.eligible) {
+      const aPrio = typeof a.priority === "number" && Number.isFinite(a.priority) ? a.priority : Infinity;
+      const bPrio = typeof b.priority === "number" && Number.isFinite(b.priority) ? b.priority : Infinity;
+      if (aPrio !== bPrio) {
+        return aPrio - bPrio;
+      }
       if (a.minLayerOrder !== b.minLayerOrder) {
         return a.minLayerOrder - b.minLayerOrder;
       }
