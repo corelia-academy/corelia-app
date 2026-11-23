@@ -56,3 +56,14 @@ supabase/snippets/Untitled query *.sql
 # AI retirement backups
 .backups/
 backups/
+
+# Course skill local runs (course-author output, planner state, catalog snapshots)
+.course-runs/
+.course-plan/*
+!.course-plan/slug-aliases.json
+!.course-plan/*/
+.course-plan/*/*
+!.course-plan/*/.gitkeep
+
+# Wrangler state backups
+.wrangler.bak-*/
