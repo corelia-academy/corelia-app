@@ -1,13 +1,13 @@
 import { normalizeCodeLocale } from "./locale";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowCounterClockwise, FileText } from "@phosphor-icons/react";
+import { ArrowCounterClockwise } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProgressCircle } from "@/components/ui/progress";
-import { CodeBlock, CodeBlockFrame, CodeBlockLine, CodeSpan } from "@/components/ui/code-block";
+import { CodeBlockFrame, CodeBlockLine, CodeSpan } from "@/components/ui/code-block";
 import { codeLanguageLabel } from "@/components/ui/code-syntax";
 import { InputCode } from "@/components/ui/input-code";
 import { ExplanationBox } from "@/components/ui/explanation-box";
@@ -47,7 +47,8 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
   const inFlight = useRef(false);
   const [completionPending, setCompletionPending] = useState(false);
   const [, setSaved] = useState<boolean | null>(null);
-  const [solution, setSolution] = useState(false);
+  // TODO(figma-learn): tạm ẩn Show solutions, bật lại cùng nút (dòng ~209) và khối đáp án (dòng ~217)
+  // const [solution, setSolution] = useState(false);
   const segments = useMemo(() => config.mode === "fill" ? parseMarkers(config.file.starter_source) : [], [config]);
   const lines = useMemo(() => { const out = segments.reduce<FillSegment[][]>((acc, s) => {
     if (s.type === "blank") { acc[acc.length - 1].push(s); return acc; }
@@ -206,14 +207,16 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
         trailingIcon={<ArrowCounterClockwise weight="duotone" className="size-4" aria-hidden />}>
         {t("learning.reset")}
       </Button>
+      {/* TODO(figma-learn): tạm ẩn nút Show solutions, bật lại cùng state `solution`
       <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setSolution(v => !v)}
         trailingIcon={<FileText weight="duotone" className="size-4" aria-hidden />}>
         {t("learning.solution")}
       </Button>
+      */}
       {/* TODO(figma-learn): Figma không có dòng "đã lưu nháp", tạm ẩn, bật lại khi có thiết kế
       {key && saved !== null && <span role="status" className="text-xs text-foreground-muted">{t(saved ? "learning.draftSaved" : "learning.draftUnavailable")}</span>}
       */}
     </div>
-    {solution && <CodeBlock language={config.language} code={config.reference_solution} copyable={false} header={false} />}
+    {/* {solution && <CodeBlock language={config.language} code={config.reference_solution} copyable={false} header={false} />} */}
   </div>;
 }
