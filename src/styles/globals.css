@@ -152,6 +152,12 @@
   --color-toast-bar-surface: var(--toast-bar-surface);
   --color-toast-bar-border: var(--toast-bar-border);
   --color-toast-bar-foreground: var(--toast-bar-foreground);
+  /* Figma Modal semantic color aliases. */
+  --color-modal-overlay: var(--modal-overlay);
+  --color-modal-surface: var(--modal-surface);
+  --color-modal-title: var(--modal-title);
+  --color-modal-description: var(--modal-description);
+  --color-modal-description-muted: var(--modal-description-muted);
   --color-foreground-muted: var(--foreground-muted);
   --color-catalog-subtitle: var(--catalog-subtitle);
   --color-foreground-subtle: var(--foreground-subtle);
@@ -885,6 +891,13 @@
   --toast-bar-border: var(--neutral-200);
   --toast-bar-foreground: var(--text-primary-2);
 
+  /* Modal tokens — Figma only defines the dark palette; light mode reverses it. */
+  --modal-overlay: color-mix(in srgb, var(--neutral-900) 50%, transparent);
+  --modal-surface: var(--surface-float);
+  --modal-title: var(--text-primary-2);
+  --modal-description: var(--text-secondary);
+  --modal-description-muted: var(--text-secondary);
+
   --text-primary-2: #121926;
   --text-secondary: #4b5565;
   --text-tertiary: #9aa3b2;
@@ -1231,6 +1244,13 @@
   --toast-bar-surface: var(--neutral-800);
   --toast-bar-border: color-mix(in srgb, var(--neutral-700) 40%, transparent);
   --toast-bar-foreground: var(--neutral-50);
+
+  /* Modal tokens — exact Figma Dark Midnight Navy specification. */
+  --modal-overlay: color-mix(in srgb, var(--neutral-900) 95%, transparent);
+  --modal-surface: var(--neutral-800);
+  --modal-title: var(--neutral-50);
+  --modal-description: var(--neutral-200);
+  --modal-description-muted: var(--neutral-400);
 
   /* Dark mode: preserve the exact Figma palette mappings. */
   --progress-track: var(--neutral-700);

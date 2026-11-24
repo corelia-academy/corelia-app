@@ -429,6 +429,7 @@ function ApplicationRoutes() {
               "explanation-box",
               "code-block",
               "input-code",
+              "modal",
             ].map((component) => (
               <Route
                 key={component}

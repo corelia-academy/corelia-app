@@ -36,7 +36,7 @@ describe("App router context", () => {
     expect(dynamicComponentRouteIndex).toBeGreaterThan(informativeIconRouteIndex);
   });
 
-  it.each(["code-block", "input-code"])("registers the %s showcase route in the component route list", (slug) => {
+  it.each(["code-block", "input-code", "modal"])("registers the %s showcase route in the component route list", (slug) => {
     const slugIndex = appSource.indexOf(`"${slug}",`);
     const dynamicComponentRouteIndex = appSource.indexOf(
       "path={`/components/${component}`}",

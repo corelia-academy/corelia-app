@@ -56,7 +56,8 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(24);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(25);
+    expect(container.querySelector('a[href="/components/modal"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/timestamp"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/toast-bar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/explanation-box"]')).not.toBeNull();
@@ -83,9 +84,10 @@ describe("AdminComponentsPage", () => {
     expect(navigation?.classList.contains("overflow-x-auto")).toBe(true);
     expect(navigation?.classList.contains("overflow-x-hidden")).toBe(false);
     expect(container.querySelector("main")?.classList.contains("select-none")).toBe(false);
-    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(23);
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(24);
+    expect(container.querySelector("#component-modal")).not.toBeNull();
     expect(container.querySelector("#component-full-page-empty-state")).toBeNull();
-    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(23);
+    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(24);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
     expect(container.textContent).toContain("Selection");
