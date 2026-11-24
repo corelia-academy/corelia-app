@@ -36,6 +36,7 @@ import AdminExplanationBoxComponentPage from "./components/AdminExplanationBoxCo
 import AdminCodeBlockComponentPage from "./components/AdminCodeBlockComponentPage";
 import AdminInputCodeComponentPage from "./components/AdminInputCodeComponentPage";
 import AdminModalComponentPage from "./components/AdminModalComponentPage";
+import AdminSideDrawerComponentPage from "./components/AdminSideDrawerComponentPage";
 import AdminComponentsSidebar from "./components/AdminComponentsSidebar";
 
 const components = [
@@ -163,6 +164,11 @@ const components = [
     slug: "modal",
     title: "Modal",
     criterion: "Confirmation, Destructive Action, Form, Status, and Slot templates over the dark overlay.",
+  },
+  {
+    slug: "side-drawer",
+    title: "Side Drawer",
+    criterion: "30vw and 50vw right-hand panels with header, close button, and scrolling content slot.",
   },
 ] as const;
 
@@ -636,6 +642,9 @@ export default function AdminComponentsPage() {
               </ComponentSection>
               <ComponentSection {...components[24]}>
                 <AdminModalComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[25]}>
+                <AdminSideDrawerComponentPage embedded />
               </ComponentSection>
             </>
           )}

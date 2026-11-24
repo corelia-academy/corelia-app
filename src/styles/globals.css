@@ -158,6 +158,11 @@
   --color-modal-title: var(--modal-title);
   --color-modal-description: var(--modal-description);
   --color-modal-description-muted: var(--modal-description-muted);
+  /* Figma Side Drawer semantic color aliases. */
+  --color-side-drawer-overlay: var(--side-drawer-overlay);
+  --color-side-drawer-surface: var(--side-drawer-surface);
+  --color-side-drawer-title: var(--side-drawer-title);
+  --color-side-drawer-description: var(--side-drawer-description);
   --color-foreground-muted: var(--foreground-muted);
   --color-catalog-subtitle: var(--catalog-subtitle);
   --color-foreground-subtle: var(--foreground-subtle);
@@ -898,6 +903,12 @@
   --modal-description: var(--text-secondary);
   --modal-description-muted: var(--text-secondary);
 
+  /* Side Drawer tokens — Figma only defines the dark palette; light mode reverses it. */
+  --side-drawer-overlay: color-mix(in srgb, var(--neutral-900) 50%, transparent);
+  --side-drawer-surface: var(--surface-float);
+  --side-drawer-title: var(--text-primary-2);
+  --side-drawer-description: var(--text-secondary);
+
   --text-primary-2: #121926;
   --text-secondary: #4b5565;
   --text-tertiary: #9aa3b2;
@@ -1251,6 +1262,12 @@
   --modal-title: var(--neutral-50);
   --modal-description: var(--neutral-200);
   --modal-description-muted: var(--neutral-400);
+
+  /* Side Drawer tokens — exact Figma Dark Midnight Navy specification. */
+  --side-drawer-overlay: color-mix(in srgb, var(--neutral-900) 95%, transparent);
+  --side-drawer-surface: color-mix(in srgb, var(--neutral-900) 95%, transparent);
+  --side-drawer-title: var(--neutral-200);
+  --side-drawer-description: var(--neutral-400);
 
   /* Dark mode: preserve the exact Figma palette mappings. */
   --progress-track: var(--neutral-700);

@@ -430,6 +430,7 @@ function ApplicationRoutes() {
               "code-block",
               "input-code",
               "modal",
+              "side-drawer",
             ].map((component) => (
               <Route
                 key={component}
