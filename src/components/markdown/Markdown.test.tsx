@@ -29,4 +29,12 @@ describe("Markdown variants", () => {
     expect(html).toContain("min-w-[32rem]");
     expect(html).not.toContain("space-y-3");
   });
+
+  it("renders the inline variant without block elements", () => {
+    const html = renderToStaticMarkup(<Markdown content={"Dùng `Vec` và **mut**"} variant="inline" />);
+    expect(html).toContain("bg-code-block-surface");
+    expect(html).toContain("<strong>");
+    expect(html).not.toContain("<div");
+    expect(html).not.toContain("<p");
+  });
 });
