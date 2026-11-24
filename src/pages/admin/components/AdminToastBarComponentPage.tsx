@@ -26,6 +26,25 @@ const positions: { position: ToastBarPosition; title: string; criterion: string 
   },
 ]
 
+const sonnerForms: { id: string; label: string; fire: () => void }[] = [
+  { id: "success", label: "Success", fire: () => toast.success("Đã cập nhật thay đổi thành công") },
+  { id: "error", label: "Error", fire: () => toast.error("Không thể lưu thay đổi") },
+  { id: "info", label: "Info", fire: () => toast.info("Có phiên bản mới của bài học") },
+  { id: "warning", label: "Warning", fire: () => toast.warning("Bài nộp sắp hết hạn") },
+  { id: "message", label: "Message (no icon)", fire: () => toast.message("Vui lòng đăng nhập để tiếp tục") },
+  { id: "loading", label: "Loading", fire: () => toast.loading("Đang lưu thay đổi...", { duration: 4000 }) },
+  {
+    id: "description",
+    label: "With description",
+    fire: () => toast.success("Đã lưu hồ sơ", { description: "Các thay đổi sẽ hiển thị sau vài giây." }),
+  },
+  {
+    id: "action",
+    label: "With action",
+    fire: () => toast.success("Đã ẩn công việc", { action: { label: "Xem việc đã ẩn", onClick: () => {} } }),
+  },
+]
+
 type AdminToastBarComponentPageProps = {
   embedded?: boolean
 }
@@ -110,6 +129,39 @@ export default function AdminToastBarComponentPage({
               Last triggered: <strong className="text-foreground">{lastTriggered}</strong>
             </span>
           )}
+        </div>
+      </ShowcaseSection>
+
+      <ShowcaseSection
+        title="All sonner forms in use"
+        criterion="Real toasts from the global Toaster, the same ones users see. Compare each with the Toast Bar above."
+      >
+        <div className="flex flex-wrap items-center gap-3" data-testid="sonner-forms">
+          {sonnerForms.map(({ id, label, fire }) => (
+            <Button
+              key={id}
+              type="button"
+              size="small"
+              variant="cta"
+              hierarchy="secondary"
+              onClick={fire}
+              data-testid={`trigger-sonner-${id}`}
+            >
+              {label}
+            </Button>
+          ))}
+          <Button
+            type="button"
+            size="small"
+            variant="cta"
+            hierarchy="primary"
+            onClick={() => sonnerForms.forEach(({ fire }, index) => window.setTimeout(fire, index * 250))}
+          >
+            Fire all
+          </Button>
+          <Button type="button" size="small" variant="cta" hierarchy="tertiary" onClick={() => toast.dismiss()}>
+            Dismiss all
+          </Button>
         </div>
       </ShowcaseSection>
     </ComponentShowcaseLayout>

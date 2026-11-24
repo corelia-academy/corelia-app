@@ -33,6 +33,7 @@ describe("ToastBar Component", () => {
 
     expect(markup).toContain("w-[400px]")
     expect(markup).toContain("font-medium")
+    expect(markup).toContain("shadow-toast-bar")
   })
 
   it("renders all 8 Figma variant combinations without crashing", () => {
