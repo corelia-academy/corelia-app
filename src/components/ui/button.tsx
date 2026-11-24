@@ -21,7 +21,7 @@ const buttonVariants = cva(
         small:
           "h-8 gap-md rounded-md px-xl text-cta-medium [&_svg:not([class*='size-'])]:size-4",
         xsmall:
-          "h-6 gap-md rounded-md px-md text-cta-small [&_svg:not([class*='size-'])]:size-3",
+          "h-6 gap-md rounded-sm px-md text-cta-small [&_svg:not([class*='size-'])]:size-3",
       },
       hierarchy: {
         primary: "",

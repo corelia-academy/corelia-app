@@ -12,6 +12,7 @@ import {
   DropdownMenuItemContent,
   DropdownMenuList,
   DropdownMenuSearch,
+  DropdownMenuSearchInput,
   DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -79,13 +80,7 @@ export function ProjectTaxonomyPicker({ label, options, selectedIds, customValue
           className="w-(--anchor-width) min-w-0 gap-2"
         >
           <DropdownMenuSearch>
-            <Input
-              type="search"
-              variant="icon-leading"
-              leadingIconClassName="text-dropdown-supporting"
-              statusIcon={null}
-              controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
-              className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
+            <DropdownMenuSearchInput
               value={query}
               maxLength={MAX_CUSTOM_LENGTH}
               placeholder={searchPlaceholder}
@@ -109,7 +104,7 @@ export function ProjectTaxonomyPicker({ label, options, selectedIds, customValue
                   key={option.id}
                   checked={checked}
                   disabled={disabled}
-                  size="compact"
+                  size="large"
                   onCheckedChange={(nextChecked, eventDetails) => {
                     eventDetails.cancel();
                     onChange(

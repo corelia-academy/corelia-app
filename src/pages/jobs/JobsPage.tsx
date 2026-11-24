@@ -61,8 +61,8 @@ function JobFilterDropdown({ label, allLabel, value, options, disabled, fitConte
       >
         <DropdownMenuList>
           <DropdownMenuRadioGroup value={value} onValueChange={(next) => onValueChange(String(next))}>
-            <DropdownMenuRadioItem className="text-body-large" value=""><DropdownMenuItemContent>{allLabel}</DropdownMenuItemContent></DropdownMenuRadioItem>
-            {options.map((option) => <DropdownMenuRadioItem key={option.value} className="text-body-large" value={option.value}><DropdownMenuItemContent>{option.label}</DropdownMenuItemContent></DropdownMenuRadioItem>)}
+            <DropdownMenuRadioItem size="large" value=""><DropdownMenuItemContent>{allLabel}</DropdownMenuItemContent></DropdownMenuRadioItem>
+            {options.map((option) => <DropdownMenuRadioItem key={option.value} size="large" value={option.value}><DropdownMenuItemContent>{option.label}</DropdownMenuItemContent></DropdownMenuRadioItem>)}
           </DropdownMenuRadioGroup>
         </DropdownMenuList>
       </DropdownMenuContent>
@@ -106,13 +106,13 @@ function JobSalaryCurrencySelector({
               value={value}
               onValueChange={(next) => onValueChange(String(next))}
             >
-              <DropdownMenuRadioItem className="text-body-large" value="">
+              <DropdownMenuRadioItem size="large" value="">
                 <DropdownMenuItemContent>{allLabel}</DropdownMenuItemContent>
               </DropdownMenuRadioItem>
               {JOB_SALARY_CURRENCIES.map((currency) => (
                 <DropdownMenuRadioItem
                   key={currency}
-                  className="text-body-large"
+                  size="large"
                   value={currency}
                 >
                   <DropdownMenuItemContent>{currency}</DropdownMenuItemContent>

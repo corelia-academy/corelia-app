@@ -48,7 +48,7 @@ const tabsTabVariants = cva(
     variants: {
       level: {
         "1":
-          "rounded-md px-4 py-2.5 text-tabs-text-primary hover:bg-tabs-surface-hover data-[disabled]:hover:bg-transparent data-[active]:ring-1 data-[active]:ring-inset data-[active]:ring-tabs-border-secondary data-[active]:bg-tabs-surface-hover data-[active]:text-tabs-active-text-level1 data-[disabled]:text-tabs-text-disabled",
+          "rounded-md px-4 py-2.5 text-tabs-text-primary hover:bg-tabs-surface-hover data-[disabled]:hover:bg-transparent data-[active]:ring-1 data-[active]:ring-inset data-[active]:ring-tabs-active-text-level1 data-[active]:bg-tabs-surface-hover data-[active]:text-tabs-active-text-level1 data-[disabled]:text-tabs-text-disabled",
         "2a":
           "relative rounded-none pt-2 pb-3 text-tabs-text-primary after:pointer-events-none after:absolute after:right-0 after:bottom-0 after:left-0 after:h-0.5 after:content-[''] hover:text-tabs-active-text-level2a hover:after:bg-tabs-border-divider data-[disabled]:hover:text-tabs-text-disabled data-[disabled]:hover:after:bg-transparent data-[active]:text-tabs-active-text-level2a data-[active]:after:bg-tabs-active-accent data-[disabled]:text-tabs-text-disabled data-[disabled]:after:bg-transparent data-[orientation=vertical]:after:hidden",
         "2b":

@@ -8,10 +8,10 @@ const chipVariants = cva(
   {
     variants: {
       size: {
-        xsmall: "h-5 min-w-[21px] rounded-[4px] px-1.5 py-0.5 text-xs leading-4 tracking-normal",
-        small: "h-6 min-w-[30px] rounded-[6px] px-1.5 py-0.5 text-sm leading-5 tracking-[-0.5px]",
-        medium: "h-7 min-w-[34px] rounded-[6px] px-2 py-1 text-sm leading-5 tracking-[-0.5px]",
-        large: "h-8 min-w-[38px] rounded-[6px] px-2.5 py-1.5 text-sm leading-5 tracking-[-0.5px]",
+        xsmall: "h-5 min-w-[21px] rounded-[4px] px-1 py-1 text-[10px] leading-[1.2] tracking-normal",
+        small: "h-6 min-w-[30px] rounded-[6px] px-1.5 py-0.5 text-sm leading-5 tracking-[-0.07px]",
+        medium: "h-7 min-w-[34px] rounded-[6px] px-2 py-1 text-sm leading-5 tracking-[-0.07px]",
+        large: "h-8 min-w-[38px] rounded-[6px] px-2.5 py-1.5 text-sm leading-5 tracking-[-0.07px]",
       },
       shape: {
         rounded: "",

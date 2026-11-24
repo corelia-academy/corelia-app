@@ -3,16 +3,19 @@ import { CaretDown, CaretUp } from "@phosphor-icons/react";
 import { AlertTriangle, Diamond, UserRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuItemContent,
   DropdownMenuLabel,
   DropdownMenuList,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSearch,
+  DropdownMenuSearchInput,
   DropdownMenuSelectAll,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -50,30 +53,93 @@ type DropdownRowBehavior = {
   cardAction: "checkbox" | "caret" | "none";
 };
 
-const baseItemStatuses = [
+type BaseItemKind = "checkbox" | "radio" | "item";
+type BaseItemSize = "large" | "small";
+type BaseItemStatusId = "default" | "selected" | "disabled" | "active-disabled";
+
+const baseItemStatuses: readonly { id: BaseItemStatusId; label: string }[] = [
   { id: "default", label: "Default" },
-  { id: "hover", label: "Hover" },
-  { id: "focus", label: "Focused" },
   { id: "selected", label: "Selected" },
   { id: "disabled", label: "Disabled" },
   { id: "active-disabled", label: "Active + Disabled" },
-] as const;
+];
 
 const baseItemVariants = [
   { id: "default", label: "Default" },
   { id: "warning", label: "Warning" },
 ] as const satisfies readonly { id: BaseItemVariant; label: string }[];
 
-const baseItemColumns = [
-  { id: "no-leading", label: "Leading icon = No", showLeading: false },
-  { id: "leading", label: "Leading icon = Yes", showLeading: true },
+type BaseItemKindConfig = {
+  id: BaseItemKind;
+  label: string;
+  note: string;
+  variants: readonly BaseItemVariant[];
+  statuses: readonly BaseItemStatusId[];
+};
+
+const baseItemKinds: readonly BaseItemKindConfig[] = [
+  {
+    id: "checkbox",
+    label: "Checkbox",
+    note: "Multiple choice · Default and Warning, four states each",
+    variants: ["default", "warning"],
+    statuses: ["default", "selected", "disabled", "active-disabled"],
+  },
+  {
+    id: "radio",
+    label: "Radio",
+    note: "Single choice · the selected check sits on the right",
+    variants: ["default"],
+    statuses: ["default", "selected", "disabled"],
+  },
+  {
+    id: "item",
+    label: "Item",
+    note: "Plain action row · no selection state",
+    variants: ["default"],
+    statuses: ["default", "disabled"],
+  },
+];
+
+const baseItemSizes = [
+  {
+    id: "large",
+    label: "Large",
+    size: "large",
+    note: "Padding 8 / 12 · title 16 · supporting text 12 · leading icon 24",
+  },
+  {
+    id: "small",
+    label: "Small",
+    size: "small",
+    note: "Padding 6 / 8 · title 14 · supporting text 10 · leading icon 20",
+  },
 ] as const;
 
-type BaseItemPreviewProps = (typeof baseItemColumns)[number];
+const baseItemLeadingOptions = [
+  { id: "no-leading", title: "Leading icon = No", showLeading: false },
+  { id: "leading", title: "Leading icon = Yes", showLeading: true },
+] as const;
 
-function BaseItemPreview({ id, label, showLeading }: BaseItemPreviewProps) {
+type BaseItemPreviewProps = {
+  id: string;
+  label: string;
+  title: string;
+  showLeading: boolean;
+  size: BaseItemSize;
+  kind: BaseItemKind;
+};
+
+function BaseItemPreview({
+  id,
+  label,
+  title,
+  showLeading,
+  size,
+  kind,
+}: BaseItemPreviewProps) {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [radioValue, setRadioValue] = useState("selected");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     () =>
       new Set([
@@ -83,19 +149,16 @@ function BaseItemPreview({ id, label, showLeading }: BaseItemPreviewProps) {
         "warning-active-disabled",
       ]),
   );
+  const kindConfig = baseItemKinds.find((item) => item.id === kind) ?? baseItemKinds[0];
 
-  const visibleGroups = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    return baseItemVariants
-      .map((variant) => ({
-        ...variant,
-        statuses: baseItemStatuses.filter((status) =>
-          `${variant.label} ${status.label}`.toLowerCase().includes(normalizedSearch),
-        ),
-      }))
-      .filter((group) => group.statuses.length > 0);
-  }, [search]);
+  const visibleGroups = baseItemVariants
+    .filter((variant) => kindConfig.variants.includes(variant.id))
+    .map((variant) => ({
+      ...variant,
+      statuses: baseItemStatuses.filter((status) =>
+        kindConfig.statuses.includes(status.id),
+      ),
+    }));
 
   function updateSelected(itemId: string, checked: boolean) {
     setSelectedIds((current) => {
@@ -111,13 +174,81 @@ function BaseItemPreview({ id, label, showLeading }: BaseItemPreviewProps) {
     });
   }
 
+  const rows = visibleGroups.map((group, groupIndex) => (
+    <Fragment key={group.id}>
+      {groupIndex > 0 ? <DropdownMenuSeparator className="my-0" /> : null}
+      <DropdownMenuGroup className="flex flex-col gap-px">
+        <DropdownMenuLabel className="px-lg py-0">{group.label}</DropdownMenuLabel>
+        {group.statuses.map((status) => {
+          const itemId = `${group.id}-${status.id}`;
+          const content = (
+            <DropdownMenuItemContent
+              leading={
+                showLeading ? (
+                  <Diamond className="size-full text-dropdown-supporting" aria-hidden />
+                ) : undefined
+              }
+              supportingText={`${status.label} state · ${showLeading ? "leading icon" : "no leading icon"}`}
+              trailingIcon={
+                kind === "radio" ? undefined : (
+                  <CaretDown weight="duotone" className="size-4" aria-hidden />
+                )
+              }
+            >
+              {status.label}
+            </DropdownMenuItemContent>
+          );
+          const rowProps = {
+            "data-testid": `dropdown-menu-base-item-${id}-${itemId}`,
+            "data-preview-state": status.id,
+            disabled: status.id === "disabled" || status.id === "active-disabled",
+            size,
+          };
+
+          if (kind === "radio") {
+            return (
+              <DropdownMenuRadioItem
+                key={itemId}
+                {...rowProps}
+                value={status.id}
+                closeOnClick={false}
+              >
+                {content}
+              </DropdownMenuRadioItem>
+            );
+          }
+
+          if (kind === "item") {
+            return (
+              <DropdownMenuItem key={itemId} {...rowProps} closeOnClick={false}>
+                {content}
+              </DropdownMenuItem>
+            );
+          }
+
+          return (
+            <DropdownMenuCheckboxItem
+              key={itemId}
+              {...rowProps}
+              checked={selectedIds.has(itemId)}
+              variant={group.id}
+              onCheckedChange={(checked) => updateSelected(itemId, checked === true)}
+            >
+              {content}
+            </DropdownMenuCheckboxItem>
+          );
+        })}
+      </DropdownMenuGroup>
+    </Fragment>
+  ));
+
   return (
     <article
       data-testid={`dropdown-menu-base-items-${id}`}
       className="min-w-0 space-y-3"
     >
       <div>
-        <h3 className="text-title-medium font-display">{label}</h3>
+        <h5 className="text-title-small font-display">{title}</h5>
       </div>
 
       <DropdownMenu
@@ -142,73 +273,17 @@ function BaseItemPreview({ id, label, showLeading }: BaseItemPreviewProps) {
           align="start"
           className="max-w-[calc(100vw-2rem)]"
         >
-          <DropdownMenuSearch>
-            <Input
-              type="search"
-              variant="icon-leading"
-              leadingIconClassName="text-dropdown-supporting"
-              statusIcon={null}
-              value={search}
-              onChange={(event) => setSearch(event.currentTarget.value)}
-              placeholder="Search states"
-              aria-label={`Search ${label}`}
-              controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md"
-              className="text-[16px] text-dropdown-title placeholder:text-dropdown-supporting"
-            />
-          </DropdownMenuSearch>
           <DropdownMenuList className="gap-[18px]">
-            {visibleGroups.map((group, groupIndex) => (
-              <Fragment key={group.id}>
-                {groupIndex > 0 ? (
-                  <DropdownMenuSeparator className="my-0" />
-                ) : null}
-                <DropdownMenuGroup className="flex flex-col gap-px">
-                  <DropdownMenuLabel className="px-lg py-0">
-                    {group.label}
-                  </DropdownMenuLabel>
-                  {group.statuses.map((status) => {
-                    const itemId = `${group.id}-${status.id}`;
-                    const isDisabled =
-                      status.id === "disabled" || status.id === "active-disabled";
-
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={itemId}
-                        data-testid={`dropdown-menu-base-item-${id}-${itemId}`}
-                        data-preview-state={status.id}
-                        checked={selectedIds.has(itemId)}
-                        disabled={isDisabled}
-                        variant={group.id}
-                        onCheckedChange={(checked) =>
-                          updateSelected(itemId, checked === true)
-                        }
-                      >
-                        <DropdownMenuItemContent
-                          leading={
-                            showLeading ? (
-                              <Diamond
-                                className="size-5 text-dropdown-supporting"
-                                aria-hidden
-                              />
-                            ) : undefined
-                          }
-                          supportingText={`${status.label} state · ${showLeading ? "leading icon" : "no leading icon"}`}
-                          trailingIcon={
-                            <CaretDown
-                              weight="duotone"
-                              className="size-4"
-                              aria-hidden
-                            />
-                          }
-                        >
-                          {status.label}
-                        </DropdownMenuItemContent>
-                      </DropdownMenuCheckboxItem>
-                    );
-                  })}
-                </DropdownMenuGroup>
-              </Fragment>
-            ))}
+            {kind === "radio" ? (
+              <DropdownMenuRadioGroup
+                value={radioValue}
+                onValueChange={(value) => setRadioValue(String(value))}
+              >
+                {rows}
+              </DropdownMenuRadioGroup>
+            ) : (
+              rows
+            )}
           </DropdownMenuList>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -229,7 +304,6 @@ type ShowcaseRow = {
   children?: readonly ShowcaseRow[];
   behavior: DropdownRowBehavior;
   variant?: BaseItemVariant;
-  size: "compact" | "supporting" | "warning";
 };
 
 type UseCaseDefinition = {
@@ -246,7 +320,6 @@ const courseTitleRows: readonly ShowcaseRow[] = [
     id: "discover",
     title: "Discover a variety of courses tailored to your interests.",
     checked: true,
-    size: "compact",
     behavior: {
       // Toàn bộ card chọn/bỏ chọn; card này không có danh sách con.
       cardAction: "checkbox",
@@ -255,7 +328,6 @@ const courseTitleRows: readonly ShowcaseRow[] = [
   {
     id: "participate",
     title: "Participate in engaging activities and real-world projects.",
-    size: "compact",
     behavior: {
       cardAction: "checkbox",
     },
@@ -264,7 +336,6 @@ const courseTitleRows: readonly ShowcaseRow[] = [
     id: "explore",
     title: "Explore in-depth subjects with professional insights.",
     checked: true,
-    size: "compact",
     behavior: {
       cardAction: "checkbox",
     },
@@ -273,7 +344,6 @@ const courseTitleRows: readonly ShowcaseRow[] = [
     id: "assess",
     title: "Assess your knowledge through interactive quizzes.",
     checked: true,
-    size: "compact",
     behavior: {
       cardAction: "checkbox",
     },
@@ -281,7 +351,6 @@ const courseTitleRows: readonly ShowcaseRow[] = [
   {
     id: "certificate",
     title: "Receive a certificate after completing the course.",
-    size: "compact",
     behavior: {
       cardAction: "checkbox",
     },
@@ -294,7 +363,6 @@ const courseDetailRows: readonly ShowcaseRow[] = [
     title: "Discover a variety of courses tailored to your interests.",
     supportingText: "Course topics and objectives.",
     checked: true,
-    size: "supporting",
     behavior: {
       // Many single list / people-assignee: toàn bộ card là vùng chọn.
       cardAction: "checkbox",
@@ -304,7 +372,6 @@ const courseDetailRows: readonly ShowcaseRow[] = [
     id: "participate",
     title: "Participate in engaging activities and real-world projects.",
     supportingText: "Extra resources and support.",
-    size: "supporting",
     behavior: {
       cardAction: "checkbox",
     },
@@ -314,7 +381,6 @@ const courseDetailRows: readonly ShowcaseRow[] = [
     title: "Explore in-depth subjects with professional insights.",
     supportingText: "Resources for your learning.",
     checked: true,
-    size: "supporting",
     behavior: {
       cardAction: "checkbox",
     },
@@ -324,7 +390,6 @@ const courseDetailRows: readonly ShowcaseRow[] = [
     title: "Assess your knowledge through interactive quizzes.",
     supportingText: "Timely grading and feedback.",
     checked: true,
-    size: "supporting",
     behavior: {
       cardAction: "checkbox",
     },
@@ -333,7 +398,6 @@ const courseDetailRows: readonly ShowcaseRow[] = [
     id: "certificate",
     title: "Receive a certificate after completing the course.",
     supportingText: "Career-enhancing credentials.",
-    size: "supporting",
     behavior: {
       cardAction: "checkbox",
     },
@@ -380,7 +444,6 @@ const warningRows: readonly ShowcaseRow[] = [
     title: "Data Science Basics",
     supportingText: "Fundamentals of data analysis and visualization techniques.",
     checked: true,
-    size: "warning",
     behavior: {
       // Warning case vẫn chọn theo toàn bộ card.
       cardAction: "checkbox",
@@ -390,7 +453,6 @@ const warningRows: readonly ShowcaseRow[] = [
     id: "advanced-python",
     title: "Advanced Python Programming",
     supportingText: "Deep dive into Python's advanced features for software development.",
-    size: "warning",
     behavior: {
       cardAction: "checkbox",
     },
@@ -402,7 +464,6 @@ const warningRows: readonly ShowcaseRow[] = [
     checked: true,
     trailing: "warning",
     variant: "warning",
-    size: "warning",
     behavior: {
       cardAction: "checkbox",
     },
@@ -412,7 +473,6 @@ const warningRows: readonly ShowcaseRow[] = [
     title: "Project Management Essentials",
     supportingText: "Key strategies for effective project planning and execution.",
     checked: true,
-    size: "warning",
     behavior: {
       cardAction: "checkbox",
     },
@@ -421,7 +481,6 @@ const warningRows: readonly ShowcaseRow[] = [
     id: "cybersecurity",
     title: "Cybersecurity Fundamentals",
     supportingText: "Introduction to securing digital information and systems.",
-    size: "warning",
     behavior: {
       cardAction: "checkbox",
     },
@@ -659,8 +718,6 @@ function UseCaseDropdown({ definition }: { definition: UseCaseDefinition }) {
         ) : undefined;
 
       const rowClassName = cn(
-        row.size === "warning" && "!min-h-[74px]",
-        depth > 0 && "!pl-[20px]",
         cardAction === "caret" && canExpand && "cursor-pointer",
       );
       const itemContent = (
@@ -691,7 +748,7 @@ function UseCaseDropdown({ definition }: { definition: UseCaseDefinition }) {
           checked={isRowChecked(row)}
           indeterminate={isRowIndeterminate(row)}
           disabled={row.disabled}
-          size={row.size === "compact" ? "compact" : "default"}
+          size="large"
           variant={row.variant ?? "default"}
           selectionMode={cardAction === "checkbox" ? "full-row" : "checkbox-only"}
           className={rowClassName}
@@ -722,7 +779,13 @@ function UseCaseDropdown({ definition }: { definition: UseCaseDefinition }) {
       );
 
       return [
-        rowElement,
+        depth > 0 ? (
+          <div key={row.id} className="pl-2xl">
+            {rowElement}
+          </div>
+        ) : (
+          rowElement
+        ),
         ...(isExpanded && row.children
           ? renderRows(row.children, depth + 1)
           : []),
@@ -762,17 +825,11 @@ function UseCaseDropdown({ definition }: { definition: UseCaseDefinition }) {
           className="!w-[386px] max-w-[calc(100vw-2rem)]"
         >
           <DropdownMenuSearch>
-            <Input
-              type="search"
-              variant="icon-leading"
-              leadingIconClassName="text-dropdown-supporting"
-              statusIcon={null}
+            <DropdownMenuSearchInput
               value={search}
               onChange={(event) => setSearch(event.currentTarget.value)}
               placeholder="Search"
               aria-label={`Search ${definition.label}`}
-              controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md"
-              className="text-[16px] text-dropdown-title placeholder:text-dropdown-supporting"
             />
           </DropdownMenuSearch>
 
@@ -812,12 +869,50 @@ export default function AdminDropdownMenuComponentPage({
       embedded={embedded}
     >
       <ShowcaseSection title="Base Items">
-        <div
-          data-testid="dropdown-menu-base-items"
-          className="grid min-w-0 gap-8 xl:grid-cols-2"
-        >
-          {baseItemColumns.map((column) => (
-            <BaseItemPreview key={column.id} {...column} />
+        <div data-testid="dropdown-menu-base-items" className="min-w-0 space-y-6">
+          {baseItemSizes.map((sizeOption) => (
+            <section
+              key={sizeOption.id}
+              data-testid={`dropdown-menu-base-items-size-${sizeOption.id}`}
+              aria-label={`Size ${sizeOption.label}`}
+              className="min-w-0 space-y-6 rounded-xl border border-border-subtle p-4"
+            >
+              <header className="space-y-1">
+                <h3 className="text-title-large font-display">
+                  Size = {sizeOption.label}
+                </h3>
+                <p className="text-body-small text-foreground-muted">
+                  {sizeOption.note}
+                </p>
+              </header>
+
+              {baseItemKinds.map((kind) => (
+                <div
+                  key={kind.id}
+                  data-testid={`dropdown-menu-base-items-${sizeOption.id}-${kind.id}-group`}
+                  className="min-w-0 space-y-3 border-t border-border-subtle pt-4"
+                >
+                  <div className="space-y-1">
+                    <h4 className="text-title-medium font-display">{kind.label}</h4>
+                    <p className="text-body-small text-foreground-muted">{kind.note}</p>
+                  </div>
+
+                  <div className="grid min-w-0 gap-6 md:grid-cols-2">
+                    {baseItemLeadingOptions.map((option) => (
+                      <BaseItemPreview
+                        key={option.id}
+                        id={`${sizeOption.id}-${kind.id}-${option.id}`}
+                        label={`${sizeOption.label} · ${kind.label} · ${option.title}`}
+                        title={option.title}
+                        showLeading={option.showLeading}
+                        size={sizeOption.size}
+                        kind={kind.id}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </section>
           ))}
         </div>
       </ShowcaseSection>

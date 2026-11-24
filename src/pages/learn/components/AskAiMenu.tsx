@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuItemContent, DropdownMenuList, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { LEARN_MENU_CONTENT, LEARN_MENU_ITEM } from "./LearnFooterMenu";
+import { LEARN_MENU_CONTENT } from "./LearnFooterMenu";
 import { lessonText } from "@/features/learning/lessonCopy";
 import { lessonBodyForAi, resolveAskAiAction, type AskAiTarget } from "@/features/learning/askAi";
 import type { CourseLesson } from "@/types/courses";
@@ -36,7 +36,7 @@ export function AskAiMenu({ lesson, courseTitle, compact = false }: { lesson: Co
     <DropdownMenuContent layout="multiple-list" side="top" align="center" className={cn("w-auto min-w-52", LEARN_MENU_CONTENT)}>
       <DropdownMenuList>
         {TARGETS.map(target => (
-          <DropdownMenuItem key={target} className={LEARN_MENU_ITEM} onClick={() => void choose(target)}>
+          <DropdownMenuItem key={target} size="small" onClick={() => void choose(target)}>
             <DropdownMenuItemContent trailingIcon={target === "copy" ? <Copy weight="duotone" aria-hidden /> : <ArrowSquareOut weight="duotone" aria-hidden />}>
               {t(`learning.askAi.${target}`)}
             </DropdownMenuItemContent>

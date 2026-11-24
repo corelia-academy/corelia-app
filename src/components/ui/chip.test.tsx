@@ -5,7 +5,7 @@ import { Chip } from "./chip"
 
 describe("Chip", () => {
   it.each([
-    ["xsmall", "h-5", "text-xs leading-4"],
+    ["xsmall", "h-5", "text-[10px] leading-[1.2]"],
     ["small", "h-6", "text-sm leading-5"],
     ["medium", "h-7", "text-sm leading-5"],
     ["large", "h-8", "text-sm leading-5"],
@@ -44,4 +44,14 @@ describe("Chip", () => {
     expect(disabled).toContain('data-disabled="true"')
     expect(disabled).toContain('aria-disabled="true"')
   })
+
+  it.each(["small", "medium", "large"] as const)(
+    "uses the Figma -0.5% letter spacing for the %s size",
+    (size) => {
+      const markup = renderToStaticMarkup(<Chip size={size}>3</Chip>)
+
+      expect(markup).toContain("tracking-[-0.07px]")
+      expect(markup).not.toContain("tracking-[-0.5px]")
+    },
+  )
 })

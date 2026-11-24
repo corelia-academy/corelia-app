@@ -10,7 +10,6 @@ import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -20,6 +19,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSearch,
+  DropdownMenuSearchInput,
   DropdownMenuSelectAll,
   DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
@@ -120,17 +120,11 @@ function TaxonomyFilter({
         className="max-w-[calc(100vw-2rem)]"
       >
         <DropdownMenuSearch>
-          <Input
-            type="search"
-            variant="icon-leading"
-            leadingIconClassName="text-dropdown-supporting"
-            statusIcon={null}
+          <DropdownMenuSearchInput
             value={query}
             onChange={(event) => setQuery(event.currentTarget.value)}
             placeholder={searchLabel}
             aria-label={`${searchLabel} ${label}`}
-            controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
-            className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
           />
         </DropdownMenuSearch>
         <DropdownMenuSelectAll
@@ -146,7 +140,7 @@ function TaxonomyFilter({
               <DropdownMenuCheckboxItem
                 key={option.id}
                 checked={selected.includes(option.id)}
-                size="compact"
+                size="large"
                 onCheckedChange={(checked, eventDetails) => {
                   eventDetails.cancel();
                   onChange(
@@ -375,17 +369,11 @@ export default function ProjectsPage() {
               className="w-(--anchor-width) max-w-[calc(100vw-2rem)]"
             >
               <DropdownMenuSearch>
-                <Input
-                  type="search"
-                  variant="icon-leading"
-                  leadingIconClassName="text-dropdown-supporting"
-                  statusIcon={null}
+                <DropdownMenuSearchInput
                   value={hackathonSearch}
                   onChange={(event) => setHackathonSearch(event.currentTarget.value)}
                   placeholder={t("pageTitles.search")}
                   aria-label={`${t("pageTitles.search")} ${t("projects.filters.hackathon")}`}
-                  controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
-                  className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
                 />
               </DropdownMenuSearch>
               <DropdownMenuList>
@@ -397,7 +385,7 @@ export default function ProjectsPage() {
                     setHackathonSearch("");
                   }}
                 >
-                  <DropdownMenuRadioItem className="text-body-large" value="">
+                  <DropdownMenuRadioItem size="large" value="">
                     <DropdownMenuItemContent>
                       {t("projects.filters.allHackathons")}
                     </DropdownMenuItemContent>
@@ -405,7 +393,7 @@ export default function ProjectsPage() {
                   {visibleHackathons.map((hackathon) => (
                     <DropdownMenuRadioItem
                       key={hackathon.id}
-                      className="text-body-large"
+                      size="large"
                       value={hackathon.slug ?? ""}
                     >
                       <DropdownMenuItemContent>{hackathon.title}</DropdownMenuItemContent>
@@ -452,16 +440,16 @@ export default function ProjectsPage() {
                     update("sort", value);
                   }}
                 >
-                  <DropdownMenuRadioItem className="text-body-large" value="newest">
+                  <DropdownMenuRadioItem size="large" value="newest">
                     <DropdownMenuItemContent>{t("projects.sort.newest")}</DropdownMenuItemContent>
                   </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem className="text-body-large" value="oldest">
+                  <DropdownMenuRadioItem size="large" value="oldest">
                     <DropdownMenuItemContent>{t("projects.sort.oldest")}</DropdownMenuItemContent>
                   </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem className="text-body-large" value="most_liked">
+                  <DropdownMenuRadioItem size="large" value="most_liked">
                     <DropdownMenuItemContent>{t("projects.sort.mostLiked")}</DropdownMenuItemContent>
                   </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem className="text-body-large" value="liked">
+                  <DropdownMenuRadioItem size="large" value="liked">
                     <DropdownMenuItemContent>{t("projects.sort.liked")}</DropdownMenuItemContent>
                   </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>

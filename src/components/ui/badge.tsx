@@ -8,10 +8,10 @@ const badgeVariants = cva(
   {
     variants: {
       size: {
-        xsmall: "h-[18px] gap-0 px-[6px] py-[4px] text-[10px] leading-none",
-        small: "h-6 gap-1 px-2 py-1 text-xs leading-none",
-        medium: "h-7 gap-1 px-[10px] py-[6px] text-sm leading-none tracking-[-0.07px]",
-        large: "h-8 gap-1 px-3 py-2 text-base leading-none",
+        xsmall: "h-5 gap-0 px-[6px] py-[4px] text-[10px] leading-none",
+        small: "h-[25px] gap-1 px-2 py-1 text-xs leading-none",
+        medium: "h-8 gap-1 px-[10px] py-[6px] text-sm leading-none tracking-[-0.07px]",
+        large: "h-[38px] gap-1 px-3 py-2 text-base leading-none",
       },
       color: {
         primary: "border-badge-primary text-badge-primary",

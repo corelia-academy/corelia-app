@@ -3,6 +3,8 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { CaretDown } from "@phosphor-icons/react"
 import { Check, ChevronRight, Minus } from "lucide-react"
 
+import { FieldContextReset } from "@/components/ui/field"
+import { Input, type InputSingleLineProps } from "@/components/ui/input"
 import { Checkbox, type CheckboxProps } from "@/components/ui/selection"
 import { cn } from "@/lib/utils"
 
@@ -14,8 +16,37 @@ type DropdownMenuCheckboxItemKeyDownHandler = NonNullable<
   MenuPrimitive.CheckboxItem.Props["onKeyDown"]
 >
 
+type DropdownRowSize = "large" | "small"
+
+// One row shell for every Dropdown List row (checkbox, radio, plain item).
+// Hover, focus ring and disabled live here; size only changes padding, radius and type size.
+const DROPDOWN_ROW_BASE =
+  "group/dropdown-menu-row relative flex w-full items-center gap-lg font-body text-[16px] font-medium leading-[1.4] tracking-[0] text-dropdown-title outline-hidden select-none hover:bg-dropdown-hover focus-visible:z-10 focus-visible:after:pointer-events-none focus-visible:after:absolute focus-visible:after:inset-[-2px] focus-visible:after:z-10 focus-visible:after:border-2 focus-visible:after:border-dropdown-focus focus-visible:after:content-[''] data-disabled:cursor-not-allowed data-disabled:hover:bg-transparent data-inset:pl-4xl [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+
+const DROPDOWN_ROW_SIZE: Record<DropdownRowSize, string> = {
+  large:
+    "rounded-xl px-lg py-md hover:rounded-xl focus-visible:rounded-xl focus-visible:after:rounded-lg data-checked:rounded-xl data-disabled:hover:rounded-xl",
+  small:
+    "rounded-md px-md py-sm text-[14px] leading-[1.4] tracking-[-0.07px] hover:rounded-md focus-visible:rounded-md focus-visible:after:rounded-md data-checked:rounded-md data-disabled:hover:rounded-md",
+}
+
+function dropdownRowClassName(size: DropdownRowSize) {
+  return cn(DROPDOWN_ROW_BASE, DROPDOWN_ROW_SIZE[size])
+}
+
+// Plain action rows in menus that do not pass `size` keep their previous look.
+const LEGACY_ITEM_CLASS =
+  "group/dropdown-menu-item relative flex cursor-default items-center gap-md rounded-md px-md py-md text-body-small font-body outline-hidden select-none focus:bg-surface-raised focus:text-foreground data-inset:pl-4xl data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive-muted data-[variant=destructive]:focus:text-destructive data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-[variant=destructive]:*:[svg]:text-destructive"
+
 function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
-  return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
+  // Hover must not move real focus, or the focus ring follows the mouse after keyboard use.
+  return (
+    <MenuPrimitive.Root
+      data-slot="dropdown-menu"
+      highlightItemOnHover={false}
+      {...props}
+    />
+  )
 }
 
 function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
@@ -113,7 +144,7 @@ function DropdownMenuItemContent({
   return (
     <>
       {leading ? (
-        <span className="flex size-6 shrink-0 items-center justify-center">
+        <span className="flex size-6 shrink-0 items-center justify-center group-data-[size=small]/dropdown-menu-row:size-5">
           {leading}
         </span>
       ) : null}
@@ -121,7 +152,7 @@ function DropdownMenuItemContent({
       <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
         <span
           data-slot="dropdown-menu-item-title"
-          className="truncate text-[16px] font-medium leading-[1.4] tracking-[0] text-dropdown-title"
+          className="truncate text-[16px] font-medium leading-[1.4] tracking-[0] text-dropdown-title group-data-[size=small]/dropdown-menu-row:text-[14px] group-data-[size=small]/dropdown-menu-row:tracking-[-0.07px]"
         >
           {children}
         </span>
@@ -129,7 +160,7 @@ function DropdownMenuItemContent({
         {supportingText ? (
           <span
             data-slot="dropdown-menu-item-supporting"
-            className="truncate text-xs font-normal leading-[1.25] tracking-[0.24px] text-dropdown-supporting"
+            className="truncate text-xs font-normal leading-[1.25] tracking-[0.24px] text-dropdown-supporting group-data-[size=small]/dropdown-menu-row:text-[10px] group-data-[size=small]/dropdown-menu-row:leading-[1.2] group-data-[size=small]/dropdown-menu-row:tracking-[0.2px]"
           >
             {supportingText}
           </span>
@@ -147,7 +178,7 @@ function DropdownMenuItemContent({
           data-slot="dropdown-menu-item-trailing-icon"
           data-hit-area={trailingIconHitArea}
           className={cn(
-            "flex shrink-0 items-center justify-center text-dropdown-supporting",
+            "flex shrink-0 items-center justify-center text-dropdown-icon",
             trailingIconHitArea === "control" ? "size-11" : "size-4",
           )}
         >
@@ -174,10 +205,10 @@ function DropdownMenuHeader({
   return (
     <div
       data-slot="dropdown-menu-header"
-      className={cn("flex items-start gap-md px-md", className)}
+      className={cn("flex items-start gap-md px-md pb-md", className)}
     >
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[16px] font-medium leading-[1.4] tracking-[0] text-dropdown-title">
+        <div className="truncate text-[16px] font-medium leading-6 tracking-[-0.32px] text-foreground">
           {title}
         </div>
 
@@ -223,7 +254,7 @@ function DropdownMenuContent({
           className={cn(
             "z-50 origin-(--transform-origin) text-body-small font-body duration-100 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-y-hidden data-closed:fade-out-0 data-closed:zoom-out-95",
             layout === "multiple-list"
-              ? "flex max-h-(--available-height) w-[296px] min-w-0 flex-col gap-2 overflow-x-auto overflow-y-hidden rounded-xl border-[0.5px] border-dropdown-container-border bg-dropdown-surface px-[6px] py-3 text-dropdown-title shadow-dropdown"
+              ? "flex max-h-(--available-height) w-[349px] min-w-0 flex-col gap-2 overflow-x-auto overflow-y-hidden rounded-xl border-[0.5px] border-dropdown-container-border bg-dropdown-surface px-xs py-md text-dropdown-title shadow-dropdown"
               : "max-h-(--available-height) w-(--anchor-width) min-w-32 overflow-x-auto overflow-y-auto scrollbar-design rounded-lg border border-border bg-surface-overlay text-foreground",
             className
           )}
@@ -262,18 +293,21 @@ function DropdownMenuItem({
   className,
   inset,
   variant = "default",
+  size,
   ...props
 }: MenuPrimitive.Item.Props & {
   inset?: boolean
   variant?: "default" | "destructive"
+  size?: DropdownRowSize
 }) {
   return (
     <MenuPrimitive.Item
       data-slot="dropdown-menu-item"
       data-inset={inset}
       data-variant={variant}
+      data-size={size}
       className={cn(
-        "group/dropdown-menu-item relative flex cursor-default items-center gap-md rounded-md px-md py-md text-body-small font-body outline-hidden select-none focus:bg-surface-raised focus:text-foreground data-inset:pl-4xl data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive-muted data-[variant=destructive]:focus:text-destructive data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-[variant=destructive]:*:[svg]:text-destructive",
+        size ? ["cursor-pointer", dropdownRowClassName(size)] : LEGACY_ITEM_CLASS,
         className
       )}
       {...props}
@@ -340,7 +374,7 @@ function DropdownMenuCheckboxItem({
   disabled,
   indeterminate = false,
   inset,
-  size = "default",
+  size,
   variant = "default",
   selectionMode = "full-row",
   onCheckedChange,
@@ -349,7 +383,7 @@ function DropdownMenuCheckboxItem({
   ...props
 }: MenuPrimitive.CheckboxItem.Props & {
   inset?: boolean
-  size?: "default" | "compact"
+  size: DropdownRowSize
   variant?: "default" | "warning"
   indeterminate?: boolean
   selectionMode?: "full-row" | "checkbox-only"
@@ -403,12 +437,13 @@ function DropdownMenuCheckboxItem({
     <MenuPrimitive.CheckboxItem
       data-slot="dropdown-menu-checkbox-item"
       data-inset={inset}
+      data-size={size}
       data-indeterminate={indeterminate || undefined}
       data-variant={variant}
       data-selection-mode={selectionMode}
       className={cn(
-        "group/dropdown-menu-checkbox-item relative flex min-h-[59px] w-full items-center gap-lg rounded-xl px-lg py-2md text-body-small font-body outline-hidden select-none hover:rounded-xl hover:bg-dropdown-hover focus-visible:z-10 focus-visible:rounded-xl focus-visible:after:pointer-events-none focus-visible:after:absolute focus-visible:after:inset-[-1px] focus-visible:after:z-10 focus-visible:after:rounded-xl focus-visible:after:border-2 focus-visible:after:border-dropdown-focus focus-visible:after:content-[''] data-checked:rounded-xl data-inset:pl-4xl data-disabled:cursor-not-allowed data-disabled:hover:rounded-xl data-disabled:hover:bg-transparent [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        size === "compact" && "!min-h-[42px]",
+        "group/dropdown-menu-checkbox-item",
+        dropdownRowClassName(size),
         selectionMode === "checkbox-only" ? "cursor-default" : "cursor-pointer",
         className
       )}
@@ -462,6 +497,32 @@ function DropdownMenuSearch({
   )
 }
 
+function DropdownMenuSearchInput({
+  className,
+  controlClassName,
+  ...props
+}: Omit<InputSingleLineProps, "type" | "variant" | "statusIcon" | "fieldType">) {
+  return (
+    <FieldContextReset>
+      <Input
+        type="search"
+        variant="icon-leading"
+        statusIcon={null}
+        leadingIconClassName="text-dropdown-supporting"
+        controlClassName={cn(
+          "h-10 gap-md rounded-md border-dropdown-input-border bg-dropdown-surface px-lg focus-within:ring-dropdown-focus",
+          controlClassName,
+        )}
+        className={cn(
+          "text-body-large text-dropdown-title placeholder:text-dropdown-supporting",
+          className,
+        )}
+        {...props}
+      />
+    </FieldContextReset>
+  )
+}
+
 function DropdownMenuSelectAll({
   className,
   label,
@@ -491,7 +552,7 @@ function DropdownMenuList({
     <div
       data-slot="dropdown-menu-list"
       className={cn(
-        "flex min-h-0 max-h-[295px] w-full flex-col gap-px overflow-y-auto scrollbar-design rounded-lg px-1 py-px",
+        "flex min-h-0 max-h-[275px] w-full flex-col overflow-y-auto scrollbar-design rounded-md px-1",
         className
       )}
       {...props}
@@ -512,31 +573,31 @@ function DropdownMenuRadioItem({
   className,
   children,
   inset,
+  size,
   closeOnClick = true,
   ...props
 }: MenuPrimitive.RadioItem.Props & {
   inset?: boolean
+  size: DropdownRowSize
 }) {
   return (
     <MenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
       data-inset={inset}
+      data-size={size}
       closeOnClick={closeOnClick}
-      className={cn(
-        "relative flex cursor-default items-center gap-md rounded-md py-md pr-5xl pl-md text-body-small font-body outline-hidden select-none focus:bg-surface-raised focus:text-foreground data-inset:pl-4xl data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        className
-      )}
+      className={cn("cursor-pointer", dropdownRowClassName(size), className)}
       {...props}
     >
+      {children}
       <span
-        className="pointer-events-none absolute right-2 flex items-center justify-center"
+        className="pointer-events-none ml-auto flex size-4 shrink-0 items-center justify-center text-dropdown-icon"
         data-slot="dropdown-menu-radio-item-indicator"
       >
         <MenuPrimitive.RadioItemIndicator>
           <Check aria-hidden />
         </MenuPrimitive.RadioItemIndicator>
       </span>
-      {children}
     </MenuPrimitive.RadioItem>
   )
 }
@@ -583,6 +644,7 @@ export {
   DropdownMenuItem,
   DropdownMenuCheckboxItem,
   DropdownMenuSearch,
+  DropdownMenuSearchInput,
   DropdownMenuSelectAll,
   DropdownMenuList,
   DropdownMenuRadioGroup,
@@ -595,6 +657,7 @@ export {
 }
 
 export type {
+  DropdownRowSize,
   DropdownMenuContentLayout,
   DropdownMenuTriggerWithIndicatorProps,
   DropdownMenuItemContentProps,

@@ -137,7 +137,7 @@ describe("Dropdown Menu multiple list", () => {
     const listMarkup = renderToStaticMarkup(
       <DropdownMenu open>
         <DropdownMenuList>
-          <DropdownMenuCheckboxItem checked>
+          <DropdownMenuCheckboxItem size="large" checked>
             <DropdownMenuItemContent supportingText="Supporting Text">
               Lorem ipsum
             </DropdownMenuItemContent>
@@ -158,7 +158,7 @@ describe("Dropdown Menu multiple list", () => {
 
   it("matches Figma item radii and keeps hover separate from focus", () => {
     const markup = renderMenuItem(
-      <DropdownMenuCheckboxItem>
+      <DropdownMenuCheckboxItem size="large">
         <DropdownMenuItemContent supportingText="Supporting Text">
           Lorem ipsum
         </DropdownMenuItemContent>
@@ -173,8 +173,8 @@ describe("Dropdown Menu multiple list", () => {
     expect(normalizedMarkup).toContain("hover:bg-dropdown-hover")
     expect(normalizedMarkup).not.toContain("[&:hover:not(:focus)]")
     expect(normalizedMarkup).toContain("focus-visible:rounded-xl")
-    expect(normalizedMarkup).toContain("focus-visible:after:inset-[-1px]")
-    expect(normalizedMarkup).toContain("focus-visible:after:rounded-xl")
+    expect(normalizedMarkup).toContain("focus-visible:after:inset-[-2px]")
+    expect(normalizedMarkup).toContain("focus-visible:after:rounded-lg")
     expect(normalizedMarkup).toContain("focus-visible:after:border-2")
     expect(normalizedMarkup).toContain("focus-visible:after:border-dropdown-focus")
     expect(normalizedMarkup).not.toContain("focus:rounded-xl")
@@ -185,6 +185,30 @@ describe("Dropdown Menu multiple list", () => {
     expect(normalizedMarkup).not.toContain("focus:after:inset-[-2px]")
     expect(normalizedMarkup).not.toContain("focus:after:rounded-[10px]")
     expect(normalizedMarkup).not.toContain("focus:ring-2")
+  })
+
+  it("renders the Figma Small item size with its own padding and radius", () => {
+    const smallMarkup = renderMenuItem(
+      <DropdownMenuCheckboxItem size="small">
+        <DropdownMenuItemContent supportingText="Supporting Text">
+          Lorem ipsum
+        </DropdownMenuItemContent>
+      </DropdownMenuCheckboxItem>,
+    )
+    const defaultMarkup = renderMenuItem(
+      <DropdownMenuCheckboxItem size="large">
+        <DropdownMenuItemContent supportingText="Supporting Text">
+          Lorem ipsum
+        </DropdownMenuItemContent>
+      </DropdownMenuCheckboxItem>,
+    )
+
+    expect(smallMarkup).toContain('data-size="small"')
+    expect(smallMarkup).toContain("py-sm")
+    expect(smallMarkup).toContain("hover:rounded-md")
+    expect(defaultMarkup).toContain('data-size="large"')
+    expect(defaultMarkup).not.toContain("py-sm")
+    expect(defaultMarkup).not.toContain("min-h-[59px]")
   })
 
   it("mounts the multiple-list layout through the existing menu portal", async () => {
@@ -209,7 +233,7 @@ describe("Dropdown Menu multiple list", () => {
             </DropdownMenuSearch>
             <DropdownMenuSelectAll label="Select All" />
             <DropdownMenuList>
-              <DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem size="large">
                 <DropdownMenuItemContent supportingText="Supporting Text">
                   Lorem ipsum
                 </DropdownMenuItemContent>
@@ -225,7 +249,7 @@ describe("Dropdown Menu multiple list", () => {
     )
 
     expect(content).not.toBeNull()
-    expect(content?.className).toContain("w-[296px]")
+    expect(content?.className).toContain("w-[349px]")
     expect(content?.className).toContain("overflow-x-auto")
     expect(content?.className).toContain("overflow-y-hidden")
     expect(content?.className).not.toContain("overflow-hidden")
@@ -276,8 +300,8 @@ describe("Dropdown Menu multiple list", () => {
               value=""
               onValueChange={() => undefined}
             >
-              <DropdownMenuRadioItem value="">All</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="remote">
+              <DropdownMenuRadioItem size="large" value="">All</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem size="large" value="remote">
                 Remote
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
@@ -306,7 +330,7 @@ describe("Dropdown Menu multiple list", () => {
 
   it("keeps warning and disabled states scoped to dropdown item tokens", () => {
     const warningMarkup = renderMenuItem(
-      <DropdownMenuCheckboxItem variant="warning">
+      <DropdownMenuCheckboxItem size="large" variant="warning">
         <DropdownMenuItemContent supportingText="Warning detail">
           Warning item
         </DropdownMenuItemContent>
@@ -314,7 +338,7 @@ describe("Dropdown Menu multiple list", () => {
     )
 
     const disabledMarkup = renderMenuItem(
-      <DropdownMenuCheckboxItem disabled>
+      <DropdownMenuCheckboxItem size="large" disabled>
         <DropdownMenuItemContent supportingText="Disabled detail">
           Disabled item
         </DropdownMenuItemContent>
@@ -322,7 +346,7 @@ describe("Dropdown Menu multiple list", () => {
     )
 
     const checkedDisabledMarkup = renderMenuItem(
-      <DropdownMenuCheckboxItem checked disabled>
+      <DropdownMenuCheckboxItem size="large" checked disabled>
         <DropdownMenuItemContent supportingText="Active disabled detail">
           Active disabled item
         </DropdownMenuItemContent>
@@ -343,7 +367,7 @@ describe("Dropdown Menu multiple list", () => {
 
   it("renders a mixed checkbox state for nested parent items", () => {
     const markup = renderMenuItem(
-      <DropdownMenuCheckboxItem indeterminate>
+      <DropdownMenuCheckboxItem size="large" indeterminate>
         <DropdownMenuItemContent supportingText="Some children are selected">
           Parent item
         </DropdownMenuItemContent>
