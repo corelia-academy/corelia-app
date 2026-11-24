@@ -19,7 +19,7 @@ describe("Avatar Figma contract", () => {
           </Avatar>,
         )
 
-        expect(markup).toContain(`data-avatar-size="${size === "1.5XLarge" ? "xlarge-1-5" : size === "2XLarge" ? "xlarge-2" : size === "3XLarge" ? "xlarge-3" : size === "4XLarge" ? "xlarge-4" : size.toLowerCase()}"`)
+        expect(markup).toContain(`data-avatar-size="${size === "1.5XLarge" ? "xlarge-1-5" : size === "2XLarge" ? "xlarge-2" : size === "3XLarge" ? "xlarge-3" : size === "4XLarge" ? "xlarge-4" : size === "5XLarge" ? "xlarge-5" : size.toLowerCase()}"`)
         expect(markup).toContain(`data-avatar-type="${type === "Set avatar" ? "set-avatar" : type === "Brand Logos" ? "brand-logos" : type.toLowerCase()}"`)
       }
     }

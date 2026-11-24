@@ -26,6 +26,20 @@ describe("Tag", () => {
   })
 
   it.each([
+    ["small", "h-6"],
+    ["medium", "h-7"],
+    ["large", "h-8"],
+  ] as const)("gives plain label tags the Figma %s height", (size, heightClass) => {
+    const markup = renderToStaticMarkup(
+      <Tag type="label" size={size}>
+        Rust
+      </Tag>,
+    )
+
+    expect(markup).toContain(heightClass)
+  })
+
+  it.each([
     ["small", "h-6", "px-sm py-xxs"],
     ["medium", "h-7", "px-md py-xs"],
     ["large", "h-8", "px-2md py-sm"],

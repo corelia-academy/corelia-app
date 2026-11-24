@@ -7,10 +7,10 @@ import { Badge } from "./badge"
 
 describe("Badge", () => {
   it.each([
-    ["xsmall", "h-[18px]"],
-    ["small", "h-6"],
-    ["medium", "h-7"],
-    ["large", "h-8"],
+    ["xsmall", "h-5"],
+    ["small", "h-[25px]"],
+    ["medium", "h-8"],
+    ["large", "h-[38px]"],
   ] as const)("uses the Figma height and line-height for %s", (size, heightClass) => {
     const markup = renderToStaticMarkup(
       <Badge size={size} color="primary" variant="outline">

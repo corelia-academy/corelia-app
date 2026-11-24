@@ -14,6 +14,7 @@ export const AVATAR_SIZES = [
   "2XLarge",
   "3XLarge",
   "4XLarge",
+  "5XLarge",
 ] as const
 
 export const AVATAR_TYPES = [
@@ -38,6 +39,7 @@ type AvatarSizeKey =
   | "xlarge-2"
   | "xlarge-3"
   | "xlarge-4"
+  | "xlarge-5"
 type AvatarTypeKey =
   | "user"
   | "disabled"
@@ -70,6 +72,7 @@ const avatarSizeClasses: Record<AvatarSize, string> = {
   "2XLarge": "size-16",
   "3XLarge": "size-[72px]",
   "4XLarge": "size-20",
+  "5XLarge": "size-[120px]",
 
   // Backward compatibility — tương thích ngược
   sm: "size-6",
@@ -87,6 +90,7 @@ const avatarSizeKeys: Record<AvatarSize, AvatarSizeKey> = {
   "2XLarge": "xlarge-2",
   "3XLarge": "xlarge-3",
   "4XLarge": "xlarge-4",
+  "5XLarge": "xlarge-5",
   sm: "small",
   default: "medium",
   lg: "large",
@@ -176,6 +180,15 @@ const avatarContentStyles: Record<AvatarSize, AvatarCSSProperties> = {
   },
   "4XLarge": {
     "--avatar-icon-size": "40px",
+    "--avatar-text-font-family": '"Akt", sans-serif',
+    "--avatar-text-font-size": "18px",
+    "--avatar-text-font-weight": "500",
+    "--avatar-text-letter-spacing": "0px",
+    "--avatar-text-line-height": "24px",
+    "--avatar-text-padding": "20px",
+  },
+  "5XLarge": {
+    "--avatar-icon-size": "80px",
     "--avatar-text-font-family": '"Akt", sans-serif',
     "--avatar-text-font-size": "18px",
     "--avatar-text-font-weight": "500",
@@ -317,6 +330,7 @@ function AvatarBadge({ className, ...props }: React.ComponentProps<"span">) {
         "group-data-[avatar-size=xlarge-2]/avatar:size-4 group-data-[avatar-size=xlarge-2]/avatar:[&>svg]:size-3",
         "group-data-[avatar-size=xlarge-3]/avatar:size-[18px] group-data-[avatar-size=xlarge-3]/avatar:[&>svg]:size-4",
         "group-data-[avatar-size=xlarge-4]/avatar:size-5 group-data-[avatar-size=xlarge-4]/avatar:[&>svg]:size-4",
+        "group-data-[avatar-size=xlarge-5]/avatar:size-6 group-data-[avatar-size=xlarge-5]/avatar:[&>svg]:size-4",
         className
       )}
       {...props}

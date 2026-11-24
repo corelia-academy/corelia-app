@@ -92,7 +92,7 @@ describe("Tabs", () => {
 
     expect(tabs[0]?.className).toContain("data-[active]:bg-tabs-surface-hover")
     expect(tabs[2]?.className).toContain("data-[active]:after:bg-tabs-active-accent")
-    expect(tabs[0]?.className).toContain("data-[active]:ring-tabs-border-secondary")
+    expect(tabs[0]?.className).toContain("data-[active]:ring-tabs-active-text-level1")
     expect(tabs[0]?.className).not.toContain("data-[active]:border-tabs-border-active")
     expect(tabs[6]?.className).toContain("rounded-full")
     expect(tabs[4]?.className).toContain("data-[active]:ring-tabs-border-active")

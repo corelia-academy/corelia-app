@@ -50,6 +50,7 @@ const sizePixels: Record<ShowcaseSize, number> = {
   "2XLarge": 64,
   "3XLarge": 72,
   "4XLarge": 80,
+  "5XLarge": 120,
 };
 
 const sizeKeys: Record<ShowcaseSize, string> = {
@@ -62,6 +63,7 @@ const sizeKeys: Record<ShowcaseSize, string> = {
   "2XLarge": "xlarge-2",
   "3XLarge": "xlarge-3",
   "4XLarge": "xlarge-4",
+  "5XLarge": "xlarge-5",
 };
 
 const typeKeys: Record<AvatarType, string> = {

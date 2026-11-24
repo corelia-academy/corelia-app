@@ -1253,8 +1253,8 @@
 
   /* Toast Bar tokens — exact Figma Dark Midnight Navy specification */
   --toast-bar-surface: var(--neutral-800);
-  --toast-bar-border: color-mix(in srgb, var(--neutral-700) 40%, transparent);
-  --toast-bar-foreground: var(--neutral-50);
+  --toast-bar-border: var(--neutral-600);
+  --toast-bar-foreground: var(--neutral-200);
 
   /* Modal tokens — exact Figma Dark Midnight Navy specification. */
   --modal-overlay: color-mix(in srgb, var(--neutral-900) 95%, transparent);

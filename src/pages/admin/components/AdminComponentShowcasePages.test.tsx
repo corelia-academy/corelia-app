@@ -263,7 +263,7 @@ describe("admin component detail pages", () => {
       );
     });
 
-    expect(container.querySelectorAll('[data-testid^="avatar-case-"]')).toHaveLength(54);
+    expect(container.querySelectorAll('[data-testid^="avatar-case-"]')).toHaveLength(60);
     expect(container.querySelectorAll('[data-testid^="avatar-type-row-"]')).toHaveLength(6);
     expect(container.querySelectorAll('[data-testid^="avatar-user-trigger-"]')).toHaveLength(1);
     expect(container.querySelectorAll('[data-slot="avatar-action"]')).toHaveLength(15);

@@ -13,27 +13,15 @@ const tagVariants = cva(
         datetime: "gap-md",
       },
       size: {
-        small: "px-sm py-xxs",
-        medium: "px-md py-xs",
-        large: "px-2md py-sm",
+        small: "h-6 px-sm py-xxs",
+        medium: "h-7 px-md py-xs",
+        large: "h-8 px-2md py-sm",
       },
       disabled: {
         false: "bg-tag-background text-tag-foreground",
         true: "bg-tag-disabled-background text-tag-disabled-foreground",
       },
-      leadingVisual: {
-        false: "",
-        true: "",
-      },
     },
-    compoundVariants: [
-      { type: "datetime", size: "small", className: "h-6" },
-      { type: "datetime", size: "medium", className: "h-7" },
-      { type: "datetime", size: "large", className: "h-8" },
-      { type: "label", size: "small", leadingVisual: true, className: "h-6" },
-      { type: "label", size: "medium", leadingVisual: true, className: "h-7" },
-      { type: "label", size: "large", leadingVisual: true, className: "h-8" },
-    ],
     defaultVariants: {
       type: "label",
       size: "small",
@@ -102,7 +90,7 @@ function Tag({
       onClick={disabled ? undefined : onClick}
       data-has-leading-visual={hasLeadingVisual ? "true" : undefined}
       className={cn(
-        tagVariants({ type, size, disabled, leadingVisual: hasLeadingVisual }),
+        tagVariants({ type, size, disabled }),
         disabled && "cursor-not-allowed select-none",
         className,
       )}
