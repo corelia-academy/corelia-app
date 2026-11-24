@@ -2,7 +2,11 @@ import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { Loader2 } from "lucide-react"
 
-import { InformativeIcon } from "@/components/ui/informative-icon"
+import {
+  ToastBarIcon,
+  toastBarTextClassName,
+  toastBarVariants,
+} from "@/components/ui/toast-bar"
 
 const Toaster = ({ position = "top-center", ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
@@ -12,30 +16,28 @@ const Toaster = ({ position = "top-center", ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       position={position}
+      // Sonner sizes every toast with --width (356px by default); match the 400px Toast Bar.
+      style={{ "--width": "400px" } as React.CSSProperties}
       icons={{
-        success: (
-          <InformativeIcon color="success" size="sm" type="circle-outline" aria-hidden="true" />
-        ),
-        info: (
-          <InformativeIcon color="blue" size="sm" type="circle-outline" aria-hidden="true" />
-        ),
-        warning: (
-          <InformativeIcon color="warning" size="sm" type="circle-outline" aria-hidden="true" />
-        ),
-        error: (
-          <InformativeIcon color="error" size="sm" type="circle-outline" aria-hidden="true" />
-        ),
+        success: <ToastBarIcon variant="success" />,
+        info: <ToastBarIcon variant="info" />,
+        warning: <ToastBarIcon variant="warning" />,
+        error: <ToastBarIcon variant="error" />,
         loading: (
           <Loader2 className="size-5 animate-spin text-[var(--accent-sky-400)]" aria-hidden="true" />
         ),
       }}
       toastOptions={{
         unstyled: true,
+        // The look comes from the Toast Bar; the icon, content and description classes only adapt
+        // sonner's own markup to it. `relative` keeps sonner's absolutely positioned loader inside
+        // the icon slot, in front of the text.
         classNames: {
-          toast: "w-[400px] max-w-full rounded-xl border-[0.5px] border-toast-bar-border bg-toast-bar-surface px-4 py-3 shadow-toast-bar select-none font-body text-sm font-medium tracking-[-0.07px] text-toast-bar-foreground flex items-center gap-6",
-          icon: "shrink-0 self-center flex items-center justify-center p-0 m-0 size-8",
-          content: "flex flex-col flex-1 min-w-0 justify-center",
-          title: "text-toast-bar-foreground text-sm font-medium leading-5 tracking-[-0.07px] break-words",
+          toast: toastBarVariants(),
+          icon: "relative flex size-8 shrink-0 items-center justify-center",
+          // min-h-8 = the icon slot height, so a toast without an icon is as tall as the Toast Bar.
+          content: "flex min-h-8 min-w-0 flex-1 flex-col justify-center",
+          title: `${toastBarTextClassName} break-words`,
           description: "text-toast-bar-foreground/80 text-xs mt-1",
         },
       }}
