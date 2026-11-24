@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { RadioGroup } from "@base-ui/react/radio-group";
 import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import { Badge } from "@/components/ui/badge";
+import { Markdown } from "@/components/markdown/Markdown";
 import { ExplanationBox } from "@/components/ui/explanation-box";
 import { ProgressCircle } from "@/components/ui/progress";
 import { RadioCard } from "@/components/ui/selection";
@@ -95,14 +96,14 @@ function Quiz({ courseId, lesson, mode, completed, onComplete, onAction, questio
               <Badge size="medium" color="gray" variant="filled" className="h-8">{t("learning.questionNumber", { number: i + 1 })}</Badge>
               <span className="text-body-medium text-foreground-subtle">{t("learning.quizType.mcq")}</span>
             </div>
-            <p id={`${q.id}-question`} className="text-body-large text-action-text">{q.question}</p>
+            <div id={`${q.id}-question`}><Markdown content={q.question} variant="lesson" /></div>
           </div>
           <RadioGroup aria-labelledby={`${q.id}-question`} value={picked === undefined ? "" : String(picked)} readOnly={locked}
             onValueChange={value => setAnswers(a => ({ ...a, [q.id]: Number(value) }))} className="flex flex-col gap-lg">
             {q.options.map((o, index) => {
               const mark = result ? (index === q.correct_index ? "done" : picked === index ? "failed" : null) : null;
               return <div key={o.id} className="relative">
-                <RadioCard appearance="answer" size="large" value={String(index)} label={o.text} disabled={Boolean(result) && index !== q.correct_index} className={cn(mark && "pr-12")} />
+                <RadioCard appearance="answer" size="large" value={String(index)} label={<Markdown content={o.text} variant="inline" />} disabled={Boolean(result) && index !== q.correct_index} className={cn(mark && "pr-12")} />
                 {mark && <ProgressCircle className="pointer-events-none absolute right-lg top-1/2 size-5 -translate-y-1/2"
                   done={mark === "done"} failed={mark === "failed"} aria-label={t(mark === "done" ? "learning.quizAnswerCorrect" : "learning.quizAnswerWrong")} />}
               </div>;
@@ -110,7 +111,7 @@ function Quiz({ courseId, lesson, mode, completed, onComplete, onAction, questio
           </RadioGroup>
           {missingId === q.id && picked === undefined && <p role="alert" className="text-body-medium text-input-field-error">{t("learning.quizPleaseAnswer")}</p>}
           {result && <ExplanationBox status={right ? "correct" : "incorrect"} title={t(right ? "learning.quizCorrect" : "learning.quizThinkAgain")}
-            statusLabel={t(right ? "learning.quizAnswerCorrect" : "learning.quizAnswerWrong")}>{q.explanation}</ExplanationBox>}
+            statusLabel={t(right ? "learning.quizAnswerCorrect" : "learning.quizAnswerWrong")}>{q.explanation ? <Markdown content={q.explanation} variant="lesson" /> : undefined}</ExplanationBox>}
         </fieldset>;
       })}
     </div>

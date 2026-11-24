@@ -31,9 +31,29 @@ function MarkdownImage({ src, alt, lesson = false }: { src?: string; alt: string
   );
 }
 
-export function Markdown({ content, compact, variant = "default", codeHeader = true }: { content: string; compact?: boolean; variant?: "default" | "lesson"; codeHeader?: boolean }) {
+// For text inside a label (quiz answers): inline code, bold and italic only. Block elements,
+// fenced code (it has a copy button) and links would swallow the click that selects the answer.
+function InlineMarkdown({ value }: { value: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeSanitize]}
+      allowedElements={["p", "code", "strong", "em"]}
+      unwrapDisallowed
+      components={{
+        p: ({ children }) => <span>{children}</span>,
+        code: ({ children }) => <code className="rounded-md bg-code-block-surface px-1.5 py-0.5 font-mono text-[0.9em] text-foreground">{children}</code>,
+      }}
+    >
+      {value}
+    </ReactMarkdown>
+  );
+}
+
+export function Markdown({ content, compact, variant = "default", codeHeader = true }: { content: string; compact?: boolean; variant?: "default" | "lesson" | "inline"; codeHeader?: boolean }) {
   const value = content?.trim();
   if (!value) return null;
+  if (variant === "inline") return <InlineMarkdown value={value} />;
   const lesson = variant === "lesson" && !compact;
 
   return (
