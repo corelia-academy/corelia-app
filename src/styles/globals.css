@@ -324,6 +324,7 @@
   --color-dropdown-warning: var(--dropdown-warning);
   --color-dropdown-warning-supporting: var(--dropdown-warning-supporting);
   --shadow-dropdown: var(--dropdown-shadow);
+  --shadow-toast-bar: var(--toast-bar-shadow);
   /* Action interaction token mapped from the Figma hover surface. */
   --color-action-hover: var(--action-hover);
   --color-resource-item-surface: var(--resource-item-surface);
@@ -895,6 +896,8 @@
   --toast-bar-surface: var(--neutral-50);
   --toast-bar-border: var(--neutral-200);
   --toast-bar-foreground: var(--text-primary-2);
+  /* Soft dark shadow so the toast lifts off light surfaces without a heavy edge. */
+  --toast-bar-shadow: 8px 4px 25px 0 color-mix(in srgb, var(--neutral-900) 16%, transparent);
 
   /* Modal tokens — Figma only defines the dark palette; light mode reverses it. */
   --modal-overlay: color-mix(in srgb, var(--neutral-900) 50%, transparent);
@@ -1255,6 +1258,8 @@
   --toast-bar-surface: var(--neutral-800);
   --toast-bar-border: var(--neutral-600);
   --toast-bar-foreground: var(--neutral-200);
+  /* Figma dark spec: 8px 4px 25px at 80%, drawn with the darkest neutral. */
+  --toast-bar-shadow: 8px 4px 25px 0 color-mix(in srgb, var(--neutral-900) 80%, transparent);
 
   /* Modal tokens — exact Figma Dark Midnight Navy specification. */
   --modal-overlay: color-mix(in srgb, var(--neutral-900) 95%, transparent);
