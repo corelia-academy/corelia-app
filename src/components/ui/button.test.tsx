@@ -101,6 +101,13 @@ describe("Button", () => {
     expect(iconOnly).toContain('aria-label="Add item"');
   });
 
+  it("uses the Figma 6px radius for xsmall buttons", () => {
+    const markup = renderToStaticMarkup(<Button size="xsmall">Run action</Button>);
+
+    expect(markup).toContain("rounded-sm");
+    expect(markup).not.toMatch(/\brounded-md\b/);
+  });
+
   it.each([
     { size: "large", labelSize: "h-14", iconSize: "size-14" },
     { size: "medium", labelSize: "h-11", iconSize: "size-11" },
