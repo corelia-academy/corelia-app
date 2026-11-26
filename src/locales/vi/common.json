@@ -336,6 +336,8 @@
       "updatedAt": "Cập nhật {{date}}"
     },
     "projects": {
+      "saved": "Dự án đã lưu",
+      "savedEmpty": "Bạn chưa lưu dự án nào.",
       "mine": "Dự án của tôi",
       "empty": "Chưa có dự án public nào.",
       "viewSource": "Xem nguồn",

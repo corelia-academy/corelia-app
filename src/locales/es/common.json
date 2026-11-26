@@ -336,6 +336,8 @@
       "updatedAt": "Actualizado el {{date}}"
     },
     "projects": {
+      "saved": "Proyectos guardados",
+      "savedEmpty": "Aún no has guardado ningún proyecto.",
       "mine": "Mis proyectos",
       "empty": "Aún no hay proyectos públicos.",
       "viewSource": "Ver código fuente",

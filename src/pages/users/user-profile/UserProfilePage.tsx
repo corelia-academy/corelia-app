@@ -35,7 +35,7 @@ import { XpActivity } from "@/features/xp/XpActivity";
 // TODO(figma-profile): Figma hồ sơ chưa có Khóa học và Hackathon, ẩn tạm; bật lại khi có thiết kế
 // import { UserProfileContestsSection } from "./components/UserProfileContestsSection";
 // import { UserProfileCoursesSection } from "./components/UserProfileCoursesSection";
-import { UserProfileProjectsTab } from "./components/UserProfileProjectsTab";
+import { UserProfileProjectsSection } from "./components/UserProfileProjectsSection";
 // TODO(figma-profile): Figma cột phải chưa có thẻ Skill, ẩn tạm; bật lại khi có thiết kế
 // import { UserProfileSkillsCard } from "./components/UserProfileSkillsCard";
 import { useUserProfileLayoutData } from "./hooks/useUserProfileLayoutData";
@@ -463,7 +463,7 @@ export default function UserProfileLayout() {
                     <XpActivity userId={profile.id} own={effectiveIsSelf} />
                   </Tabs.Panel>
                   <Tabs.Panel value="projects">
-                    <UserProfileProjectsTab profile={profile} isSelf={effectiveIsSelf} />
+                    <UserProfileProjectsSection profile={profile} isSelf={effectiveIsSelf} />
                   </Tabs.Panel>
                   <Tabs.Panel value="achievements">
                     <UserProfileAchievementsSection isSelf={effectiveIsSelf} profileId={profile.id} />

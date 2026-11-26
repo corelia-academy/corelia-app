@@ -336,6 +336,8 @@
       "updatedAt": "更新於 {{date}}"
     },
     "projects": {
+      "saved": "已儲存的專案",
+      "savedEmpty": "你還沒有儲存任何專案。",
       "mine": "我的專案",
       "empty": "尚無公開專案。",
       "viewSource": "檢視原始碼",

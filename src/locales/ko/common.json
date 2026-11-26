@@ -336,6 +336,8 @@
       "updatedAt": "{{date}} 업데이트"
     },
     "projects": {
+      "saved": "저장한 프로젝트",
+      "savedEmpty": "아직 저장한 프로젝트가 없습니다.",
       "mine": "내 프로젝트",
       "empty": "아직 공개된 프로젝트가 없습니다.",
       "viewSource": "소스 보기",

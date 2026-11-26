@@ -336,6 +336,8 @@
       "updatedAt": "更新于 {{date}}"
     },
     "projects": {
+      "saved": "已保存的项目",
+      "savedEmpty": "你还没有保存任何项目。",
       "mine": "我的项目",
       "empty": "暂无公开项目。",
       "viewSource": "查看源码",
