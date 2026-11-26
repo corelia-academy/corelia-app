@@ -1,12 +1,18 @@
-import { XpRankProgress } from "./XpRankProgress";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Pulse } from "@phosphor-icons/react";
 
+import { Button } from "@/components/ui/button";
 import { getMyXpDayBreakdown, getMyXpHistory, getXpSummary, utcDate, xpIntensity } from "@/lib/xp";
 import type { XpEntry } from "@/lib/xp";
 import { intlLocaleFor } from "@/lib/locales";
+import { cn } from "@/lib/utils";
+
+const CELL_PITCH = 21; // ô 16px + khoảng cách 5px (Figma)
+const VISIBLE_HISTORY = 4;
 
 const intensityClass = [
   "bg-surface-raised border-border-subtle",
@@ -35,11 +41,29 @@ function calendarCells<T extends { date: string }>(items: T[]): Array<T | null> 
   return [...Array<T | null>((weekday + 6) % 7).fill(null), ...items];
 }
 
+function SectionHeader({ title, action }: { title: string; action?: ReactNode }) {
+  return (
+    <header className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <Pulse aria-hidden weight="duotone" className="size-5 shrink-0 text-foreground-muted" />
+          <h2 data-profile-heading className="text-base font-medium text-foreground">{title}</h2>
+        </div>
+        {action}
+      </div>
+      <div className="h-px w-full bg-stroke-divider" />
+    </header>
+  );
+}
+
 export function XpActivity({ userId, own = false }: { userId: string; own?: boolean }) {
   const { t, i18n } = useTranslation("account");
+  const { t: tc } = useTranslation("common");
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [weekShift, setWeekShift] = useState(0);
   const [historyPage, setHistoryPage] = useState(0);
+  const [historyExpanded, setHistoryExpanded] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const now = useMemo(() => new Date(), []);
   const rangeStart = addDays(now, -364);
   const start = utcDate(rangeStart);
@@ -69,8 +93,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
     });
   }, [summary.data?.days, summary.data?.trackingSince, rangeStart, today]);
   const currentWeek = startOfUtcWeek(now);
-  const desktopCells = calendarCells(days);
-  const mobileCells = calendarCells(days.slice(-91));
+  const cells = calendarCells(days);
   const weekStart = addDays(currentWeek, weekShift * 7);
   const weekDays = Array.from({ length: 7 }, (_, index) => {
     const date = utcDate(addDays(weekStart, index));
@@ -82,12 +105,12 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
   const formatted = (value: number) => new Intl.NumberFormat(locale).format(value);
   const dayLabel = (day: { date: string; xp: number; noData?: boolean }) => `${day.date}: ${day.noData ? t("xp.noData") : `${formatted(day.xp)} XP`}`;
   const weekdayLabels = Array.from({ length: 7 }, (_, index) => new Intl.DateTimeFormat(locale, { weekday: "narrow", timeZone: "UTC" }).format(addDays(new Date("2026-09-21T00:00:00Z"), index)));
-  const monthMarkers = (cells: Array<{ date: string } | null>, cellWidth: number) => cells.flatMap((day, index) => {
+  const monthMarkers = cells.flatMap((day, index) => {
     if (!day) return [];
     const previous = cells.slice(0, index).reverse().find(Boolean);
     if (previous?.date.slice(0, 7) === day.date.slice(0, 7)) return [];
     const month = new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" }).format(new Date(`${day.date}T00:00:00Z`));
-    return [{ month, left: Math.floor(index / 7) * cellWidth }];
+    return [{ month, left: Math.floor(index / 7) * CELL_PITCH }];
   }).filter((marker, index, markers) => !markers[index + 1] || markers[index + 1].left - marker.left >= 48);
   const sourceLabels: Record<string, string> = {
     daily_streak_claim: t("xp.sources.daily_streak_claim"),
@@ -103,68 +126,178 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
     correction: t("xp.sources.correction"),
   };
 
-  if (summary.isPending) return <div className="rounded-2xl border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted">{t("xp.loading")}</div>;
-  if (summary.isError) return <div className="rounded-2xl border border-border-subtle bg-surface-base p-4 text-sm"><p>{t("xp.error")}</p><button type="button" onClick={() => void summary.refetch()} className="mt-2 text-primary underline">{t("profile.retry")}</button></div>;
+  // Cuộn heatmap về phía ngày mới nhất (đồng bộ với DOM, không đổi dữ liệu)
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollLeft = el.scrollWidth;
+  }, [summary.data]);
+
+  if (summary.isPending) return <p className="text-sm text-foreground-muted">{t("xp.loading")}</p>;
+  if (summary.isError) {
+    return (
+      <div className="text-sm">
+        <p>{t("xp.error")}</p>
+        <button type="button" onClick={() => void summary.refetch()} className="mt-2 text-primary underline">{t("profile.retry")}</button>
+      </div>
+    );
+  }
   if (!summary.data) return null;
 
-  return <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card" aria-label={t("xp.title")}>
-    <div>
-      <div className="flex items-center gap-2 text-foreground"><h2 className="font-display text-heading-medium">{t("xp.title")}</h2></div>
-      <p className="mt-1 text-sm text-foreground-muted">{t("xp.total", { count: formatted(summary.data.total) })} · {t("xp.utc")}</p>
+  const historyRows = history.data ? (historyExpanded ? history.data : history.data.slice(0, VISIBLE_HISTORY)) : [];
+
+  return (
+    <div className="flex flex-col gap-8">
+      <section aria-label={t("xp.title")} className="flex flex-col gap-4">
+        <SectionHeader title={t("xp.title")} />
+        <div className="flex items-start gap-4">
+          <div aria-hidden className="grid shrink-0 grid-rows-[repeat(7,16px)] gap-[5px] pt-6 text-title-medium text-foreground-muted">
+            {weekdayLabels.map((label, index) => (
+              <span key={index} className="h-4 w-6 leading-4">{index === 0 || index === 2 || index === 4 ? label : ""}</span>
+            ))}
+          </div>
+          <div ref={scrollRef} className="scrollbar-design min-w-0 flex-1 overflow-x-auto overflow-y-hidden pb-2">
+            <div className="w-max">
+              <div className="relative mb-1 h-5 text-title-medium text-foreground-muted">
+                {monthMarkers.map((marker) => (
+                  <span key={marker.left} className="absolute whitespace-nowrap" style={{ left: marker.left }}>{marker.month}</span>
+                ))}
+              </div>
+              {/* Ô heatmap nhỏ hơn mức tối thiểu 44px của vỏ public nên đặt minHeight 0 */}
+              <div className="grid grid-flow-col grid-rows-[repeat(7,16px)] gap-[5px]" role="group" aria-label={t("xp.calendar")}>
+                {cells.map((day, index) =>
+                  day ? (
+                    <button
+                      key={day.date}
+                      type="button"
+                      onClick={() => setSelectedDay(day.date)}
+                      title={dayLabel(day)}
+                      aria-label={dayLabel(day)}
+                      style={{ minHeight: 0 }}
+                      className={cn("size-4 rounded-[3px] border focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary", day.noData ? noDataClass : intensityClass[xpIntensity(day.xp)])}
+                    />
+                  ) : (
+                    <span key={`pad-${index}`} className="size-4" aria-hidden />
+                  ),
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-start gap-3">
+          <div className="flex flex-col">
+            <p className="text-xs font-medium leading-[1.4] text-foreground">{t("xp.total", { count: formatted(summary.data.total) })}</p>
+            <p className="text-[10px] font-medium leading-[1.2] text-foreground-muted">{t("xp.utc")}</p>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-foreground-muted" aria-hidden>
+            {t("xp.less")}
+            {intensityClass.map((color) => (
+              <span key={color} className={cn("size-4 rounded-[3px] border", color)} />
+            ))}
+            {t("xp.more")}
+          </div>
+          <p className="flex items-center gap-1.5 text-xs text-foreground-muted">
+            <span className={cn("size-4 rounded-[3px] border", noDataClass)} aria-hidden />
+            {t("xp.noData")}
+          </p>
+        </div>
+        {selectedDay ? <p className="text-sm text-foreground" role="status">{dayLabel(days.find((day) => day.date === selectedDay) ?? { date: selectedDay, xp: 0 })}</p> : null}
+        {own && selectedDay && breakdown.data?.length ? (
+          <ul className="text-sm text-foreground-muted">
+            {breakdown.data.map((item) => <li key={item.source}>{sourceLabels[item.source] ?? item.source}: {item.xp > 0 ? "+" : ""}{formatted(item.xp)} XP</li>)}
+          </ul>
+        ) : null}
+        {summary.data.total === 0 ? <p className="text-sm text-foreground-muted">{t("xp.empty")}</p> : null}
+      </section>
+
+      {own ? (
+        <section aria-label={t("xp.weekChart")} className="flex flex-col gap-4">
+          <SectionHeader
+            title={t("xp.weekTotal", { count: formatted(weekTotal) })}
+            action={
+              <div className="flex items-center gap-1">
+                <Button type="button" variant="cta" hierarchy="tertiary" size="small" iconOnly aria-label={t("xp.previousWeek")} onClick={() => setWeekShift((v) => v - 1)}>
+                  <ChevronLeft className="size-4" aria-hidden />
+                </Button>
+                <Button type="button" variant="cta" hierarchy="tertiary" size="small" iconOnly aria-label={t("xp.nextWeek")} disabled={weekShift >= 0} onClick={() => setWeekShift((v) => v + 1)}>
+                  <ChevronRight className="size-4" aria-hidden />
+                </Button>
+              </div>
+            }
+          />
+          <p className="text-xs text-foreground-muted">{weekDays[0].date} – {weekDays[6].date}</p>
+          <div className="grid h-36 grid-cols-7 items-end gap-2" role="group" aria-label={t("xp.weekChart")}>
+            {weekDays.map((day) => (
+              <button
+                key={day.date}
+                type="button"
+                disabled={day.future}
+                onClick={() => setSelectedDay(day.date)}
+                title={`${day.date}: ${formatted(day.xp)} XP`}
+                aria-label={`${day.date}: ${formatted(day.xp)} XP`}
+                style={{ minHeight: 0 }}
+                className="flex h-full flex-col items-center justify-end gap-1 disabled:opacity-30"
+              >
+                <span className="w-full rounded-t bg-primary" style={{ height: `${day.future ? 0 : Math.max(day.xp > 0 ? 6 : 0, day.xp / maxWeek * 108)}px` }} />
+                <span className="text-xs text-foreground-muted">{new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" }).format(new Date(`${day.date}T00:00:00Z`))}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {own ? (
+        <section aria-label={t("xp.history")} className="flex flex-col gap-4">
+          <SectionHeader
+            title={t("xp.history")}
+            action={
+              history.data && history.data.length > VISIBLE_HISTORY && !historyExpanded ? (
+                <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setHistoryExpanded(true)}>
+                  {tc("userProfile.xpHistory.viewAll")}
+                </Button>
+              ) : undefined
+            }
+          />
+          {history.isPending ? (
+            <p className="text-sm text-foreground-muted">{t("xp.loading")}</p>
+          ) : history.isError ? (
+            <button type="button" onClick={() => void history.refetch()} className="w-fit text-sm text-primary underline">{t("profile.retry")}</button>
+          ) : (
+            <>
+              <ul className="flex flex-col gap-2">
+                {historyRows.map((entry: XpEntry) => {
+                  const when = new Date(entry.occurred_at ?? entry.created_at);
+                  return (
+                    <li key={entry.id} className="flex items-start justify-between gap-4 rounded-lg border border-stroke-divider px-5 py-4 sm:gap-10">
+                      <div className="flex min-w-0 flex-col gap-2">
+                        <p className="text-sm font-medium text-foreground">{sourceLabels[entry.source] ?? entry.source.replaceAll("_", " ")}</p>
+                        <p className="flex items-center gap-2 text-xs text-foreground-muted">
+                          {when.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
+                          <span aria-hidden className="h-3 w-px bg-stroke-divider" />
+                          {when.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })} UTC
+                        </p>
+                      </div>
+                      <p className="shrink-0 text-sm font-medium text-foreground">{entry.points > 0 ? "+" : ""}{entry.points} XP</p>
+                    </li>
+                  );
+                })}
+              </ul>
+              {history.data.length === 0 ? <p className="text-sm text-foreground-muted">{t("xp.empty")}</p> : null}
+              {historyExpanded ? (
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => { setHistoryExpanded(false); setHistoryPage(0); }}>
+                    {tc("userProfile.xpHistory.collapse")}
+                  </Button>
+                  <div className="flex gap-2">
+                    <button type="button" disabled={historyPage === 0} onClick={() => setHistoryPage((p) => p - 1)} className="text-primary disabled:opacity-40">{t("xp.previous")}</button>
+                    <button type="button" disabled={history.data.length < 20} onClick={() => setHistoryPage((p) => p + 1)} className="text-primary disabled:opacity-40">{t("xp.next")}</button>
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
+        </section>
+      ) : null}
     </div>
-
-    <XpRankProgress total={summary.data.total} />
-
-    <div>
-      <h3 className="mb-2 text-sm font-semibold">{t("xp.calendar")}</h3>
-      {/* Compact heatmap cells override the public shell’s 44px minimum button height. */}
-      <div className="hidden overflow-x-auto overflow-y-hidden md:block">
-        <div className="ml-5 relative h-5 text-[10px] text-foreground-muted">{monthMarkers(desktopCells, 13).map((marker) => <span key={marker.left} className="absolute whitespace-nowrap" style={{ left: marker.left }}>{marker.month}</span>)}</div>
-        <div className="flex items-start gap-2">
-          <div className="grid grid-rows-[repeat(7,10px)] gap-[3px] text-[10px] text-foreground-muted">{weekdayLabels.map((label, index) => <span key={index} className="h-[10px] leading-[10px]">{index % 2 === 0 ? label : ""}</span>)}</div>
-          <div className="grid w-max shrink-0 grid-flow-col grid-rows-[repeat(7,10px)] gap-[3px]" role="group" aria-label={t("xp.calendar")}>
-            {desktopCells.map((day, index) => day ? <button key={day.date} type="button" onClick={() => setSelectedDay(day.date)} title={dayLabel(day)} aria-label={dayLabel(day)} style={{ minHeight: 0 }} className={`size-[10px] rounded-[2px] border focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${day.noData ? noDataClass : intensityClass[xpIntensity(day.xp)]}`} /> : <span key={`pad-${index}`} className="size-[10px]" aria-hidden />)}
-          </div>
-        </div>
-      </div>
-      <div className="overflow-x-auto overflow-y-hidden md:hidden">
-        <div className="ml-5 relative h-5 text-[10px] text-foreground-muted">{monthMarkers(mobileCells, 18).map((marker) => <span key={marker.left} className="absolute whitespace-nowrap" style={{ left: marker.left }}>{marker.month}</span>)}</div>
-        <div className="flex items-start gap-2">
-          <div className="grid grid-rows-7 gap-1 text-[10px] text-foreground-muted">{weekdayLabels.map((label, index) => <span key={index} className="h-3.5 leading-[14px]">{index % 2 === 0 ? label : ""}</span>)}</div>
-          <div className="grid w-max grid-flow-col grid-rows-7 gap-1" role="group" aria-label={t("xp.calendar")}>
-            {mobileCells.map((day, index) => day ? <button key={day.date} type="button" onClick={() => setSelectedDay(day.date)} title={dayLabel(day)} aria-label={dayLabel(day)} style={{ minHeight: 0 }} className={`size-3.5 rounded-[2px] border focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${day.noData ? noDataClass : intensityClass[xpIntensity(day.xp)]}`} /> : <span key={`pad-${index}`} className="size-3.5" aria-hidden />)}
-          </div>
-        </div>
-      </div>
-      <div className="mt-2 flex items-center gap-1 text-xs text-foreground-muted" aria-hidden>{t("xp.less")}{intensityClass.map((color) => <span key={color} className={`size-3 rounded-[3px] border ${color}`} />)}{t("xp.more")}</div>
-      <p className="mt-1 flex items-center gap-1 text-xs text-foreground-muted"><span className={`size-3 rounded-[3px] border ${noDataClass}`} aria-hidden />{t("xp.noData")}</p>
-      {selectedDay ? <p className="mt-2 text-sm" role="status">{dayLabel(days.find((day) => day.date === selectedDay) ?? { date: selectedDay, xp: 0 })}</p> : null}
-      {own && selectedDay && breakdown.data?.length ? <ul className="mt-1 text-sm text-foreground-muted">{breakdown.data.map((item) => <li key={item.source}>{sourceLabels[item.source] ?? item.source}: {item.xp > 0 ? "+" : ""}{formatted(item.xp)} XP</li>)}</ul> : null}
-      {summary.data.total === 0 ? <p className="mt-2 text-sm text-foreground-muted">{t("xp.empty")}</p> : null}
-    </div>
-
-    {own ? <>
-      <div>
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">{t("xp.weekTotal", { count: formatted(weekTotal) })}</h3>
-          <div className="flex items-center gap-1">
-            <button type="button" aria-label={t("xp.previousWeek")} onClick={() => setWeekShift((v) => v - 1)} className="rounded-lg p-2 hover:bg-surface-raised"><ChevronLeft className="size-4" /></button>
-            <button type="button" aria-label={t("xp.nextWeek")} disabled={weekShift >= 0} onClick={() => setWeekShift((v) => v + 1)} className="rounded-lg p-2 hover:bg-surface-raised disabled:opacity-40"><ChevronRight className="size-4" /></button>
-          </div>
-        </div>
-        <p className="mb-2 text-xs text-foreground-muted">{weekDays[0].date} – {weekDays[6].date}</p>
-        <div className="grid h-36 grid-cols-7 items-end gap-2" role="group" aria-label={t("xp.weekChart")}>
-          {weekDays.map((day) => <button key={day.date} type="button" disabled={day.future} onClick={() => setSelectedDay(day.date)} title={`${day.date}: ${formatted(day.xp)} XP`} aria-label={`${day.date}: ${formatted(day.xp)} XP`} className="flex h-full flex-col items-center justify-end gap-1 disabled:opacity-30"><span className="w-full rounded-t bg-primary" style={{ height: `${day.future ? 0 : Math.max(day.xp > 0 ? 6 : 0, day.xp / maxWeek * 108)}px` }} /><span className="text-xs text-foreground-muted">{new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" }).format(new Date(`${day.date}T00:00:00Z`))}</span></button>)}
-        </div>
-      </div>
-      <div>
-        <h3 className="mb-2 text-sm font-semibold">{t("xp.history")}</h3>
-        {history.isPending ? <p className="text-sm text-foreground-muted">{t("xp.loading")}</p> : history.isError ? <button type="button" onClick={() => void history.refetch()} className="text-sm text-primary underline">{t("profile.retry")}</button> : <>
-          <ul className="divide-y divide-border-subtle">{history.data.map((entry: XpEntry) => <li key={entry.id} className="flex justify-between gap-3 py-2 text-sm"><span>{sourceLabels[entry.source] ?? entry.source.replaceAll("_", " ")}<span className="ml-2 text-xs text-foreground-muted">{new Date(entry.occurred_at ?? entry.created_at).toLocaleDateString(locale, { timeZone: "UTC" })}</span></span><span>{entry.points > 0 ? "+" : ""}{entry.points} XP</span></li>)}</ul>
-          {history.data.length === 0 ? <p className="text-sm text-foreground-muted">{t("xp.empty")}</p> : null}
-          <div className="mt-2 flex justify-end gap-2 text-sm"><button type="button" disabled={historyPage === 0} onClick={() => setHistoryPage((p) => p - 1)} className="text-primary disabled:opacity-40">{t("xp.previous")}</button><button type="button" disabled={history.data.length < 20} onClick={() => setHistoryPage((p) => p + 1)} className="text-primary disabled:opacity-40">{t("xp.next")}</button></div>
-        </>}
-      </div>
-    </> : null}
-  </section>;
+  );
 }

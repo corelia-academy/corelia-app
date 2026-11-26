@@ -8,7 +8,6 @@ import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import ConnectOCIDCard from "@/pages/account/ConnectOCIDCard";
 import { ChangePasswordCard } from "./ChangePasswordCard";
 import { ProfileSection } from "./ProfileSection";
-import { XpActivity } from "@/features/xp/XpActivity";
 import { ConnectedAccountsCard } from "./ConnectedAccountsCard";
 import { queryClient } from "@/lib/queryClient";
 
@@ -232,8 +231,7 @@ export function AccountProfileRoute() {
         onSubmit={onSubmitProfile}
       />
 
-      <XpActivity userId={user.id} own />
-
+      {/* Khối XP Activity đã chuyển sang tab Activity trên hồ sơ công khai */}
       <ConnectedAccountsCard />
       <ConnectOCIDCard />
       <ChangePasswordCard user={user} />

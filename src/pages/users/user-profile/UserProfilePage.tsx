@@ -31,7 +31,7 @@ import { XpStatPanel } from "@/features/xp/XpStatPanel";
 import { AvatarEditorModal } from "@/pages/account/AvatarSettingsRoute";
 import { EditProfileModal } from "./components/EditProfileModal";
 import { UserProfileAchievementsSection } from "./components/UserProfileAchievementsSection";
-import { UserProfileActivityTab } from "./components/UserProfileActivityTab";
+import { XpActivity } from "@/features/xp/XpActivity";
 // TODO(figma-profile): Figma hồ sơ chưa có Khóa học và Hackathon, ẩn tạm; bật lại khi có thiết kế
 // import { UserProfileContestsSection } from "./components/UserProfileContestsSection";
 // import { UserProfileCoursesSection } from "./components/UserProfileCoursesSection";
@@ -460,7 +460,7 @@ export default function UserProfileLayout() {
               <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-12">
                 <div className="min-w-0">
                   <Tabs.Panel value="activity">
-                    <UserProfileActivityTab userId={profile.id} own={effectiveIsSelf} />
+                    <XpActivity userId={profile.id} own={effectiveIsSelf} />
                   </Tabs.Panel>
                   <Tabs.Panel value="projects">
                     <UserProfileProjectsTab profile={profile} isSelf={effectiveIsSelf} />
