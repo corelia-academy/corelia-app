@@ -14,9 +14,9 @@ import {
   DropdownMenuItemContent,
   DropdownMenuList,
   DropdownMenuSearch,
+  DropdownMenuSearchInput,
   DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
-import { FieldContextReset } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
@@ -80,30 +80,22 @@ function CatalogMultiSelectFilter({
         <DropdownMenuContent
           layout="multiple-list"
           sideOffset={8}
-          className="w-[min(296px,calc(100vw-2rem))]"
+          className="max-w-[calc(100vw-2rem)]"
         >
           <DropdownMenuSearch>
-            <FieldContextReset>
-              <Input
-                type="search"
-                variant="icon-leading"
-                leadingIconClassName="text-dropdown-supporting"
-                statusIcon={null}
-                value={search}
-                onChange={(event) => setSearch(event.currentTarget.value)}
-                placeholder={t("catalog.filters.searchPlaceholder")}
-                aria-label={searchLabel}
-                controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
-                className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
-              />
-            </FieldContextReset>
+            <DropdownMenuSearchInput
+              value={search}
+              onChange={(event) => setSearch(event.currentTarget.value)}
+              placeholder={t("catalog.filters.searchPlaceholder")}
+              aria-label={searchLabel}
+            />
           </DropdownMenuSearch>
           <DropdownMenuList>
             {matchingOptions.length > 0 ? matchingOptions.map((option) => (
               <DropdownMenuCheckboxItem
                 key={option.value}
                 checked={selectedValues.includes(option.value)}
-                size="compact"
+                size="large"
                 className="whitespace-nowrap"
                 onCheckedChange={(checked, eventDetails) => {
                   eventDetails.cancel();

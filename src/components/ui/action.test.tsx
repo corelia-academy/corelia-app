@@ -108,10 +108,24 @@ describe("Action", () => {
     expect(destructiveSmall).toContain('data-variant="destructive"');
     expect(destructiveSmall).toContain('data-size="small"');
     expect(destructiveSmall).toContain("px-2md");
-    expect(destructiveSmall).toContain("py-md");
+    expect(destructiveSmall).toContain("py-2md");
     expect(destructiveSmall).toContain("text-label-medium");
     expect(destructiveSmall).toContain("leading-5");
     expect(destructiveSmall).not.toContain("min-h-[48px]");
+
+    expect(defaultLarge).toContain("rounded-md");
+    expect(destructiveSmall).toContain("rounded-md");
+    expect(defaultLarge).not.toContain("border-transparent");
+    expect(defaultLarge).not.toContain("hover:rounded");
+  });
+
+  it("keeps the Figma gap and line-height between label and supporting text", () => {
+    const large = renderAction({ label: "A", supportingText: "B", size: "large" });
+    const small = renderAction({ label: "A", supportingText: "B", size: "small" });
+
+    expect(large).toContain("gap-xxs");
+    expect(large).toContain("leading-[1.4]");
+    expect(small).toContain("leading-[1.25]");
   });
 
   it("keeps the active color when the active state is hovered", () => {
@@ -223,5 +237,16 @@ describe("Action", () => {
     expect(markup).toContain('data-active="false"');
     expect(markup).not.toContain("bg-action-active");
     expect(markup).toContain("text-action-text");
+  });
+
+  it("truncates label and supporting text by default and wraps them when multiline", () => {
+    const base = { label: "Long title", supportingText: "Long supporting text" };
+
+    const truncated = renderAction(base);
+    expect(truncated).toContain("truncate");
+
+    const wrapped = renderAction({ ...base, multiline: true });
+    expect(wrapped).not.toContain("truncate");
+    expect(wrapped).toContain("break-words");
   });
 });

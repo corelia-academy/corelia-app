@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const actionVariants = cva(
     // Shared layout scope (phạm vi layout dùng chung cho mọi Action).
-    "group/action relative flex min-w-0 w-full items-center border border-transparent text-left select-none outline-none transition-[background-color,color,border-radius] duration-150 ease-out focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background data-disabled:cursor-not-allowed data-disabled:select-none",
+    "group/action relative flex min-w-0 w-full items-center text-left select-none outline-none transition-[background-color,color,border-radius] duration-150 ease-out focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background data-disabled:cursor-not-allowed data-disabled:select-none",
     {
         variants: {
             // Type scope (phạm vi loại hành động).
@@ -19,13 +19,13 @@ const actionVariants = cva(
                 destructive: "text-action-destructive",
             },
 
-            // Size scope (phạm vi kích thước). Default radius = 6px theo Figma.
+            // Size scope (phạm vi kích thước). Default radius = 8px theo Figma.
             size: {
                 // Large Action (Action lớn): padding theo Figma.
-                large: "gap-lg rounded-xl px-lg py-2md",
+                large: "gap-lg rounded-md px-lg py-2md",
 
                 // Small Action (Action nhỏ): padding theo Figma.
-                small: "gap-lg rounded-lg px-2md py-md",
+                small: "gap-lg rounded-md px-2md py-2md",
             },
 
             // Business active scope (phạm vi item đang được chọn).
@@ -41,46 +41,12 @@ const actionVariants = cva(
             },
         },
         compoundVariants: [
-            // Default + Large + inactive (loại thường + lớn + chưa được chọn):
-            // hover (rê chuột) = action-hover.
+            // Chưa được chọn: hover (rê chuột) = action-hover.
             {
-                variant: "default",
-                size: "large",
                 isActive: false,
                 disabled: false,
-                class: "hover:bg-action-hover hover:rounded-xl",
+                class: "hover:bg-action-hover",
             },
-
-            // Default + Small + inactive (loại thường + nhỏ + chưa được chọn):
-            // hover (rê chuột) = action-hover.
-            {
-                variant: "default",
-                size: "small",
-                isActive: false,
-                disabled: false,
-                class: "hover:bg-action-hover hover:rounded-lg",
-            },
-
-            // Destructive + Large + inactive (nguy hiểm + lớn + chưa được chọn):
-            // hover (rê chuột) = action-hover.
-            {
-                variant: "destructive",
-                size: "large",
-                isActive: false,
-                disabled: false,
-                class: "hover:bg-action-hover hover:rounded-xl",
-            },
-
-            // Destructive + Small + inactive (nguy hiểm + nhỏ + chưa được chọn):
-            // hover (rê chuột) = action-hover.
-            {
-                variant: "destructive",
-                size: "small",
-                isActive: false,
-                disabled: false,
-                class: "hover:bg-action-hover hover:rounded-lg",
-            },
-
 
             // isActive=true: giữ màu đang chọn khi hover (rê chuột).
             // Nhờ vậy state dùng chung của Action không đổi màu item active.
@@ -129,6 +95,10 @@ type ActionProps = Omit<ButtonPrimitive.Props, "children"> &
         // Toggle the transient pressed state (bật/tắt trạng thái đang nhấn).
         // Opt-in only: callers enable it explicitly when needed.
         showPressed?: boolean;
+
+        // Let label and supporting text wrap instead of truncating to one line
+        // (cho label và supporting text xuống dòng thay vì cắt một dòng; mặc định tắt).
+        multiline?: boolean;
     };
 
 function Action({
@@ -146,6 +116,7 @@ function Action({
     showActive = true,
     hoverAsActive = false,
     showPressed = false,
+    multiline = false,
     disabled = false,
     ...props
 }: ActionProps) {
@@ -270,18 +241,11 @@ function Action({
             ) : null}
 
             {/* Main text slot (vùng label và supporting text). */}
-            <span
-                className={cn(
-                    "flex min-w-0 flex-1 flex-col justify-center",
-                    variant === "destructive" && size === "small"
-                        ? "gap-xs"
-                        : "gap-sm",
-                )}
-            >
+            <span className="flex min-w-0 flex-1 flex-col justify-center gap-xxs">
                 {/* Label luôn có; nội dung label do nơi sử dụng truyền vào. */}
                 <span
                     className={cn(
-                        "block truncate font-body",
+                        multiline ? "block break-words font-body" : "block truncate font-body",
                         size === "large"
                             ? "text-label-large leading-[22px] tracking-[0]"
                             : "text-label-medium leading-5 tracking-[-0.005em]",
@@ -296,10 +260,10 @@ function Action({
                 {supportingText !== undefined && supportingText !== null ? (
                     <span
                         className={cn(
-                            "block truncate font-body",
+                            multiline ? "block break-words font-body" : "block truncate font-body",
                             size === "large"
-                                ? "text-body-medium"
-                                : "text-body-small",
+                                ? "text-body-medium leading-[1.4]"
+                                : "text-body-small leading-[1.25]",
                             disabled ? "text-action-disabled" : contentSupportingClass,
                             hoverAsActiveSupportingClass,
                         )}

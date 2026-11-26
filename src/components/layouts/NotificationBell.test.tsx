@@ -32,6 +32,10 @@ vi.mock("@/features/notifications/notificationQueries", () => ({
     queryKey: ["notification-test", "invite-contexts"],
     queryFn: async () => ({}),
   }),
+  notificationCourseContextsQueryOptions: () => ({
+    queryKey: ["notification-test", "course-contexts"],
+    queryFn: async () => ({}),
+  }),
 }));
 
 vi.mock("@/lib/notifications", () => ({

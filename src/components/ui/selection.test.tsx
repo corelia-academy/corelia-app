@@ -3,11 +3,30 @@ import { act } from "react"
 import * as React from "react"
 import { createRoot } from "react-dom/client"
 import { RadioGroup } from "@base-ui/react/radio-group"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { Checkbox, CheckboxCard, Radio, RadioCard } from "./selection"
 
 ;(globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
+
+const gsapMocks = vi.hoisted(() => ({
+  timeline: vi.fn(),
+  fromTo: vi.fn(),
+  set: vi.fn(),
+  to: vi.fn(),
+  tl: { fromTo: vi.fn(), kill: vi.fn() },
+}))
+vi.mock("gsap", () => ({ gsap: gsapMocks }))
+
+// restoreAllMocks in afterEach clears implementations, so re-arm the mocks before every test.
+beforeEach(() => {
+  gsapMocks.tl.fromTo.mockReset().mockReturnValue(gsapMocks.tl)
+  gsapMocks.tl.kill.mockReset()
+  gsapMocks.timeline.mockReset().mockReturnValue(gsapMocks.tl)
+  gsapMocks.fromTo.mockReset().mockReturnValue({ kill: vi.fn() })
+  gsapMocks.set.mockReset()
+  gsapMocks.to.mockReset().mockReturnValue({ kill: vi.fn() })
+})
 
 function render(ui: React.ReactNode) {
   const container = document.createElement("div")
@@ -644,5 +663,177 @@ describe("Selection cards", () => {
     expect(new FormData(form ?? undefined).get("plan")).toBe("free")
 
     await view.unmount()
+  })
+})
+
+describe("selection motion", () => {
+  function setReducedMotion(matches: boolean) {
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => ({ matches, media: "" })),
+    })
+  }
+  const flush = () =>
+    act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+
+  beforeEach(() => {
+    setReducedMotion(false)
+  })
+
+  it("does not animate on first render", async () => {
+    const view = render(<Checkbox aria-label="c" defaultChecked />)
+    await view.render()
+    await flush()
+
+    expect(gsapMocks.timeline).not.toHaveBeenCalled()
+
+    await view.unmount()
+  })
+
+  it("draws the tick when a checkbox becomes checked", async () => {
+    const view = render(<Checkbox aria-label="c" />)
+    await view.render()
+
+    await act(async () =>
+      view.container.querySelector<HTMLElement>('[role="checkbox"]')?.click(),
+    )
+    await flush()
+
+    expect(gsapMocks.timeline).toHaveBeenCalledTimes(1)
+    expect(gsapMocks.tl.fromTo).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ strokeDashoffset: 1 }),
+      expect.objectContaining({ strokeDashoffset: 0 }),
+      expect.any(Number),
+    )
+
+    await view.unmount()
+  })
+
+  it("pops the radio dot when a radio is selected", async () => {
+    const view = render(
+      <RadioGroup>
+        <Radio aria-label="a" value="a" />
+        <Radio aria-label="b" value="b" />
+      </RadioGroup>,
+    )
+    await view.render()
+
+    await act(async () =>
+      view.container.querySelectorAll<HTMLElement>('[role="radio"]')[1]?.click(),
+    )
+    await flush()
+
+    expect(gsapMocks.fromTo).toHaveBeenCalledWith(
+      expect.any(Element),
+      expect.objectContaining({ attr: { r: 0 } }),
+      expect.objectContaining({ attr: { r: expect.any(Number) } }),
+    )
+
+    await view.unmount()
+  })
+
+  it("skips GSAP but still changes state when reduced motion is requested", async () => {
+    setReducedMotion(true)
+    const view = render(<Checkbox aria-label="c" />)
+    await view.render()
+
+    const control = view.container.querySelector<HTMLElement>('[role="checkbox"]')
+    await act(async () => control?.click())
+    await flush()
+
+    expect(control?.getAttribute("aria-checked")).toBe("true")
+    expect(gsapMocks.timeline).not.toHaveBeenCalled()
+
+    await view.unmount()
+  })
+
+  it("pops the tick with a scale variable when a checkbox becomes checked", async () => {
+    const view = render(<Checkbox aria-label="c" />)
+    await view.render()
+
+    await act(async () =>
+      view.container.querySelector<HTMLElement>('[role="checkbox"]')?.click(),
+    )
+    await flush()
+
+    expect(gsapMocks.tl.fromTo).toHaveBeenCalledWith(
+      expect.any(SVGPathElement),
+      expect.objectContaining({ "--tick-scale": 0 }),
+      expect.objectContaining({ "--tick-scale": 1 }),
+      expect.any(Number),
+    )
+
+    await view.unmount()
+  })
+
+  it("shrinks the tick away when a checked checkbox is cleared", async () => {
+    const view = render(<Checkbox aria-label="c" defaultChecked />)
+    await view.render()
+
+    await act(async () =>
+      view.container.querySelector<HTMLElement>('[role="checkbox"]')?.click(),
+    )
+    await flush()
+
+    expect(gsapMocks.tl.fromTo).toHaveBeenCalledWith(
+      expect.any(SVGPathElement),
+      expect.objectContaining({ "--tick-scale": 1 }),
+      expect.objectContaining({ "--tick-scale": 0 }),
+      expect.any(Number),
+    )
+
+    await view.unmount()
+  })
+
+  it("shrinks a control while it is pressed and bounces it back on release", async () => {
+    const view = render(<Checkbox aria-label="c" />)
+    await view.render()
+    const control = view.container.querySelector<HTMLElement>('[role="checkbox"]')!
+
+    await act(async () => {
+      control.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0 }))
+    })
+    await flush()
+    expect(gsapMocks.to).toHaveBeenCalledWith(control, expect.objectContaining({ scale: 0.86 }))
+
+    await act(async () => {
+      window.dispatchEvent(new MouseEvent("pointerup", { bubbles: true, button: 0 }))
+    })
+    await flush()
+    expect(gsapMocks.to).toHaveBeenCalledWith(
+      control,
+      expect.objectContaining({ scale: 1, clearProps: "transform,scale" }),
+    )
+
+    await view.unmount()
+  })
+
+  it("gives no press feedback to a disabled control or under reduced motion", async () => {
+    const disabled = render(<Checkbox aria-label="d" disabled />)
+    await disabled.render()
+    await act(async () => {
+      disabled.container
+        .querySelector<HTMLElement>('[role="checkbox"]')
+        ?.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0 }))
+    })
+    await flush()
+    expect(gsapMocks.to).not.toHaveBeenCalled()
+    await disabled.unmount()
+
+    setReducedMotion(true)
+    const reduced = render(<Checkbox aria-label="r" />)
+    await reduced.render()
+    await act(async () => {
+      reduced.container
+        .querySelector<HTMLElement>('[role="checkbox"]')
+        ?.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0 }))
+    })
+    await flush()
+    expect(gsapMocks.to).not.toHaveBeenCalled()
+    await reduced.unmount()
   })
 })

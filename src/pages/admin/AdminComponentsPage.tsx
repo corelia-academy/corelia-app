@@ -8,6 +8,7 @@ import {
 } from "react";
 import { gsap } from "gsap";
 import { useTheme } from "next-themes";
+import { setThemeWithTransition } from "@/lib/themeTransition";
 import { useLocation, useNavigate } from "react-router";
 
 import AdminActionComponentPage from "./components/AdminActionComponentPage";
@@ -34,6 +35,8 @@ import AdminToastBarComponentPage from "./components/AdminToastBarComponentPage"
 import AdminExplanationBoxComponentPage from "./components/AdminExplanationBoxComponentPage";
 import AdminCodeBlockComponentPage from "./components/AdminCodeBlockComponentPage";
 import AdminInputCodeComponentPage from "./components/AdminInputCodeComponentPage";
+import AdminModalComponentPage from "./components/AdminModalComponentPage";
+import AdminSideDrawerComponentPage from "./components/AdminSideDrawerComponentPage";
 import AdminComponentsSidebar from "./components/AdminComponentsSidebar";
 
 const components = [
@@ -85,7 +88,7 @@ const components = [
   {
     slug: "dropdown-menu",
     title: "Dropdown Menu",
-    criterion: "Figma Base Items with five real states, two leading-icon variants, and six independent dropdown use cases with search, Select All, warning, disabled, and nested-list behavior.",
+    criterion: "Large and Small Checkbox, Radio, and Item rows, plus six dropdown use cases.",
   },
   {
     slug: "input-field",
@@ -156,6 +159,16 @@ const components = [
     slug: "input-code",
     title: "Input Code",
     criterion: "The coding area where a learner types, in default, filled, focused, disabled, and error states.",
+  },
+  {
+    slug: "modal",
+    title: "Modal",
+    criterion: "Confirmation, Destructive Action, Form, Status, and Slot templates over the dark overlay.",
+  },
+  {
+    slug: "side-drawer",
+    title: "Side Drawer",
+    criterion: "30vw and 50vw right-hand panels with header, close button, and scrolling content slot.",
   },
 ] as const;
 
@@ -534,7 +547,7 @@ export default function AdminComponentsPage() {
           activeIndicatorRef={activeIndicatorRef}
           resolvedTheme={resolvedTheme}
           onBack={() => navigate("/")}
-          onThemeChange={setTheme}
+          onThemeChange={(theme) => setThemeWithTransition(setTheme, theme)}
           onSelectComponent={(slug) => {
             setActiveComponent(slug);
             if (
@@ -626,6 +639,12 @@ export default function AdminComponentsPage() {
               </ComponentSection>
               <ComponentSection {...components[23]}>
                 <AdminInputCodeComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[24]}>
+                <AdminModalComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[25]}>
+                <AdminSideDrawerComponentPage embedded />
               </ComponentSection>
             </>
           )}

@@ -152,6 +152,17 @@
   --color-toast-bar-surface: var(--toast-bar-surface);
   --color-toast-bar-border: var(--toast-bar-border);
   --color-toast-bar-foreground: var(--toast-bar-foreground);
+  /* Figma Modal semantic color aliases. */
+  --color-modal-overlay: var(--modal-overlay);
+  --color-modal-surface: var(--modal-surface);
+  --color-modal-title: var(--modal-title);
+  --color-modal-description: var(--modal-description);
+  --color-modal-description-muted: var(--modal-description-muted);
+  /* Figma Side Drawer semantic color aliases. */
+  --color-side-drawer-overlay: var(--side-drawer-overlay);
+  --color-side-drawer-surface: var(--side-drawer-surface);
+  --color-side-drawer-title: var(--side-drawer-title);
+  --color-side-drawer-description: var(--side-drawer-description);
   --color-foreground-muted: var(--foreground-muted);
   --color-catalog-subtitle: var(--catalog-subtitle);
   --color-foreground-subtle: var(--foreground-subtle);
@@ -185,6 +196,7 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive-muted: var(--destructive-muted);
+  --color-icon-destructive: var(--icon-destructive);
 
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
@@ -308,9 +320,11 @@
   --color-dropdown-checkbox-disabled-active: var(--dropdown-checkbox-disabled-active);
   --color-dropdown-checkbox-disabled-mark: var(--dropdown-checkbox-disabled-mark);
   --color-dropdown-focus: var(--dropdown-focus);
+  --color-dropdown-icon: var(--dropdown-icon);
   --color-dropdown-warning: var(--dropdown-warning);
   --color-dropdown-warning-supporting: var(--dropdown-warning-supporting);
   --shadow-dropdown: var(--dropdown-shadow);
+  --shadow-toast-bar: var(--toast-bar-shadow);
   /* Action interaction token mapped from the Figma hover surface. */
   --color-action-hover: var(--action-hover);
   --color-resource-item-surface: var(--resource-item-surface);
@@ -347,6 +361,7 @@
   --color-toggle-supporting-text: var(--toggle-supporting-text);
   --color-toggle-pressed-background: var(--toggle-pressed-background);
   --color-toggle-pressed-foreground: var(--toggle-pressed-foreground);
+  --color-toggle-icon: var(--toggle-icon);
   --color-toggle-icon-disabled: var(--toggle-icon-disabled);
   --color-toggle-pressed-disabled-background: var(--toggle-pressed-disabled-background);
   --color-toggle-pressed-disabled-foreground: var(--toggle-pressed-disabled-foreground);
@@ -881,6 +896,21 @@
   --toast-bar-surface: var(--neutral-50);
   --toast-bar-border: var(--neutral-200);
   --toast-bar-foreground: var(--text-primary-2);
+  /* Soft dark shadow so the toast lifts off light surfaces without a heavy edge. */
+  --toast-bar-shadow: 8px 4px 25px 0 color-mix(in srgb, var(--neutral-900) 16%, transparent);
+
+  /* Modal tokens — Figma only defines the dark palette; light mode reverses it. */
+  --modal-overlay: color-mix(in srgb, var(--neutral-900) 50%, transparent);
+  --modal-surface: var(--surface-float);
+  --modal-title: var(--text-primary-2);
+  --modal-description: var(--text-secondary);
+  --modal-description-muted: var(--text-secondary);
+
+  /* Side Drawer tokens — Figma only defines the dark palette; light mode reverses it. */
+  --side-drawer-overlay: color-mix(in srgb, var(--neutral-900) 50%, transparent);
+  --side-drawer-surface: var(--surface-float);
+  --side-drawer-title: var(--text-primary-2);
+  --side-drawer-description: var(--text-secondary);
 
   --text-primary-2: #121926;
   --text-secondary: #4b5565;
@@ -996,6 +1026,8 @@
   --destructive: var(--error-400);
   --destructive-foreground: var(--neutral-50);
   --destructive-muted: var(--error-100);
+  /* Figma icon/destructive (unread dot). */
+  --icon-destructive: var(--error-400);
 
   --success: var(--success-400);
   --success-foreground: var(--neutral-50);
@@ -1079,6 +1111,7 @@
   --toggle-supporting-text: var(--text-secondary);
   --toggle-pressed-background: var(--blue-700);
   --toggle-pressed-foreground: var(--neutral-50);
+  --toggle-icon: var(--neutral-400);
   --toggle-icon-disabled: var(--neutral-500);
   --toggle-pressed-disabled-background: var(--neutral-500);
   --toggle-pressed-disabled-foreground: var(--neutral-800);
@@ -1160,6 +1193,8 @@
   --dropdown-input-border: var(--neutral-500);
   --dropdown-divider: var(--neutral-300);
   --dropdown-checkbox-unchecked: var(--neutral-600);
+  --dropdown-icon: var(--neutral-500);
+  --dropdown-scrollbar-thumb: var(--neutral-400);
   --dropdown-checkbox-active: var(--blue-700);
   --dropdown-checkbox-mark: var(--blue-100);
   --dropdown-checkbox-disabled-active: var(--selection-disabled);
@@ -1221,8 +1256,23 @@
 
   /* Toast Bar tokens — exact Figma Dark Midnight Navy specification */
   --toast-bar-surface: var(--neutral-800);
-  --toast-bar-border: color-mix(in srgb, var(--neutral-700) 40%, transparent);
-  --toast-bar-foreground: var(--neutral-50);
+  --toast-bar-border: var(--neutral-600);
+  --toast-bar-foreground: var(--neutral-200);
+  /* Figma dark spec: 8px 4px 25px at 80%, drawn with the darkest neutral. */
+  --toast-bar-shadow: 8px 4px 25px 0 color-mix(in srgb, var(--neutral-900) 80%, transparent);
+
+  /* Modal tokens — exact Figma Dark Midnight Navy specification. */
+  --modal-overlay: color-mix(in srgb, var(--neutral-900) 95%, transparent);
+  --modal-surface: var(--neutral-800);
+  --modal-title: var(--neutral-50);
+  --modal-description: var(--neutral-200);
+  --modal-description-muted: var(--neutral-400);
+
+  /* Side Drawer tokens — exact Figma Dark Midnight Navy specification. */
+  --side-drawer-overlay: color-mix(in srgb, var(--neutral-900) 95%, transparent);
+  --side-drawer-surface: color-mix(in srgb, var(--neutral-900) 95%, transparent);
+  --side-drawer-title: var(--neutral-200);
+  --side-drawer-description: var(--neutral-400);
 
   /* Dark mode: preserve the exact Figma palette mappings. */
   --progress-track: var(--neutral-700);
@@ -1382,6 +1432,8 @@
   --destructive: var(--error-300);
   --destructive-foreground: var(--error-600);
   --destructive-muted: var(--error-600);
+  /* Figma icon/destructive (unread dot): #eb5146. */
+  --icon-destructive: var(--error-400);
 
   --success: var(--success-300);
   --success-foreground: var(--success-600);
@@ -1464,6 +1516,7 @@
   --toggle-supporting-text: #cdd5df;
   --toggle-pressed-background: var(--blue-700);
   --toggle-pressed-foreground: var(--neutral-50);
+  --toggle-icon: var(--neutral-500);
   --toggle-icon-disabled: var(--neutral-500);
   --toggle-pressed-disabled-background: var(--neutral-500);
   --toggle-pressed-disabled-foreground: var(--neutral-800);
@@ -1550,12 +1603,14 @@
   --dropdown-container-border: var(--neutral-400);
   --dropdown-input-border: var(--neutral-500);
   --dropdown-divider: var(--neutral-600);
-  --dropdown-checkbox-unchecked: var(--blue-100);
+  --dropdown-checkbox-unchecked: var(--neutral-50);
+  --dropdown-icon: var(--neutral-50);
+  --dropdown-scrollbar-thumb: #e3e8ef;
   --dropdown-checkbox-active: var(--blue-700);
   --dropdown-checkbox-mark: var(--blue-100);
   --dropdown-checkbox-disabled-active: var(--selection-disabled);
   --dropdown-checkbox-disabled-mark: var(--selection-disabled-mark);
-  --dropdown-focus: var(--blue-500);
+  --dropdown-focus: var(--blue-400);
   --dropdown-warning: var(--error-400);
   --dropdown-warning-supporting: var(--error-300);
   --dropdown-shadow: 0 -1px 12px -2px #10182814, 0 4px 4px -2px #1018280f;
@@ -1591,6 +1646,11 @@
 @layer base {
   * {
     @apply border-border outline-primary/40;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 
   body {
@@ -1698,9 +1758,12 @@
     --dropdown-supporting: var(--dropdown-warning-supporting);
   }
 
-  [data-slot="dropdown-menu-checkbox-item"][data-disabled] {
+  [data-slot="dropdown-menu-checkbox-item"][data-disabled],
+  [data-slot="dropdown-menu-radio-item"][data-disabled],
+  [data-slot="dropdown-menu-item"][data-size][data-disabled] {
     --dropdown-title: var(--dropdown-disabled);
     --dropdown-supporting: var(--dropdown-disabled);
+    --dropdown-icon: var(--dropdown-disabled);
   }
 
   /* Input Code: Monaco decorations mark a wrong line, and a disabled editor dims its text. */

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/stores/authStore";
 import { useTheme } from "next-themes";
+import { setThemeWithTransition } from "@/lib/themeTransition";
 import { Link, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { LanguageSettingsCard } from "./LanguageSettingsCard";
@@ -58,7 +59,7 @@ function AccountSettingsSection() {
               <button
                 key={themeOption}
                 type="button"
-                onClick={() => setTheme(themeOption)}
+                onClick={() => setThemeWithTransition(setTheme, themeOption)}
                 className={[
                   "min-h-11 rounded-full border px-3 py-1 text-cta-medium font-cta transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                   (theme ?? "system") === themeOption

@@ -145,6 +145,8 @@
   },
   "header": {
     "publicProfile": "Perfil público",
+    "personalProfile": "Perfil",
+    "switchToAdmin": "Cambiar a Administración",
     "feedAria": "Abrir novedades",
     "notifications": "Notificaciones",
     "notificationsAria": "Abrir notificaciones",
@@ -157,6 +159,7 @@
     "projectInviteBody": "Te invitaron a unirte a un proyecto de hackathon.",
     "projectInviteProjectLabel": "Proyecto: {{title}}",
     "projectInviteHackathonLabel": "Hackathon: {{title}}",
+    "projectInviteUnavailable": "Este proyecto ya no está disponible.",
     "openHackathon": "Abrir hackathon",
     "inviteResolved": "Resuelta",
     "inviteAccepted": "Te uniste al proyecto.",
@@ -207,6 +210,10 @@
     "member": "Un miembro",
     "actorGroup": "{{name}} y {{count}} más",
     "newActivity": "Tienes actividad nueva",
+    "justNow": "Ahora mismo",
+    "drawerSubtitle": "Todas las notificaciones",
+    "today": "Hoy",
+    "yesterday": "Ayer",
     "social": {
       "project_liked": "A {{actors}} les gustó el proyecto de tu equipo {{title}}.",
       "project_followed": "{{actors}} siguieron el proyecto de tu equipo {{title}}.",

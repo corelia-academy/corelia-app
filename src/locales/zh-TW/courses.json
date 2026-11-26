@@ -418,9 +418,7 @@
       },
       "noLessonSelected": "請從課程大綱中選擇一個單元開始。",
       "toggleCurriculum": "切換課程大綱",
-      "openCurriculum": "開啟課程大綱",
-      "moveBar": "移動操作列(拖曳或使用方向鍵)",
-      "resetBar": "重設操作列位置"
+      "openCurriculum": "開啟課程大綱"
     }
   },
   "filters": {
@@ -538,8 +536,6 @@
     "markIncompleteShort": "未完成",
     "noHints": "本練習尚無提示。",
     "outline": "目錄",
-    "footerToDock": "切換為浮動列",
-    "footerToBar": "固定在底部",
     "redoShort": "重做",
     "nextShort": "下一步",
     "redoFromStart": "重新開始",

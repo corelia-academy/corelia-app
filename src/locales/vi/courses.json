@@ -427,9 +427,7 @@
       },
       "noLessonSelected": "Chọn một bài học từ curriculum để bắt đầu.",
       "toggleCurriculum": "Bật/tắt curriculum",
-      "openCurriculum": "Mở curriculum",
-      "moveBar": "Di chuyển thanh hành động (kéo hoặc dùng phím mũi tên)",
-      "resetBar": "Đặt lại vị trí thanh"
+      "openCurriculum": "Mở curriculum"
     }
   },
   "filters": {
@@ -553,8 +551,6 @@
     "moreActions": "Thao tác khác",
     "noHints": "Bài này chưa có gợi ý.",
     "outline": "Mục lục",
-    "footerToDock": "Chuyển sang thanh nổi",
-    "footerToBar": "Gắn thanh cố định",
     "recalculateDuration": "Tính lại thời lượng",
     "previewBanner": "XEM THỬ · Không lưu tiến độ, bài nộp hoặc nháp.",
     "completed": "Đã hoàn thành",

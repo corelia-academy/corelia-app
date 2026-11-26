@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react"
 
-import { clamp, prefersReducedMotion, readStored, rubberBand, runSpring, writeStored } from "../utils/dockPhysics"
+import { clamp, prefersReducedMotion, readStored, rubberBand, runSpring, writeStored } from "../utils/edgeTabPhysics"
 
-const STORAGE_KEY = "learn-dock-tab-v1"
+const STORAGE_KEY = "learn-edge-tab-v1"
 const DRAG_THRESHOLD = 4
 const KEY_STEP = 16
 

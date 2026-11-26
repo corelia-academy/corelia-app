@@ -418,9 +418,7 @@
       },
       "noLessonSelected": "请从课程大纲中选择一个课时开始。",
       "toggleCurriculum": "切换课程大纲",
-      "openCurriculum": "打开课程大纲",
-      "moveBar": "移动操作栏(拖动或使用方向键)",
-      "resetBar": "重置操作栏位置"
+      "openCurriculum": "打开课程大纲"
     }
   },
   "filters": {
@@ -538,8 +536,6 @@
     "markIncompleteShort": "未完成",
     "noHints": "本练习暂无提示。",
     "outline": "目录",
-    "footerToDock": "切换为悬浮栏",
-    "footerToBar": "固定到底部",
     "redoShort": "重做",
     "nextShort": "下一步",
     "redoFromStart": "重新开始",

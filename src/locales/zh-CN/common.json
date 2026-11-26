@@ -145,6 +145,8 @@
   },
   "header": {
     "publicProfile": "公开资料",
+    "personalProfile": "个人资料",
+    "switchToAdmin": "切换到管理后台",
     "feedAria": "打开动态",
     "notifications": "通知",
     "notificationsAria": "打开通知",
@@ -157,6 +159,7 @@
     "projectInviteBody": "您被邀请加入一个黑客松项目。",
     "projectInviteProjectLabel": "项目：{{title}}",
     "projectInviteHackathonLabel": "黑客松：{{title}}",
+    "projectInviteUnavailable": "该项目目前不可用。",
     "openHackathon": "打开黑客松",
     "inviteResolved": "已处理",
     "inviteAccepted": "您已加入项目。",
@@ -207,6 +210,10 @@
     "member": "一位成员",
     "actorGroup": "{{name}} 等 {{count}} 人",
     "newActivity": "您有新的动态",
+    "justNow": "刚刚",
+    "drawerSubtitle": "所有通知",
+    "today": "今天",
+    "yesterday": "昨天",
     "social": {
       "project_liked": "{{actors}} 赞了您团队的项目 {{title}}。",
       "project_followed": "{{actors}} 关注了您团队的项目 {{title}}。",

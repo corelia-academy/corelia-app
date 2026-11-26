@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import i18n from "@/i18n";
 import { NotificationInbox } from "./NotificationInbox";
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-const state = vi.hoisted(() => ({ read: vi.fn(), all: vi.fn(), query: vi.fn() }));
+const state = vi.hoisted(() => ({ read: vi.fn(), all: vi.fn(), query: vi.fn(), invite: vi.fn() }));
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: { id: "me" }, profile: {}, authInitialized: true, isAuthenticated: true }) }));
 vi.mock("@/components/social/FollowButton", () => ({ FollowButton: () => null }));
 vi.mock("@/lib/notifications", () => ({ markNotificationRead: state.read, markAllNotificationsRead: state.all, acceptProjectInviteById: vi.fn(), declineProjectInviteById: vi.fn() }));
@@ -20,12 +20,13 @@ vi.mock("./notificationQueries", () => ({
   queryFn: ({ pageParam }: { pageParam: unknown }) => state.query(pageParam, unread),
   getNextPageParam: (page: { items: { id: string }[] }) => page.items.length === 20 ? page.items.at(-1) : undefined,
  }),
- notificationInviteContextsQueryOptions: () => ({ queryKey: ["invite-context"], queryFn: async () => ({}) }),
+ notificationInviteContextsQueryOptions: () => ({ queryKey: ["invite-context"], queryFn: () => state.invite() }),
+ notificationCourseContextsQueryOptions: () => ({ queryKey: ["course-context"], queryFn: async () => ({}) }),
 }));
 const row = (id: number) => ({ id: String(id), user_id: "me", type: "project_liked", group_key: `group${id}`, activity_at: "2026-10-13T00:00:00Z", created_at: "2026-10-13T00:00:00Z", read_at: null, resolved_at: null, payload: { count: 1, title: `Project ${id}`, target_path: `/projects/${id}` } });
 beforeEach(async () => {
  vi.clearAllMocks(); await i18n.changeLanguage("en");
- state.read.mockResolvedValue(undefined); state.all.mockResolvedValue(undefined);
+ state.read.mockResolvedValue(undefined); state.all.mockResolvedValue(undefined); state.invite.mockResolvedValue({});
  state.query.mockImplementation(async (cursor: unknown) => ({ items: cursor ? [row(21)] : Array.from({ length: 20 }, (_, i) => row(i + 1)), unread_count: 21 }));
 });
 async function mount() {
@@ -40,7 +41,7 @@ describe("notification history", () => {
   const view = await mount();
   expect(view.container.querySelectorAll("li")).toHaveLength(20);
   expect(state.all).not.toHaveBeenCalled(); expect(state.read).not.toHaveBeenCalled();
-  await act(async () => { view.container.querySelector<HTMLAnchorElement>('a[href="/projects/1"]')!.click(); });
+  await act(async () => { view.container.querySelector<HTMLElement>('[data-slot="action"]')!.click(); });
   expect(state.read).toHaveBeenCalledWith("1", true, "2026-10-13T00:00:00Z");
   await view.cleanup();
  });
@@ -56,7 +57,7 @@ describe("notification history", () => {
   expect(state.all).toHaveBeenCalledTimes(1);
   await view.cleanup();
  });
- it("explains an automatically hidden project with readable field names and marks it read when opened", async () => {
+ it("explains an automatically hidden project and marks it read when its row is clicked", async () => {
   state.query.mockResolvedValue({ unread_count: 1, items: [{
    id: "hidden", user_id: "me", type: "project_auto_hidden", group_key: null,
    activity_at: "2026-10-27T00:00:00Z", created_at: "2026-10-27T00:00:00Z", read_at: null, resolved_at: null,
@@ -65,10 +66,38 @@ describe("notification history", () => {
   const view = await mount();
   expect(view.container.textContent).toContain("Your project was hidden");
   expect(view.container.textContent).toContain("Pact");
-  expect(view.container.textContent).toMatch(/Flagged: .+, .+ \(VI\)/);
-  expect(view.container.textContent).not.toContain("vi.summary");
-  await act(async () => { view.container.querySelector<HTMLAnchorElement>('a[href="/projects/pact"]')!.click(); });
+  expect(view.container.textContent).not.toContain("Flagged:");
+  await act(async () => { view.container.querySelector<HTMLElement>('[data-slot="action"]')!.click(); });
   expect(state.read).toHaveBeenCalledWith("hidden", true, "2026-10-27T00:00:00Z");
+  await view.cleanup();
+ });
+ it("marks a row without a destination as read when its row is clicked", async () => {
+  state.query.mockResolvedValue({ unread_count: 1, items: [{
+   id: "invite", user_id: "me", type: "project_collaboration_invite", group_key: null,
+   activity_at: "2026-10-28T00:00:00Z", created_at: "2026-10-28T00:00:00Z", read_at: null, resolved_at: null,
+   payload: { invite_id: "i1", project_id: "p1", invited_by: "u2" },
+  }] });
+  const view = await mount();
+  await act(async () => { view.container.querySelector<HTMLElement>('[data-slot="action"]')!.click(); });
+  expect(state.read).toHaveBeenCalledWith("invite", true, "2026-10-28T00:00:00Z");
+  await view.cleanup();
+ });
+ it("keeps an invite row on one line and shows a skeleton avatar while its context loads", async () => {
+  const body = i18n.t("notifications.projectInviteBody", { ns: "common" });
+  let resolveContext!: (value: Record<string, unknown>) => void;
+  state.invite.mockReturnValue(new Promise(resolve => { resolveContext = resolve; }));
+  state.query.mockResolvedValue({ unread_count: 1, items: [{
+   id: "invite", user_id: "me", type: "project_collaboration_invite", group_key: null,
+   activity_at: "2026-10-13T00:00:00Z", created_at: "2026-10-13T00:00:00Z", read_at: null, resolved_at: null,
+   payload: { invite_id: "i1", project_id: "p1" },
+  }] });
+  const view = await mount();
+  expect(view.container.textContent).not.toContain(body);
+  expect(view.container.querySelector('[data-slot="skeleton"]')).not.toBeNull();
+  await act(async () => { resolveContext({ p1: { projectTitle: "Pact", projectSlug: "pact", logoUrl: null, hackathonTitle: null, hackathonHref: null } }); await new Promise(resolve => setTimeout(resolve, 30)); });
+  expect(view.container.textContent).toContain("Pact");
+  expect(view.container.textContent).not.toContain(body);
+  expect(view.container.querySelector('[data-slot="skeleton"]')).toBeNull();
   await view.cleanup();
  });
 });

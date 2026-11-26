@@ -17,8 +17,8 @@ function open(props: Partial<React.ComponentProps<typeof LearnFooterMenu>> = {})
   document.body.append(host);
   const root = createRoot(host);
   cleanup = () => act(() => root.unmount());
-  const onNavigate = vi.fn(), onModeChange = vi.fn();
-  act(() => root.render(<LearnFooterMenu mode="bar" previousLessonId="prev" nextLessonId="next" onNavigate={onNavigate} onModeChange={onModeChange} {...props} />));
+  const onNavigate = vi.fn();
+  act(() => root.render(<LearnFooterMenu previousLessonId="prev" nextLessonId="next" onNavigate={onNavigate} {...props} />));
   const trigger = host.querySelector<HTMLButtonElement>('button[aria-label="learning.moreActions"]')!;
   act(() => {
     trigger.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0 }));
@@ -26,7 +26,7 @@ function open(props: Partial<React.ComponentProps<typeof LearnFooterMenu>> = {})
     trigger.click();
   });
   const items = () => Array.from(document.body.querySelectorAll<HTMLElement>('[data-slot="dropdown-menu-item"]'));
-  return { trigger, items, onNavigate, onModeChange };
+  return { trigger, items, onNavigate };
 }
 
 it("labels the icon-only trigger", () => {
@@ -34,14 +34,9 @@ it("labels the icon-only trigger", () => {
   expect(trigger.getAttribute("aria-label")).toBe("learning.moreActions");
 });
 
-it("lists previous, next and the footer mode switch", () => {
+it("lists previous and next", () => {
   const { items } = open();
-  expect(items().map(item => item.textContent)).toEqual(["learning.previous", "learning.next", "learning.footerToDock"]);
-});
-
-it("offers the way back to the pinned bar while docked", () => {
-  const { items } = open({ mode: "dock" });
-  expect(items().at(-1)?.textContent).toBe("learning.footerToBar");
+  expect(items().map(item => item.textContent)).toEqual(["learning.previous", "learning.next"]);
 });
 
 it("disables a lesson move that has no target", () => {
@@ -49,11 +44,10 @@ it("disables a lesson move that has no target", () => {
   expect(items().slice(0, 2).every(item => item.hasAttribute("data-disabled"))).toBe(true);
 });
 
-it("reports the chosen lesson and mode", () => {
-  const { items, onNavigate, onModeChange } = open();
+it("reports the chosen lesson", () => {
+  const { items, onNavigate } = open();
   act(() => items()[1].click());
   expect(onNavigate).toHaveBeenCalledWith("next");
-  expect(onModeChange).not.toHaveBeenCalled();
 });
 
 it("uses the project's list menu look and never scrolls sideways", () => {

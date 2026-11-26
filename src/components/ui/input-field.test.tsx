@@ -196,7 +196,7 @@ function TestTagMenu({ menu }: { menu: InputTagMenuState }) {
               key={option.value}
               checked={menu.selectedValues.includes(option.value)}
               disabled={menu.disabled || option.disabled}
-              size="compact"
+              size="large"
               onCheckedChange={(checked, eventDetails) => {
                 eventDetails.cancel()
                 menu.onSelectedValuesChange(

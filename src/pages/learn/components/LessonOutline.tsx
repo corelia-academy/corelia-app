@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuItemContent, DropdownMenuList, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { LEARN_MENU_CONTENT, LEARN_MENU_ITEM } from "./LearnFooterMenu";
+import { LEARN_MENU_CONTENT } from "./LearnFooterMenu";
 
 gsap.registerPlugin(ScrollToPlugin);
 
@@ -88,15 +88,17 @@ function OutlineMenu({ items, active, onPick, onSettled }: { items: OutlineItem[
       <DropdownMenuContent layout="multiple-list" side="top" align="start" className={cn("w-72", LEARN_MENU_CONTENT)}>
         <DropdownMenuList>
           {items.map((item, index) => (
-            <DropdownMenuItem
-              key={index}
-              aria-current={index === active ? "true" : undefined}
-              ref={index === active ? (el: HTMLElement | null) => el?.scrollIntoView?.({ block: "nearest" }) : undefined}
-              className={cn(LEARN_MENU_ITEM, item.level === 3 && "pl-xl", item.level === 4 && "pl-3xl", index === active && "bg-dropdown-hover [&_[data-slot=dropdown-menu-item-title]]:text-primary")}
-              onClick={() => go(item, index)}
-            >
-              <DropdownMenuItemContent>{item.text}</DropdownMenuItemContent>
-            </DropdownMenuItem>
+            <div key={index} className={cn(item.level === 3 && "pl-2xl", item.level === 4 && "pl-6xl")}>
+              <DropdownMenuItem
+                size="small"
+                aria-current={index === active ? "true" : undefined}
+                ref={index === active ? (el: HTMLElement | null) => el?.scrollIntoView?.({ block: "nearest" }) : undefined}
+                className={cn(index === active && "bg-dropdown-hover [&_[data-slot=dropdown-menu-item-title]]:text-primary")}
+                onClick={() => go(item, index)}
+              >
+                <DropdownMenuItemContent>{item.text}</DropdownMenuItemContent>
+              </DropdownMenuItem>
+            </div>
           ))}
         </DropdownMenuList>
       </DropdownMenuContent>

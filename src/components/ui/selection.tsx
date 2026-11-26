@@ -2,6 +2,7 @@ import * as React from "react"
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
 import { Radio as RadioPrimitive } from "@base-ui/react/radio"
 import { cn } from "@/lib/utils"
+import { useSelectionMotion } from "./selection-motion"
 
 type SelectionSize = "small" | "large"
 type SelectionCardOrientation = "horizontal" | "vertical"
@@ -168,6 +169,12 @@ type SelectionIconProps = {
                 />
                 <path
                   d={isSmall ? "M15 6.25L8.125 13.125L5 10" : "M18 7.5L9.75 15.75L6 12"}
+                  pathLength={1}
+                  style={{
+                    transform: "scale(var(--tick-scale, 1))",
+                    transformBox: "fill-box",
+                    transformOrigin: "center",
+                  }}
                   stroke={markColor}
                   strokeWidth="1.6666"
                   strokeLinecap="round"
@@ -189,6 +196,12 @@ type SelectionIconProps = {
                 />
                 <path
                   d={isSmall ? "M5 10H15" : "M6 12H18"}
+                  pathLength={1}
+                  style={{
+                    transform: "scale(var(--tick-scale, 1))",
+                    transformBox: "fill-box",
+                    transformOrigin: "center",
+                  }}
                   stroke={color}
                   strokeWidth="1.67"
                   strokeLinecap="round"
@@ -450,10 +463,11 @@ export const Checkbox = React.forwardRef<HTMLElement, CheckboxProps>(
       : {}
     const styles = sizeStyles[size]
     const disabled = props.disabled ?? false
+    const motionRef = useSelectionMotion<HTMLElement>("checkbox", ref)
 
     const control = (
       <CheckboxPrimitive.Root
-        ref={ref}
+        ref={motionRef}
         id={inputId}
         data-slot="checkbox"
         indeterminate={indeterminate}
@@ -476,7 +490,7 @@ export const Checkbox = React.forwardRef<HTMLElement, CheckboxProps>(
           size={size}
           disabled={disabled}
           state="unchecked"
-          className="pointer-events-none absolute inset-0 size-full transition-[opacity,transform] duration-150 ease-out group-data-[checked]/checkbox:scale-95 group-data-[checked]/checkbox:opacity-0 group-data-[indeterminate]/checkbox:scale-95 group-data-[indeterminate]/checkbox:opacity-0 motion-reduce:transition-none"
+          className="pointer-events-none absolute inset-0 size-full group-data-[checked]/checkbox:scale-95 group-data-[checked]/checkbox:opacity-0 group-data-[indeterminate]/checkbox:scale-95 group-data-[indeterminate]/checkbox:opacity-0"
         />
         <SelectionIcon
           dataSlot="checkbox-checked-frame"
@@ -484,7 +498,7 @@ export const Checkbox = React.forwardRef<HTMLElement, CheckboxProps>(
           size={size}
           disabled={disabled}
           state="checked"
-          className="pointer-events-none absolute inset-0 size-full scale-95 opacity-0 transition-[opacity,transform] duration-150 ease-out group-data-[checked]/checkbox:scale-100 group-data-[checked]/checkbox:opacity-100 motion-reduce:transition-none"
+          className="pointer-events-none absolute inset-0 size-full scale-95 opacity-0 group-data-[checked]/checkbox:scale-100 group-data-[checked]/checkbox:opacity-100"
         />
         <SelectionIcon
           dataSlot="checkbox-indeterminate-frame"
@@ -492,7 +506,7 @@ export const Checkbox = React.forwardRef<HTMLElement, CheckboxProps>(
           size={size}
           disabled={disabled}
           state="indeterminate"
-          className="pointer-events-none absolute inset-0 size-full scale-95 opacity-0 transition-[opacity,transform] duration-150 ease-out group-data-[indeterminate]/checkbox:scale-100 group-data-[indeterminate]/checkbox:opacity-100 motion-reduce:transition-none"
+          className="pointer-events-none absolute inset-0 size-full scale-95 opacity-0 group-data-[indeterminate]/checkbox:scale-100 group-data-[indeterminate]/checkbox:opacity-100"
         />
       </CheckboxPrimitive.Root>
     )
@@ -568,9 +582,11 @@ export const Radio = React.forwardRef<HTMLElement, RadioProps>(
       )
     }
 
+    const motionRef = useSelectionMotion<HTMLElement>("radio", ref)
+
     const control = (
       <RadioPrimitive.Root
-        ref={ref}
+        ref={motionRef}
         id={inputId}
         data-slot="radio"
         className={cn(

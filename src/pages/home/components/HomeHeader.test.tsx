@@ -77,7 +77,7 @@ it("labels a completed featured course as View", async () => {
   expect(action?.textContent).not.toContain("Continue learning");
   const chip = container.querySelector<HTMLElement>('[data-slot="chip"]');
   expect(chip?.textContent).toBe("Online");
-  expect(chip?.className).toContain("text-xs");
+  expect(chip?.className).toContain("text-[10px]");
 });
 
 it("keeps Continue learning for an incomplete featured course", async () => {

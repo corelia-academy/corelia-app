@@ -18,13 +18,13 @@ function Player({ url, title, flush = false }: Props) {
     const src = new URL(url);
     src.searchParams.set("enablejsapi", "1");
     src.searchParams.set("origin", window.location.origin);
-    src.searchParams.set("autoplay", "0");
+    src.searchParams.set("autoplay", "1");
     src.searchParams.set("playsinline", "1");
     frame.referrerPolicy = "strict-origin-when-cross-origin";
     frame.src = src.toString();
     frame.title = title;
     frame.className = "mx-auto block aspect-video h-full max-w-full";
-    frame.allow = "encrypted-media; picture-in-picture";
+    frame.allow = "autoplay; encrypted-media; picture-in-picture";
     frame.allowFullscreen = true;
     host.append(frame);
     let cancelled = false;

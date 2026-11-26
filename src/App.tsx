@@ -198,7 +198,7 @@ export default function App() {
   if (import.meta.env.VITE_MAINTENANCE_MODE === "true") {
     return (
       <PageTitleProvider>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <MaintenancePage />
         </ThemeProvider>
       </PageTitleProvider>
@@ -208,7 +208,7 @@ export default function App() {
   return (
     <PageTitleProvider>
       <ErrorBoundary>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LoadingBar />
           <Toaster />
           <AuthSync />
@@ -357,9 +357,11 @@ function ApplicationRoutes() {
             <Route
               path="study"
               element={
-                <Suspense fallback={<LearnFallback />}>
-                  <LearnLayout />
-                </Suspense>
+                <RequireAuth>
+                  <Suspense fallback={<LearnFallback />}>
+                    <LearnLayout />
+                  </Suspense>
+                </RequireAuth>
               }
             >
               <Route
@@ -427,6 +429,8 @@ function ApplicationRoutes() {
               "explanation-box",
               "code-block",
               "input-code",
+              "modal",
+              "side-drawer",
             ].map((component) => (
               <Route
                 key={component}
