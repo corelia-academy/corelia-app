@@ -260,6 +260,12 @@
     "cover": {
       "add": "Añadir imagen de portada"
     },
+    "edit": {
+      "subtitle": "Cambia la información que se muestra en tu perfil",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "confirmDescription": "¿Confirmas que quieres guardar los cambios?"
+    },
     "info": {
       "title": "Información y enlaces",
       "links": "Enlaces y archivos adjuntos"

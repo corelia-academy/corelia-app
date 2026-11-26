@@ -260,6 +260,12 @@
     "cover": {
       "add": "カバー画像を追加"
     },
+    "edit": {
+      "subtitle": "プロフィールに表示される情報を変更します",
+      "cancel": "キャンセル",
+      "confirm": "確認",
+      "confirmDescription": "変更内容を保存してよろしいですか？"
+    },
     "info": {
       "title": "情報とリンク",
       "links": "リンクと添付ファイル"

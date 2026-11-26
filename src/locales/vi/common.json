@@ -260,6 +260,12 @@
     "cover": {
       "add": "Thêm ảnh bìa"
     },
+    "edit": {
+      "subtitle": "Thay đổi thông tin hiển thị trên hồ sơ",
+      "cancel": "Huỷ",
+      "confirm": "Xác nhận",
+      "confirmDescription": "Xác nhận lưu thông tin đã thay đổi?"
+    },
     "info": {
       "title": "Thông tin & đường dẫn",
       "links": "Link & Đính kèm"

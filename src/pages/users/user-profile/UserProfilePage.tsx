@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
   Eye,
@@ -28,6 +28,8 @@ import { useAuth } from "@/stores/authStore";
 import type { PublicProfile } from "@/types/database";
 import { XpStatPanel } from "@/features/xp/XpStatPanel";
 
+import { AvatarEditorModal } from "@/pages/account/AvatarSettingsRoute";
+import { EditProfileModal } from "./components/EditProfileModal";
 import { UserProfileAchievementsSection } from "./components/UserProfileAchievementsSection";
 import { UserProfileActivityTab } from "./components/UserProfileActivityTab";
 // TODO(figma-profile): Figma hồ sơ chưa có Khóa học và Hackathon, ẩn tạm; bật lại khi có thiết kế
@@ -186,6 +188,14 @@ export default function UserProfileLayout() {
 
   const isSelf = Boolean(user && fetchedProfile && user.id === fetchedProfile.id);
   const [previewAsGuest, setPreviewAsGuest] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editSession, setEditSession] = useState(0);
+  const [avatarOpen, setAvatarOpen] = useState(false);
+  const [avatarSession, setAvatarSession] = useState(0);
+  const openAvatarEditor = () => {
+    setAvatarSession((n) => n + 1);
+    setAvatarOpen(true);
+  };
   const [followerDialogOpen, setFollowerDialogOpen] = useState(false);
   const [followingDialogOpen, setFollowingDialogOpen] = useState(false);
   const [followerCountOverride, setFollowerCountOverride] = useState<{
@@ -260,11 +270,10 @@ export default function UserProfileLayout() {
                 fallbackClassName="rounded-full"
               >
                 {effectiveIsSelf ? (
-                  // TODO(figma-avatar-modal): tạm chuyển sang trang avatar hiện có; thay bằng modal ở Bước 7
                   <AvatarAction
                     kind="edit"
                     aria-label={t("userProfile.actions.editAvatar")}
-                    onClick={() => navigate("/settings/avatar")}
+                    onClick={openAvatarEditor}
                   />
                 ) : null}
               </UserAvatar>
@@ -331,8 +340,10 @@ export default function UserProfileLayout() {
                     variant="cta"
                     hierarchy="primary"
                     size="small"
-                    nativeButton={false}
-                    render={<NavLink to="/account/profile" />}
+                    onClick={() => {
+                      setEditSession((n) => n + 1);
+                      setEditOpen(true);
+                    }}
                   >
                     {t("userProfile.actions.editProfile")}
                   </Button>
@@ -395,6 +406,18 @@ export default function UserProfileLayout() {
                     open={followingDialogOpen}
                     onOpenChange={setFollowingDialogOpen}
                   />
+                </>
+              ) : null}
+              {!loading && profile && effectiveIsSelf ? (
+                <>
+                  <EditProfileModal
+                    key={editSession}
+                    open={editOpen}
+                    onOpenChange={setEditOpen}
+                    onEditAvatar={openAvatarEditor}
+                    onUsernameChanged={(username) => navigate(`/@${username}`, { replace: true })}
+                  />
+                  <AvatarEditorModal key={`avatar-${avatarSession}`} open={avatarOpen} onOpenChange={setAvatarOpen} />
                 </>
               ) : null}
             </div>

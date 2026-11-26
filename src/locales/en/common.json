@@ -260,6 +260,12 @@
     "cover": {
       "add": "Add cover image"
     },
+    "edit": {
+      "subtitle": "Change the information shown on your profile",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "confirmDescription": "Confirm saving the changes you made?"
+    },
     "info": {
       "title": "Info & links",
       "links": "Links & attachments"

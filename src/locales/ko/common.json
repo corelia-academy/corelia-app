@@ -260,6 +260,12 @@
     "cover": {
       "add": "커버 이미지 추가"
     },
+    "edit": {
+      "subtitle": "프로필에 표시되는 정보를 변경합니다",
+      "cancel": "취소",
+      "confirm": "확인",
+      "confirmDescription": "변경한 내용을 저장하시겠습니까?"
+    },
     "info": {
       "title": "정보 및 링크",
       "links": "링크 및 첨부 파일"

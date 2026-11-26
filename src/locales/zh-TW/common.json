@@ -260,6 +260,12 @@
     "cover": {
       "add": "新增封面圖片"
     },
+    "edit": {
+      "subtitle": "變更顯示在你個人檔案上的資訊",
+      "cancel": "取消",
+      "confirm": "確認",
+      "confirmDescription": "確認儲存你所做的變更嗎？"
+    },
     "info": {
       "title": "資訊與連結",
       "links": "連結與附件"
