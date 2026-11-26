@@ -47,7 +47,7 @@ export function BadgeCard({
     };
     const status = isFailed && onRetry ? (
       <button type="button" onClick={handleRetry} disabled={retrying}
-        className="flex w-fit items-center gap-1 rounded bg-red-500 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-50">
+        className="flex w-fit items-center gap-1 rounded bg-destructive px-2 py-1 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50">
         {retrying && <Loader2 className="size-3 animate-spin" />}
         {t("achievements.badges.retry")}
       </button>
@@ -76,7 +76,7 @@ export function BadgeCard({
           <span className="flex flex-col gap-2 p-4 pb-0">
             <span className="text-heading-medium font-display text-foreground">{badge.title}</span>
             {badge.earnedAt && badge.earnedAt !== "-" && !isPending ? (
-              <span className={cn("text-body-medium", isFailed ? "text-red-500" : "text-foreground-subtle")}>
+              <span className={cn("text-body-medium", isFailed ? "text-destructive" : "text-foreground-subtle")}>
                 {isFailed ? t("achievements.badges.failedPrefix") : t("userProfile.achievements.completedAt", { date: badge.earnedAt })}
               </span>
             ) : null}
