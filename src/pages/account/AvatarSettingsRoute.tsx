@@ -1,123 +1,239 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router";
-import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import { Avatar as HumationAvatar } from "@humation/react";
 import { getPartsForSlot } from "@humation/core";
+import { CaretUpDown } from "@phosphor-icons/react";
+import { RotateCcw, Shuffle } from "lucide-react";
+import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { useAuth } from "@/stores/authStore";
-import { queryClient } from "@/lib/queryClient";
-import { avatarAssets } from "@/lib/avatarAssets";
-import { saveMyAvatar } from "@/lib/avatarProfile";
-import { safeAvatarConfig, EMPTY_AVATAR_CONFIG, type AvatarConfig } from "../../../shared/avatarConfig";
+import { toast } from "sonner";
 
-function displayPart(name: string): string {
-  return name.replace(/-/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItemContent,
+  DropdownMenuList,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Modal } from "@/components/ui/modal";
+import { avatarAssets } from "@/lib/avatarAssets";
+import { cn } from "@/lib/utils";
+import { displayPart, useAvatarEditor } from "./useAvatarEditor";
+
+const FIELD_CLASS =
+  "flex h-10 w-full items-center gap-2 rounded-md border border-input-field-border bg-surface-base px-lg text-left text-body-large font-body text-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-input-field-focus-ring";
+const LABEL_CLASS = "text-label-medium font-body leading-[1.4] text-foreground-subtle";
+
+// Thứ tự và cách ghép ô chọn với ô màu theo Figma "Chỉnh sửa avatar".
+const PART_FIELDS: { slot: string; color?: string }[] = [
+  { slot: "bottom" },
+  { slot: "body", color: "clothes" },
+  { slot: "head", color: "hair" },
+  { slot: "item" },
+  { slot: "glasses" },
+];
+// TODO(figma-avatar-bottom-color): Figma không có ô màu cho slot "bottom"; giá trị cũ vẫn được giữ.
+const COLOR_FIELDS = ["background", "skin", "stroke"] as const;
+
+/** Ô "Color Input" của Figma: khung viền tô màu đã chọn, bấm vào mở bộ chọn màu của trình duyệt. */
+function ColorInput({
+  id,
+  label,
+  value,
+  onChange,
+  className,
+}: {
+  id?: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+}) {
+  return (
+    <label
+      className={cn(
+        "relative block h-10 cursor-pointer rounded-md border border-input-field-border focus-within:ring-2 focus-within:ring-input-field-focus-ring",
+        className,
+      )}
+      style={{ backgroundColor: value }}
+    >
+      <span className="sr-only">{label}</span>
+      <input
+        id={id}
+        type="color"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="absolute inset-0 size-full cursor-pointer opacity-0"
+      />
+    </label>
+  );
 }
 
-export function AvatarSettingsRoute() {
+/** Ô "Input field" dạng chọn của Figma: nhãn, ô có biểu tượng ⇅ bên phải, danh sách thả xuống. */
+function PartSelect({
+  slot,
+  label,
+  value,
+  autoLabel,
+  options,
+  onChange,
+}: {
+  slot: string;
+  label: string;
+  value: string;
+  autoLabel: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
+}) {
   const { t } = useTranslation("account");
-  const { user, profile, refreshProfile } = useAuth();
-  const [seed, setSeed] = useState<string | null>(profile?.avatar_seed ?? null);
-  const [config, setConfig] = useState<AvatarConfig>(() => safeAvatarConfig(profile?.avatar_config, avatarAssets));
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const selected = options.find((option) => option.value === value)?.label ?? autoLabel;
+  // "" là "Tự động theo mẫu"; hai mũi tên đổi tuần tự trong danh sách này, dừng ở đầu/cuối.
+  const all = ["", ...options.map((option) => option.value)];
+  const index = Math.max(0, all.indexOf(value));
+  const step = (delta: number) => onChange(all[Math.min(all.length - 1, Math.max(0, index + delta))]);
+  const arrowClass =
+    "absolute left-0 h-1/2 w-full cursor-pointer rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-input-field-focus-ring disabled:cursor-default";
+  return (
+    <div className="flex min-w-0 flex-1 flex-col gap-2">
+      <span id={`avatar-${slot}-label`} className={LABEL_CLASS}>{label}</span>
+      <div className="relative">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            id={`avatar-${slot}`}
+            type="button"
+            aria-labelledby={`avatar-${slot}-label`}
+            className={cn(FIELD_CLASS, "pr-10")}
+          >
+            <span className="min-w-0 flex-1 truncate">{selected}</span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent layout="multiple-list" className="w-(--anchor-width) max-w-[calc(100vw-2rem)]">
+            <DropdownMenuList>
+              <DropdownMenuRadioGroup value={value} onValueChange={(next) => onChange(String(next))}>
+                <DropdownMenuRadioItem size="large" value="">
+                  <DropdownMenuItemContent>{autoLabel}</DropdownMenuItemContent>
+                </DropdownMenuRadioItem>
+                {options.map((option) => (
+                  <DropdownMenuRadioItem key={option.value} size="large" value={option.value}>
+                    <DropdownMenuItemContent>{option.label}</DropdownMenuItemContent>
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuList>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {/* Icon/amount-adjust của Figma (Phosphor CaretUpDown duotone 20px). Nửa trên = mẫu trước, nửa dưới = mẫu kế tiếp;
+            hai nút nằm cạnh nút mở danh sách (không lồng trong nút) */}
+        <div className="absolute top-1/2 right-lg size-5 -translate-y-1/2">
+          <CaretUpDown aria-hidden size={20} weight="duotone" className="pointer-events-none text-foreground" />
+          <button type="button" aria-label={t("avatarEditor.previousOption")} disabled={index <= 0} onClick={() => step(-1)} className={cn(arrowClass, "top-0")} />
+          <button type="button" aria-label={t("avatarEditor.nextOption")} disabled={index >= all.length - 1} onClick={() => step(1)} className={cn(arrowClass, "bottom-0")} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
-  useEffect(() => {
-    setSeed(profile?.avatar_seed ?? null);
-    setConfig(safeAvatarConfig(profile?.avatar_config, avatarAssets));
-  }, [profile?.id, profile?.avatar_seed, profile?.avatar_config]);
+export function AvatarEditorModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const { t } = useTranslation("account");
+  const editor = useAvatarEditor();
+  const { config } = editor;
 
-  if (!user || !profile) return <RouteSkeleton variant="form" />;
-  const effectiveSeed = seed ?? user.id;
-
-  async function save() {
-    if (!user) return;
-    setSaving(true);
-    setMessage(null);
-    setError(null);
-    try {
-      const saved = await saveMyAvatar(seed, config);
-      setSeed(saved.seed);
-      setConfig({ selections: saved.selections, colors: saved.colors });
-      await refreshProfile(user);
-      void queryClient.invalidateQueries();
-      setMessage(t("avatarEditor.saved"));
-    } catch {
-      setError(t("avatarEditor.saveFailed"));
-    } finally {
-      setSaving(false);
+  async function handleSave() {
+    if (await editor.save()) {
+      onOpenChange(false);
+      toast.success(t("avatarEditor.saved"));
     }
   }
 
   return (
-    <main className="container-app mx-auto max-w-5xl space-y-6 py-8">
-      <div>
-        <Link to="/account/profile" className="text-sm text-primary hover:underline">{t("avatarEditor.back")}</Link>
-        <h1 className="mt-2 text-heading-large font-display">{t("avatarEditor.title")}</h1>
-        <p className="text-foreground-muted">{t("avatarEditor.description")}</p>
-      </div>
-      <div className="grid gap-6 md:grid-cols-[260px_1fr]">
-        <section className="space-y-4 rounded-2xl border border-border-subtle bg-surface-base p-5">
-          <div className="mx-auto size-52 overflow-hidden rounded-full" aria-label={t("avatarEditor.preview")}>
-            <HumationAvatar assets={avatarAssets} seed={effectiveSeed} selections={config.selections} colors={config.colors}
-              background={config.colors.background}
-              size="100%" title={t("avatarEditor.preview")} />
+    <Modal
+      type="slot"
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t("avatarEditor.title")}
+      description={t("avatarEditor.description")}
+      cancelLabel={t("avatarEditor.cancel")}
+      confirmLabel={editor.saving ? t("avatarEditor.saving") : t("avatarEditor.save")}
+      confirmDisabled={editor.saving || !editor.ready}
+      onConfirm={() => void handleSave()}
+    >
+      {editor.ready ? (
+        <div className="flex flex-col gap-5">
+          <div
+            className="relative flex h-[188px] items-end justify-center overflow-hidden rounded-md"
+            style={{ backgroundColor: editor.colorValue("background") }}
+            aria-label={t("avatarEditor.preview")}
+          >
+            <div className="h-[164px] w-[164px]">
+              <HumationAvatar
+                assets={avatarAssets}
+                seed={editor.effectiveSeed}
+                selections={config.selections}
+                colors={config.colors}
+                background="transparent"
+                size="100%"
+                title={t("avatarEditor.preview")}
+              />
+            </div>
+            <div className="absolute right-3 bottom-3 flex gap-1">
+              <Button type="button" variant="cta" hierarchy="secondary" size="small" iconOnly aria-label={t("avatarEditor.randomize")} onClick={editor.randomize}>
+                <Shuffle className="size-4" aria-hidden />
+              </Button>
+              <Button type="button" variant="cta" hierarchy="secondary" size="small" iconOnly aria-label={t("avatarEditor.reset")} onClick={editor.reset}>
+                <RotateCcw className="size-4" aria-hidden />
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="cta" hierarchy="secondary" onClick={() => { setSeed(crypto.randomUUID()); setMessage(null); }}>
-              {t("avatarEditor.randomize")}
-            </Button>
-            <Button type="button" variant="cta" hierarchy="secondary" onClick={() => { setSeed(null); setConfig(EMPTY_AVATAR_CONFIG); setMessage(null); }}>
-              {t("avatarEditor.reset")}
-            </Button>
-          </div>
-          <p className="text-sm text-foreground-muted">{t("avatarEditor.randomizeHelp")}</p>
-        </section>
-        <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-5">
-          <h2 className="text-heading-medium font-display">{t("avatarEditor.parts")}</h2>
-          <p id="avatar-parts-help" className="text-sm text-foreground-muted">{t("avatarEditor.autoPartHelp")}</p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {avatarAssets.selectionSlots.map((slot) => (
-              <div key={slot.id} className="space-y-1.5">
-                <Label htmlFor={`avatar-${slot.id}`}>{t(`avatarEditor.slots.${slot.id}` as "avatarEditor.slots.head")}</Label>
-                <select id={`avatar-${slot.id}`} aria-describedby="avatar-parts-help" value={config.selections[slot.id] ?? ""}
-                  onChange={(event) => setConfig((current) => {
-                    const selections = { ...current.selections };
-                    if (event.target.value) selections[slot.id] = event.target.value;
-                    else delete selections[slot.id];
-                    return { ...current, selections };
-                  })}
-                  className="min-h-11 w-full rounded-md border border-border-subtle bg-surface-base px-3 text-foreground">
-                  <option value="">{t("avatarEditor.fromSeed")}</option>
-                  {getPartsForSlot(avatarAssets, slot.id).map((part) => (
-                    <option key={part.id} value={part.name ?? part.id}>{displayPart(part.name ?? part.id)}</option>
-                  ))}
-                </select>
+
+          <div className="grid grid-cols-2 gap-x-5 gap-y-6">
+            {PART_FIELDS.map(({ slot, color }) => (
+              <div key={slot} className="flex items-end gap-[10px]">
+                <PartSelect
+                  slot={slot}
+                  label={t(`avatarEditor.slots.${slot}` as "avatarEditor.slots.head")}
+                  value={config.selections[slot] ?? ""}
+                  autoLabel={t("avatarEditor.fromSeed")}
+                  options={getPartsForSlot(avatarAssets, slot).map((part) => ({
+                    value: part.name ?? part.id,
+                    label: displayPart(part.name ?? part.id),
+                  }))}
+                  onChange={(next) => editor.setSlot(slot, next)}
+                />
+                {color ? (
+                  <ColorInput
+                    label={t(`avatarEditor.colorsBySlot.${color}` as "avatarEditor.colorsBySlot.hair")}
+                    value={editor.colorValue(color)}
+                    onChange={(next) => editor.setColor(color, next)}
+                    className="w-10 shrink-0"
+                  />
+                ) : null}
+              </div>
+            ))}
+            {COLOR_FIELDS.map((color) => (
+              <div key={color} className="flex flex-col gap-2">
+                <span className={LABEL_CLASS}>{t(`avatarEditor.colorsBySlot.${color}` as "avatarEditor.colorsBySlot.hair")}</span>
+                <ColorInput
+                  id={`color-${color}`}
+                  label={t(`avatarEditor.colorsBySlot.${color}` as "avatarEditor.colorsBySlot.hair")}
+                  value={editor.colorValue(color)}
+                  onChange={(next) => editor.setColor(color, next)}
+                />
               </div>
             ))}
           </div>
-          <h2 className="text-heading-medium font-display">{t("avatarEditor.colors")}</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {avatarAssets.colors.map((slot) => (
-              <div key={slot.id} className="flex items-center gap-3">
-                <input id={`color-${slot.id}`} type="color" value={config.colors[slot.id] === "transparent" ? `#${slot.default}` : config.colors[slot.id] ?? `#${slot.default}`}
-                  onChange={(event) => setConfig((current) => ({ ...current, colors: { ...current.colors, [slot.id]: event.target.value } }))}
-                  className="size-11 cursor-pointer rounded border border-border-subtle" />
-                <Label htmlFor={`color-${slot.id}`}>{t(`avatarEditor.colorsBySlot.${slot.id}` as "avatarEditor.colorsBySlot.hair")}</Label>
-                {config.colors[slot.id] ? <button type="button" className="text-xs text-primary hover:underline" onClick={() => setConfig((current) => {
-                  const colors = { ...current.colors }; delete colors[slot.id]; return { ...current, colors };
-                })}>{t("avatarEditor.clear")}</button> : null}
-              </div>
-            ))}
-          </div>
-          {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-          {message ? <p role="status" className="text-sm text-primary">{message}</p> : null}
-          <Button type="button" disabled={saving} onClick={() => void save()}>{saving ? t("avatarEditor.saving") : t("avatarEditor.save")}</Button>
-        </section>
-      </div>
-    </main>
+
+          {editor.error ? (
+            <p role="alert" className="text-body-medium text-input-field-error">{editor.error}</p>
+          ) : null}
+        </div>
+      ) : null}
+    </Modal>
   );
+}
+
+/** Đường dẫn cũ `/settings/avatar`: hiển thị đúng modal trên, đóng thì quay lại hồ sơ. */
+export function AvatarSettingsRoute() {
+  const navigate = useNavigate();
+  return <AvatarEditorModal open onOpenChange={(open) => { if (!open) navigate("/account/profile"); }} />;
 }

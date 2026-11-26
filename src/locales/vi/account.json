@@ -522,6 +522,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "Huỷ thay đổi",
+    "previousOption": "Lựa chọn trước",
+    "nextOption": "Lựa chọn tiếp theo",
     "title": "Chỉnh sửa avatar",
     "description": "Chọn diện mạo rồi lưu vào hồ sơ của bạn.",
     "edit": "Chỉnh sửa avatar",

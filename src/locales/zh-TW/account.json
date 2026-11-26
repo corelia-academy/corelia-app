@@ -521,6 +521,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "捨棄變更",
+    "previousOption": "上一個選項",
+    "nextOption": "下一個選項",
     "title": "編輯頭像",
     "description": "選擇您的形象，然後儲存到您的資料。",
     "edit": "編輯頭像",

@@ -521,6 +521,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "変更を破棄",
+    "previousOption": "前の選択肢",
+    "nextOption": "次の選択肢",
     "title": "アバターを編集",
     "description": "見た目を選んで、プロフィールに保存します。",
     "edit": "アバターを編集",

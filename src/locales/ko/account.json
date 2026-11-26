@@ -521,6 +521,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "변경 취소",
+    "previousOption": "이전 옵션",
+    "nextOption": "다음 옵션",
     "title": "아바타 편집",
     "description": "스타일을 고른 뒤 프로필에 저장하세요.",
     "edit": "아바타 편집",

@@ -522,6 +522,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "Discard changes",
+    "previousOption": "Previous option",
+    "nextOption": "Next option",
     "title": "Edit avatar",
     "description": "Choose your look, then save it to your profile.",
     "edit": "Edit avatar",

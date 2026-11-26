@@ -523,6 +523,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "Descartar cambios",
+    "previousOption": "Opción anterior",
+    "nextOption": "Opción siguiente",
     "title": "Editar avatar",
     "description": "Elige tu aspecto y luego guárdalo en tu perfil.",
     "edit": "Editar avatar",
