@@ -16,6 +16,8 @@
 .public-ui .public-content h2 { line-height: 1.35; }
 .public-ui .public-content [data-hackathon-title] { font-size: 28px; line-height: 1.2; }
 .public-ui .public-content [data-hackathon-overview-title] { font-size: 28px; line-height: 1.2; }
+.public-ui .public-content [data-profile-title] { font-size: 28px; line-height: 1.2; letter-spacing: 0; }
+.public-ui .public-content :is([data-profile-heading], [data-xp-panel-title]) { font-family: var(--font-body); font-size: 16px; font-weight: 500; line-height: 24px; letter-spacing: -0.02em; }
 .public-ui .public-content [data-hackathon-card-title] {
   font-family: var(--font-body);
   font-size: 16px;

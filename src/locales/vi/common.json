@@ -239,7 +239,11 @@
       "overview": "Tổng quan",
       "achievements": "Thành tích",
       "courses": "Khóa học",
-      "contests": "Hackathon"
+      "contests": "Hackathon",
+      "label": "Mục hồ sơ",
+      "activity": "Hoạt động",
+      "projects": "Dự án",
+      "achievementsTab": "Thành tựu"
     },
     "actions": {
       "editProfile": "Chỉnh sửa hồ sơ",
@@ -247,7 +251,26 @@
       "exitPreview": "Thoát xem trước",
       "exitPreviewShort": "Thoát preview",
       "viewFollowers": "Xem danh sách người theo dõi",
-      "viewFollowing": "Xem danh sách đang theo dõi"
+      "viewFollowing": "Xem danh sách đang theo dõi",
+      "share": "Chia sẻ hồ sơ",
+      "shareCopied": "Đã sao chép liên kết hồ sơ.",
+      "shareCopyFailed": "Không thể sao chép liên kết.",
+      "editAvatar": "Chỉnh sửa avatar"
+    },
+    "cover": {
+      "add": "Thêm ảnh bìa"
+    },
+    "info": {
+      "title": "Thông tin & đường dẫn",
+      "links": "Link & Đính kèm"
+    },
+    "xpHistory": {
+      "viewAll": "Xem tất cả",
+      "collapse": "Thu gọn"
+    },
+    "counts": {
+      "followers": "{{value}} Người theo dõi",
+      "following": "{{value}} Đang theo dõi"
     },
     "labels": {
       "ocid": "OCID: {{ocid}}",
@@ -287,7 +310,11 @@
       "cta": "Mở trang Thành tích",
       "privateTitle": "Chi tiết thành tích không công khai",
       "privateDescription": "Chi tiết thành tích không được hiển thị công khai trên hồ sơ này.",
-      "openVault": "Mở Kho thành tích"
+      "openVault": "Mở Kho thành tích",
+      "certificatesTitle": "Chứng chỉ học tập",
+      "badgesTitle": "Huy hiệu hoàn thành",
+      "completedAt": "Hoàn thành vào {{date}}",
+      "viewCredential": "Xem OC Credential"
     },
     "courses": {
       "privateByDefault": "Danh sách khóa học của học viên mặc định là riêng tư.",
@@ -303,6 +330,7 @@
       "updatedAt": "Cập nhật {{date}}"
     },
     "projects": {
+      "mine": "Dự án của tôi",
       "empty": "Chưa có dự án public nào.",
       "viewSource": "Xem nguồn",
       "demo": "Demo",

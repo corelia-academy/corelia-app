@@ -1,43 +1,44 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { NavLink, useParams } from "react-router";
+import { NavLink, useNavigate, useParams, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
-  CalendarDays,
-  ExternalLink,
-  IdCard,
-  Link as LinkIcon,
-  ShieldAlert,
-  User,
-  Users,
   Eye,
   EyeOff,
+  Link as LinkIcon,
   Lock,
+  ShieldAlert,
+  User,
 } from "lucide-react";
+import {
+  ArrowUpRight,
+  ListChecks,
+  ShareFat,
+} from "@phosphor-icons/react";
+import { toast } from "sonner";
 
 import { UserAvatar } from "@/components/UserAvatar";
-import { XpRankBadge } from "@/features/xp/XpRankBadge";
-import { XpBadge } from "@/features/xp/XpBadge";
-import { getXpTotals } from "@/lib/xp";
-import { XpActivity } from "@/features/xp/XpActivity";
+import { AvatarAction } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FollowButton } from "@/components/social/FollowButton";
 import { FollowerPreview } from "@/components/social/FollowerPreview";
 import { FollowingListDialog } from "@/components/social/FollowingListDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs } from "@/components/ui/tabs";
 import { useAuth } from "@/stores/authStore";
-import { getRoleLabel, type PublicProfile } from "@/types/database";
+import type { PublicProfile } from "@/types/database";
+import { XpStatPanel } from "@/features/xp/XpStatPanel";
 
 import { UserProfileAchievementsSection } from "./components/UserProfileAchievementsSection";
-import { UserProfileActivitySection } from "./components/UserProfileActivitySection";
-import { UserProfileContestsSection } from "./components/UserProfileContestsSection";
-import { UserProfileCoursesSection } from "./components/UserProfileCoursesSection";
-import { UserProfileProjectsSection } from "./components/UserProfileProjectsSection";
-import { UserProfileSkillsCard } from "./components/UserProfileSkillsCard";
+import { UserProfileActivityTab } from "./components/UserProfileActivityTab";
+// TODO(figma-profile): Figma hồ sơ chưa có Khóa học và Hackathon, ẩn tạm; bật lại khi có thiết kế
+// import { UserProfileContestsSection } from "./components/UserProfileContestsSection";
+// import { UserProfileCoursesSection } from "./components/UserProfileCoursesSection";
+import { UserProfileProjectsTab } from "./components/UserProfileProjectsTab";
+// TODO(figma-profile): Figma cột phải chưa có thẻ Skill, ẩn tạm; bật lại khi có thiết kế
+// import { UserProfileSkillsCard } from "./components/UserProfileSkillsCard";
 import { useUserProfileLayoutData } from "./hooks/useUserProfileLayoutData";
 import {
   isValidHttpUrl,
-  profileHandle,
   profileTitle,
   readableProfileText,
 } from "./utils/profileDisplay";
@@ -47,10 +48,18 @@ import {
   usePageTitleOverride,
 } from "@/components/navigation/PageTitle";
 
+const PROFILE_TABS = ["activity", "projects", "achievements"] as const;
+type ProfileTab = (typeof PROFILE_TABS)[number];
+
+function isProfileTab(value: string | null): value is ProfileTab {
+  return PROFILE_TABS.some((tab) => tab === value);
+}
+
 function formatMemberSince(value: string | null | undefined, locale: string): string {
   if (!value) return "";
   try {
     return new Intl.DateTimeFormat(locale, {
+      day: "numeric",
       month: "short",
       year: "numeric",
     }).format(new Date(value));
@@ -59,172 +68,115 @@ function formatMemberSince(value: string | null | undefined, locale: string): st
   }
 }
 
-function ProfileStat({
+function ProfileCount({
   label,
-  value,
-  icon: Icon,
-  onClick,
   ariaLabel,
+  onClick,
 }: {
   label: string;
-  value: string | number;
-  icon: typeof Users;
+  ariaLabel: string;
   onClick?: () => void;
-  ariaLabel?: string;
 }) {
-  const content = (
-    <>
-      <div className="flex items-center gap-2 text-xs font-medium text-foreground-muted">
-        <Icon className="size-3.5" aria-hidden />
-        <span className="truncate">{label}</span>
-      </div>
-      <div className="mt-1 truncate text-lg font-semibold tabular-nums text-foreground">
-        {value}
-      </div>
-    </>
-  );
-
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={ariaLabel}
-        className="rounded-xl border border-border-subtle bg-surface-base/80 px-3 py-3 text-left shadow-card backdrop-blur transition-colors hover:border-border hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-      >
-        {content}
-      </button>
-    );
-  }
-
+  const className = "rounded-sm px-1 py-1 text-cta-small font-cta text-foreground";
+  if (!onClick) return <span className={className}>{label}</span>;
   return (
-    <div className="rounded-xl border border-border-subtle bg-surface-base/80 px-3 py-3 shadow-card backdrop-blur">
-      {content}
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className={`${className} hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40`}
+    >
+      {label}
+    </button>
   );
 }
 
 function ProfileSidebar({
   profile,
-  followerCount,
-  followingProfileCount,
-  bio,
   website,
-  headerHandle,
 }: {
   profile: PublicProfile;
-  followerCount: number;
-  followingProfileCount: number;
-  bio: string | null;
   website: string | null;
-  headerHandle: string | null;
 }) {
   const { t, i18n } = useTranslation("common");
-  const headline =
-    readableProfileText(profile.instructor_headline) ||
-    (profile.role === "instructor"
-      ? t("userProfile.overview.instructorHeadlineFallback")
-      : "");
-  const ocid = readableProfileText(profile.ocid);
-
-  const rows = [
-    {
-      label: t("userProfile.labels.role"),
-      value: getRoleLabel(profile.role),
-    },
-    {
-      label: t("userProfile.labels.memberSince"),
-      value: formatMemberSince(
-        profile.created_at,
-        i18n.resolvedLanguage ?? i18n.language,
-      ),
-    },
-    {
-      label: t("userProfile.labels.followers"),
-      value: followerCount,
-    },
-    {
-      label: t("userProfile.labels.following"),
-      value: followingProfileCount,
-    },
-  ];
+  const hasWebsite = Boolean(website && isValidHttpUrl(website));
 
   return (
-    <aside className="space-y-4 lg:sticky lg:top-24">
-      <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
-        <div className="flex items-center gap-2">
-          <h2 className="text-heading-small font-display text-foreground">
-            {t("userProfile.overview.title")}
-          </h2>
-        </div>
-        <p className="mt-3 text-sm leading-6 text-foreground-muted [overflow-wrap:anywhere]">
-          {headline || bio || t("userProfile.overview.empty")}
-        </p>
-      </section>
+    <aside className="flex flex-col gap-6 lg:sticky lg:top-24">
+      <XpStatPanel userId={profile.id} />
 
-      <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
-        <h2 className="text-heading-small font-display text-foreground">
-          {t("userProfile.overview.quickInfo")}
-        </h2>
-        <div className="mt-3 divide-y divide-border-subtle">
-          {rows.map((row) => (
-            <div
-              key={row.label}
-              className="flex items-center justify-between gap-4 py-2.5 text-sm"
-            >
-              <span className="text-foreground-muted">{row.label}</span>
-              <span className="min-w-0 truncate text-right font-medium text-foreground">
-                {row.value}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
+      <section
+        aria-labelledby="profile-info-title"
+        className="flex flex-col gap-2.5 rounded-2xl border border-stroke-divider px-4 pb-4 pt-3"
+      >
+        <header className="flex flex-col gap-2">
+          <div className="flex items-center gap-2.5">
+            <ListChecks
+              aria-hidden
+              weight="duotone"
+              className="size-5 shrink-0 text-foreground-muted"
+            />
+            <h2 id="profile-info-title" data-profile-heading className="text-foreground">
+              {t("userProfile.info.title")}
+            </h2>
+          </div>
+          <div className="h-px w-full bg-stroke-divider" />
+        </header>
 
-      <UserProfileSkillsCard profileId={profile.id} />
-
-      {(headerHandle || ocid || (website && isValidHttpUrl(website))) ? (
-        <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
-        <h2 className="text-heading-small font-display text-foreground">
-            {t("userProfile.labels.profile")}
-          </h2>
-          <div className="mt-3 space-y-2 text-sm">
-            {headerHandle ? (
-              <div className="flex min-w-0 items-center gap-2 text-foreground-muted">
-                <User className="size-4 shrink-0" aria-hidden />
-                <span className="truncate">{headerHandle}</span>
-              </div>
-            ) : null}
-            {ocid ? (
-              <div className="flex min-w-0 items-center gap-2 text-foreground-muted">
-                <IdCard className="size-4 shrink-0" aria-hidden />
-                <span className="truncate">
-                  {t("userProfile.labels.ocid", { ocid })}
-                </span>
-              </div>
-            ) : null}
-            {website && isValidHttpUrl(website) ? (
+        <div className="flex flex-col gap-6">
+          {/* TODO(figma-links): chưa có dữ liệu Github/LinkedIn cho người dùng thường; tạm hiển thị website */}
+          {hasWebsite ? (
+            <div className="flex flex-col gap-2.5">
+              <p className="text-title-medium text-foreground-subtle">
+                {t("userProfile.info.links")}
+              </p>
               <a
-                href={website}
+                href={website ?? undefined}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex min-w-0 items-center gap-2 font-medium text-foreground underline underline-offset-4 hover:no-underline"
+                className="flex min-w-0 items-center gap-2 text-body-medium text-foreground hover:underline"
               >
-                <LinkIcon className="size-4 shrink-0" aria-hidden />
-                <span className="truncate">{t("userProfile.labels.website")}</span>
+                <LinkIcon aria-hidden className="size-5 shrink-0" />
+                <span className="min-w-0 flex-1 truncate">
+                  {t("userProfile.labels.website")}
+                </span>
+                <ArrowUpRight aria-hidden className="size-3 shrink-0 text-foreground-muted" />
               </a>
-            ) : null}
+            </div>
+          ) : null}
+
+          <div className="flex flex-col gap-2.5">
+            <p className="text-title-medium text-foreground-subtle">
+              {t("userProfile.labels.memberSince")}
+            </p>
+            <p className="text-body-medium text-foreground">
+              {formatMemberSince(
+                profile.created_at,
+                i18n.resolvedLanguage ?? i18n.language,
+              )}
+            </p>
           </div>
-        </section>
-      ) : null}
+        </div>
+      </section>
     </aside>
   );
 }
 
 export default function UserProfileLayout() {
-  const { t, i18n } = useTranslation("common");
+  const { t } = useTranslation("common");
   const { handle } = useParams<{ handle: string }>();
   const { user, profile: currentUserProfile } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const activeTab: ProfileTab = isProfileTab(requestedTab) ? requestedTab : "activity";
+  const setActiveTab = (next: ProfileTab) =>
+    setSearchParams((previous) => {
+      const params = new URLSearchParams(previous);
+      if (next === "activity") params.delete("tab");
+      else params.set("tab", next);
+      return params;
+    });
   const {
     profile: fetchedProfile,
     followingProfileCount,
@@ -242,19 +194,12 @@ export default function UserProfileLayout() {
   } | null>(null);
   const effectiveIsSelf = isSelf && !previewAsGuest;
   const profile = (effectiveIsSelf && currentUserProfile ? currentUserProfile : fetchedProfile) as PublicProfile | null;
-  const xpTotalQuery = useQuery({
-    queryKey: ["xp", "total", profile?.id],
-    queryFn: () => getXpTotals([profile!.id]),
-    enabled: Boolean(profile?.id && (profile.profile_public || effectiveIsSelf)),
-    staleTime: 60_000,
-  });
+  const canViewContent = Boolean(profile && (profile.profile_public || effectiveIsSelf));
   const followerCount =
     followerCountOverride && followerCountOverride.profileId === profile?.id
       ? followerCountOverride.count
       : Number(profile?.follower_count ?? 0);
 
-  const headerHandle = profile ? profileHandle(profile) : null;
-  const profileOcid = profile ? readableProfileText(profile.ocid) : null;
   const website =
     profile?.website?.trim() || profile?.instructor_website?.trim() || null;
   const bio =
@@ -270,95 +215,97 @@ export default function UserProfileLayout() {
     url: window.location.href,
   });
 
+  const onShare = () => {
+    const url = `${window.location.origin}${window.location.pathname}`;
+    void navigator.clipboard.writeText(url).then(
+      () => toast.success(t("userProfile.actions.shareCopied")),
+      () => toast.error(t("userProfile.actions.shareCopyFailed")),
+    );
+  };
+
   return (
     <div className="container-app pb-6 pt-0 sm:py-8 lg:py-10">
-      <section className="mobile-bleed-surface overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
-        <div className="relative p-4 sm:p-6 lg:p-8">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,color-mix(in_oklch,var(--primary-container)_72%,transparent),transparent_44%),radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--primary)_16%,transparent),transparent_38%)]" />
+      <section>
+        <div className="relative h-40 overflow-hidden rounded-2xl bg-profile-cover-surface sm:h-56 lg:h-[280px]">
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-gradient-to-b from-profile-cover-surface/0 to-profile-cover-fade"
+          />
+          {/* TODO(figma-cover): chưa có cột ảnh bìa trong DB; hiện chỉ là khung giữ chỗ */}
+          {!loading && effectiveIsSelf ? (
+            <div className="relative flex h-full flex-col items-center justify-center text-center">
+              <p className="text-cta-medium font-cta text-foreground">
+                {t("userProfile.cover.add")}
+              </p>
+              <p className="text-cta-medium font-cta text-profile-cover-hint">(1080 x 280)</p>
+            </div>
+          ) : null}
+        </div>
 
-          <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:items-start">
-            <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start">
-              {loading ? (
-                <Skeleton className="size-20 rounded-full sm:size-28" />
-              ) : (
-                <UserAvatar
-                  userId={profile?.id}
-                  avatarUrl={profile?.avatar_url}
-                  avatarSeed={profile?.avatar_seed} avatarConfig={profile?.avatar_config}
-                  alt={profile ? profileTitle(profile) : ""}
-                  fallback={<User className="size-7" aria-hidden />}
-                  size="lg"
-                  className="size-20 rounded-full ring-4 ring-surface-base/80 sm:size-28"
-                  imageClassName="rounded-full"
-                  fallbackClassName="rounded-full"
-                />
-              )}
-
-              <div className="min-w-0 flex-1">
-                {loading ? (
-                  <>
-                    <Skeleton className="h-8 w-64 max-w-full rounded" />
-                    <Skeleton className="mt-2 h-4 w-32 rounded" />
-                    <Skeleton className="mt-4 h-16 w-full max-w-2xl rounded" />
-                  </>
-                ) : profile ? (
-                  <>
-                    <h1 className="text-display-small font-display text-foreground [overflow-wrap:anywhere]">
-                      {profileTitle(profile)}
-                    </h1>
-                    <div className="mt-2 flex flex-wrap items-center gap-2"><XpBadge total={xpTotalQuery.data?.[profile.id]} /><XpRankBadge total={xpTotalQuery.data?.[profile.id]} /></div>
-                    <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-foreground-muted">
-                      {headerHandle ? (
-                        <span className="truncate">{headerHandle}</span>
-                      ) : null}
-                      <span className="rounded-full border border-border-subtle bg-surface-base/80 px-2.5 py-1 text-xs font-medium text-foreground shadow-card">
-                        {getRoleLabel(profile.role)}
-                      </span>
-                      {profileOcid ? (
-                        <span className="truncate">
-                          {t("userProfile.labels.ocid", { ocid: profileOcid })}
-                        </span>
-                      ) : null}
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-sm text-foreground-muted">
-                    {t("userProfile.errors.notFound")}
-                  </p>
-                )}
-
-                {!loading && profile ? (
-                  <div className="mt-3 space-y-2">
-                    {bio ? (
-                      <p className="max-w-3xl text-sm leading-6 text-foreground-muted [overflow-wrap:anywhere] sm:text-base sm:leading-7">
-                        {bio}
-                      </p>
-                    ) : null}
-
-                    {website && isValidHttpUrl(website) ? (
-                      <a
-                        href={website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-foreground underline underline-offset-4 hover:no-underline"
-                      >
-                        {t("userProfile.labels.website")}
-                        <ExternalLink className="size-4" aria-hidden />
-                      </a>
-                    ) : null}
-                  </div>
+        <div className="px-4 sm:px-8">
+          <div className="relative -mt-20 size-[120px]">
+            {loading ? (
+              <Skeleton className="size-[120px] rounded-full" />
+            ) : (
+              <UserAvatar
+                userId={profile?.id}
+                avatarUrl={profile?.avatar_url}
+                avatarSeed={profile?.avatar_seed}
+                avatarConfig={profile?.avatar_config}
+                alt={profile ? profileTitle(profile) : ""}
+                fallback={<User className="size-7" aria-hidden />}
+                size="5XLarge"
+                className="rounded-full"
+                imageClassName="rounded-full"
+                fallbackClassName="rounded-full"
+              >
+                {effectiveIsSelf ? (
+                  // TODO(figma-avatar-modal): tạm chuyển sang trang avatar hiện có; thay bằng modal ở Bước 7
+                  <AvatarAction
+                    kind="edit"
+                    aria-label={t("userProfile.actions.editAvatar")}
+                    onClick={() => navigate("/settings/avatar")}
+                  />
                 ) : null}
-              </div>
+              </UserAvatar>
+            )}
+          </div>
+
+          <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
+            <div className="min-w-0 md:flex-1">
+              {loading ? (
+                <>
+                  <Skeleton className="h-8 w-64 max-w-full rounded" />
+                  <Skeleton className="mt-3 h-12 w-full max-w-lg rounded" />
+                </>
+              ) : profile ? (
+                <>
+                  <h1 data-profile-title className="text-heading-large font-display text-foreground [overflow-wrap:anywhere]">
+                    {profileTitle(profile)}
+                  </h1>
+                  {bio ? (
+                    <p className="mt-2 max-w-[499px] text-body-large font-body text-foreground-subtle [overflow-wrap:anywhere]">
+                      {bio}
+                    </p>
+                  ) : null}
+                </>
+              ) : (
+                <p className="text-sm text-foreground-muted">
+                  {t("userProfile.errors.notFound")}
+                </p>
+              )}
             </div>
 
-            <div className="flex min-w-0 flex-col gap-4">
-              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                {loading ? <Skeleton className="h-9 w-28 rounded" /> : null}
+            <div className="flex min-w-0 flex-col gap-3 md:items-end">
+              <div className="flex flex-wrap items-center gap-4 md:justify-end">
+                {loading ? <Skeleton className="h-8 w-36 rounded" /> : null}
 
+                {/* Ngoài phạm vi: Figma không có nút "Xem tư cách khách"; giữ tạm để không mất chức năng */}
                 {!loading && profile && isSelf ? (
                   <Button
-                    variant="cta" hierarchy="secondary"
-                    size={(previewAsGuest ? "small" : "large")}
+                    variant="cta"
+                    hierarchy="tertiary"
+                    size="small"
                     onClick={() => setPreviewAsGuest(!previewAsGuest)}
                     aria-label={previewAsGuest ? t("userProfile.actions.exitPreview") : undefined}
                     className={previewAsGuest
@@ -380,25 +327,62 @@ export default function UserProfileLayout() {
                 ) : null}
 
                 {!loading && profile && effectiveIsSelf ? (
-                  <NavLink to="/account/profile">
-                    <Button variant="cta" hierarchy="secondary" size="large" type="button">
-                      {t("userProfile.actions.editProfile")}
-                    </Button>
-                  </NavLink>
+                  <Button
+                    variant="cta"
+                    hierarchy="primary"
+                    size="small"
+                    nativeButton={false}
+                    render={<NavLink to="/account/profile" />}
+                  >
+                    {t("userProfile.actions.editProfile")}
+                  </Button>
                 ) : null}
                 {!loading && profile && !isSelf && profile.profile_public ? (
                   <FollowButton
                     subject={{ type: "user", id: profile.id }}
                     followerCount={followerCount}
-                    size="large"
+                    size="small"
                     onFollowerCountChange={(count) =>
                       setFollowerCountOverride({ profileId: profile.id, count })
                     }
                   />
                 ) : null}
+                {!loading && profile ? (
+                  <Button
+                    type="button"
+                    variant="cta"
+                    hierarchy="tertiary"
+                    size="small"
+                    iconOnly
+                    aria-label={t("userProfile.actions.share")}
+                    onClick={onShare}
+                  >
+                    <ShareFat aria-hidden />
+                  </Button>
+                ) : null}
               </div>
+
+              {!loading && profile ? (
+                <div className="flex h-6 items-center gap-2.5">
+                  <ProfileCount
+                    label={t("userProfile.counts.followers", { value: followerCount })}
+                    ariaLabel={t("userProfile.actions.viewFollowers")}
+                    onClick={
+                      profile.profile_public ? () => setFollowerDialogOpen(true) : undefined
+                    }
+                  />
+                  <span aria-hidden className="h-full w-px bg-stroke-divider" />
+                  <ProfileCount
+                    label={t("userProfile.counts.following", { value: followingProfileCount })}
+                    ariaLabel={t("userProfile.actions.viewFollowing")}
+                    onClick={
+                      profile.profile_public ? () => setFollowingDialogOpen(true) : undefined
+                    }
+                  />
+                </div>
+              ) : null}
               {!loading && profile?.profile_public ? (
-                <div className="sm:self-end">
+                <>
                   <FollowerPreview
                     subject={{ type: "user", id: profile.id }}
                     totalCount={followerCount}
@@ -406,70 +390,19 @@ export default function UserProfileLayout() {
                     open={followerDialogOpen}
                     onOpenChange={setFollowerDialogOpen}
                   />
-                </div>
-              ) : null}
-
-              <div className="grid grid-cols-2 gap-2">
-                {loading ? (
-                  <>
-                    <Skeleton className="h-20 rounded-xl" />
-                    <Skeleton className="h-20 rounded-xl" />
-                    <Skeleton className="h-20 rounded-xl" />
-                    <Skeleton className="h-20 rounded-xl" />
-                  </>
-                ) : profile ? (
-                  <>
-                    <ProfileStat
-                      label={t("userProfile.labels.followers")}
-                      value={followerCount}
-                      icon={Users}
-                      onClick={
-                        profile.profile_public
-                          ? () => setFollowerDialogOpen(true)
-                          : undefined
-                      }
-                      ariaLabel={t("userProfile.actions.viewFollowers")}
-                    />
-                    <ProfileStat
-                      label={t("userProfile.labels.following")}
-                      value={followingProfileCount}
-                      icon={Users}
-                      onClick={
-                        profile.profile_public
-                          ? () => setFollowingDialogOpen(true)
-                          : undefined
-                      }
-                      ariaLabel={t("userProfile.actions.viewFollowing")}
-                    />
-                    <ProfileStat
-                      label={t("userProfile.labels.memberSince")}
-                      value={formatMemberSince(
-                        profile.created_at,
-                        i18n.resolvedLanguage ?? i18n.language,
-                      )}
-                      icon={CalendarDays}
-                    />
-                    <ProfileStat
-                      label={t("userProfile.labels.role")}
-                      value={getRoleLabel(profile.role)}
-                      icon={IdCard}
-                    />
-                  </>
-                ) : null}
-              </div>
-              {profile?.profile_public ? (
-                <FollowingListDialog
-                  userId={profile.id}
-                  open={followingDialogOpen}
-                  onOpenChange={setFollowingDialogOpen}
-                />
+                  <FollowingListDialog
+                    userId={profile.id}
+                    open={followingDialogOpen}
+                    onOpenChange={setFollowingDialogOpen}
+                  />
+                </>
               ) : null}
             </div>
           </div>
         </div>
       </section>
 
-      <div className="mt-6">
+      <div className="mt-8">
         {loading ? (
           <div className="space-y-3">
             <Skeleton className="h-24 w-full rounded-md" />
@@ -488,48 +421,56 @@ export default function UserProfileLayout() {
             </div>
           </div>
         ) : profile ? (
-          <div className={`grid gap-6 lg:items-start ${profile.profile_public || effectiveIsSelf ? 'lg:grid-cols-[minmax(0,1fr)_320px]' : 'lg:grid-cols-1'}`}>
-            <main className="min-w-0 space-y-6">
-              {profile.profile_public || effectiveIsSelf ? (
-                <>
-                  <XpActivity userId={profile.id} own={effectiveIsSelf} />
-                  <UserProfileProjectsSection profile={profile} />
-                  <UserProfileActivitySection profile={profile} />
-                </>
-              ) : (
-                <div className="rounded-2xl border border-border-subtle bg-surface-base p-8 text-center shadow-card">
-                  <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-surface-raised">
-                    <Lock className="size-5 text-foreground-subtle" aria-hidden />
-                  </div>
-                  <h3 className="mt-4 text-heading-small font-display text-foreground">
-                    {t("userProfile.private.title")}
-                  </h3>
-                  <p className="mt-2 text-sm text-foreground-muted max-w-sm mx-auto">
-                    {t("userProfile.private.description")}
-                  </p>
-                </div>
-              )}
-
-              <UserProfileAchievementsSection isSelf={effectiveIsSelf} profileId={profile.id} />
-
-              {profile.profile_public || effectiveIsSelf ? (
-                <>
+          canViewContent ? (
+            <Tabs.Root
+              className="pt-5"
+              value={activeTab}
+              onValueChange={(value) => {
+                if (isProfileTab(value)) setActiveTab(value);
+              }}
+            >
+              <Tabs.List activateOnFocus level="3a" className="gap-2" aria-label={t("userProfile.tabs.label")}>
+                <Tabs.Tab value="activity">{t("userProfile.tabs.activity")}</Tabs.Tab>
+                <Tabs.Tab value="projects">{t("userProfile.tabs.projects")}</Tabs.Tab>
+                <Tabs.Tab value="achievements">{t("userProfile.tabs.achievementsTab")}</Tabs.Tab>
+              </Tabs.List>
+              <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-12">
+                <div className="min-w-0">
+                  <Tabs.Panel value="activity">
+                    <UserProfileActivityTab userId={profile.id} own={effectiveIsSelf} />
+                  </Tabs.Panel>
+                  <Tabs.Panel value="projects">
+                    <UserProfileProjectsTab profile={profile} isSelf={effectiveIsSelf} />
+                  </Tabs.Panel>
+                  <Tabs.Panel value="achievements">
+                    <UserProfileAchievementsSection isSelf={effectiveIsSelf} profileId={profile.id} />
+                    {/* TODO(figma-milestones): khối mốc feed ẩn vì Figma đã chia về Projects/Activity/Achievements;
+                        bật lại bằng: <UserProfileActivitySection profile={profile} /> (nhớ import lại) */}
+                  </Tabs.Panel>
+                  {/* TODO(figma-profile): Figma chưa có Khóa học và Hackathon, ẩn tạm; bật lại khi có thiết kế
                   <UserProfileCoursesSection profile={profile} />
                   <UserProfileContestsSection profile={profile} isSelf={effectiveIsSelf} />
-                </>
-              ) : null}
-            </main>
-            {profile.profile_public || effectiveIsSelf ? (
-              <ProfileSidebar
-                profile={profile}
-                followerCount={followerCount}
-                followingProfileCount={followingProfileCount}
-                bio={bio}
-                website={website}
-                headerHandle={headerHandle}
-              />
-            ) : null}
-          </div>
+                  */}
+                </div>
+                <ProfileSidebar profile={profile} website={website} />
+              </div>
+            </Tabs.Root>
+          ) : (
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-border-subtle bg-surface-base p-8 text-center shadow-card">
+                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-surface-raised">
+                  <Lock className="size-5 text-foreground-subtle" aria-hidden />
+                </div>
+                <h3 className="mt-4 text-heading-small font-display text-foreground">
+                  {t("userProfile.private.title")}
+                </h3>
+                <p className="mt-2 text-sm text-foreground-muted max-w-sm mx-auto">
+                  {t("userProfile.private.description")}
+                </p>
+              </div>
+              <UserProfileAchievementsSection isSelf={effectiveIsSelf} profileId={profile.id} />
+            </div>
+          )
         ) : null}
       </div>
     </div>

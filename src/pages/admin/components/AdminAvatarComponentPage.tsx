@@ -81,6 +81,7 @@ const actionSizes = new Set<ShowcaseSize>([
   "2XLarge",
   "3XLarge",
   "4XLarge",
+  "5XLarge",
 ]);
 
 const userImage = (size: ShowcaseSize) =>
@@ -98,7 +99,7 @@ function AvatarCase({
   return (
     <div
       data-testid={`avatar-case-${typeKeys[type]}-${sizeKeys[size]}`}
-      className="flex min-h-24 items-center justify-center px-1"
+      className="flex items-center justify-center"
     >
       <Avatar size={size} type={type} aria-label={`${type} avatar, ${size}`}>
         {type === "User" ? (
@@ -157,24 +158,26 @@ function AvatarCase({
 function AvatarMatrix({ fallbackText }: { fallbackText: string }) {
   return (
     <div data-testid="avatar-matrix" className="overflow-x-auto pb-2">
-      <div className="min-w-[860px] space-y-6">
-        <div className="grid grid-cols-9 items-end gap-x-6 px-2 text-body-small text-foreground-muted">
-          {AVATAR_SIZES.map((size) => (
-            <span key={size} className="text-center">
-              <span className="block text-foreground">{size}</span>
-              <span>{sizePixels[size]}px</span>
-            </span>
-          ))}
-        </div>
+      <div className="grid w-max grid-cols-[repeat(10,max-content)] items-center justify-items-center gap-x-5 gap-y-3 px-2">
+        {AVATAR_SIZES.map((size) => (
+          <span key={size} className="text-center text-body-small text-foreground-muted">
+            <span className="block text-foreground">{size}</span>
+            <span>{sizePixels[size]}px</span>
+          </span>
+        ))}
 
         {AVATAR_TYPES.map((type) => (
-          <section key={type} data-testid={`avatar-type-row-${typeKeys[type]}`} className="space-y-2">
-            <h3 className="px-2 text-body-medium font-semibold text-foreground">{type}</h3>
-            <div className="grid grid-cols-9 items-center justify-items-center gap-x-6">
-              {AVATAR_SIZES.map((size) => (
-                <AvatarCase key={`${type}-${size}`} fallbackText={fallbackText} size={size} type={type} />
-              ))}
-            </div>
+          <section
+            key={type}
+            data-testid={`avatar-type-row-${typeKeys[type]}`}
+            className="col-span-full grid grid-cols-subgrid items-center justify-items-center gap-y-1"
+          >
+            <h3 className="col-span-full justify-self-start text-body-medium font-semibold text-foreground">
+              {type}
+            </h3>
+            {AVATAR_SIZES.map((size) => (
+              <AvatarCase key={`${type}-${size}`} fallbackText={fallbackText} size={size} type={type} />
+            ))}
           </section>
         ))}
       </div>

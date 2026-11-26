@@ -239,7 +239,11 @@
       "overview": "개요",
       "achievements": "성과",
       "courses": "강의",
-      "contests": "해커톤"
+      "contests": "해커톤",
+      "label": "프로필 섹션",
+      "activity": "활동",
+      "projects": "프로젝트",
+      "achievementsTab": "성과"
     },
     "actions": {
       "editProfile": "프로필 편집",
@@ -247,7 +251,26 @@
       "exitPreview": "미리보기 종료",
       "exitPreviewShort": "미리보기 종료",
       "viewFollowers": "팔로워 보기",
-      "viewFollowing": "이 사용자가 팔로우하는 프로필 보기"
+      "viewFollowing": "이 사용자가 팔로우하는 프로필 보기",
+      "share": "프로필 공유",
+      "shareCopied": "프로필 링크를 복사했습니다.",
+      "shareCopyFailed": "링크를 복사하지 못했습니다.",
+      "editAvatar": "아바타 편집"
+    },
+    "cover": {
+      "add": "커버 이미지 추가"
+    },
+    "info": {
+      "title": "정보 및 링크",
+      "links": "링크 및 첨부 파일"
+    },
+    "xpHistory": {
+      "viewAll": "모두 보기",
+      "collapse": "간단히 보기"
+    },
+    "counts": {
+      "followers": "팔로워 {{value}}명",
+      "following": "팔로잉 {{value}}명"
     },
     "labels": {
       "ocid": "OCID: {{ocid}}",
@@ -287,7 +310,11 @@
       "cta": "성과 열기",
       "privateTitle": "성과 상세 정보는 비공개입니다",
       "privateDescription": "성과 상세 정보는 이 프로필에 공개적으로 표시되지 않습니다.",
-      "openVault": "성과 보관함 열기"
+      "openVault": "성과 보관함 열기",
+      "certificatesTitle": "학습 수료증",
+      "badgesTitle": "수료 배지",
+      "completedAt": "{{date}} 완료",
+      "viewCredential": "OC 자격 증명 보기"
     },
     "courses": {
       "privateByDefault": "학생의 강의는 기본적으로 비공개입니다.",
@@ -303,6 +330,7 @@
       "updatedAt": "{{date}} 업데이트"
     },
     "projects": {
+      "mine": "내 프로젝트",
       "empty": "아직 공개된 프로젝트가 없습니다.",
       "viewSource": "소스 보기",
       "demo": "데모",

@@ -21,6 +21,8 @@ type UserAvatarProps = {
   imageClassName?: string;
   fallbackClassName?: string;
   size?: AvatarSize;
+  /** Nội dung đặt trong Avatar, ví dụ AvatarAction. */
+  children?: ReactNode;
 };
 
 export function UserAvatar({
@@ -34,6 +36,7 @@ export function UserAvatar({
   imageClassName,
   fallbackClassName,
   size,
+  children,
 }: UserAvatarProps) {
   const generatedUrl = useMemo(
     () => getGeneratedAvatarDataUrl(userId, avatarSeed, avatarConfig),
@@ -56,6 +59,7 @@ export function UserAvatar({
           )}
         />
       ) : null}
+      {children}
     </Avatar>
   );
 }

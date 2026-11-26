@@ -260,6 +260,9 @@
   --color-project-media-upload-placeholder-surface: var(--project-media-upload-placeholder-surface);
   --color-home-xp-panel-surface: var(--home-xp-panel-surface);
   --color-home-xp-progress-track: var(--home-xp-progress-track);
+  --color-profile-cover-surface: var(--profile-cover-surface);
+  --color-profile-cover-fade: var(--profile-cover-fade);
+  --color-profile-cover-hint: var(--profile-cover-hint);
   /* Issue #391 — Figma Input Field semantic color aliases. */
   --color-input-field-border: var(--input-field-border);
   --color-input-field-focus-ring: var(--input-field-focus-ring);
@@ -1075,6 +1078,9 @@
   --home-xp-panel-surface: var(--neutral-50);
   --home-xp-panel-art-opacity: 1;
   --home-xp-progress-track: var(--neutral-200);
+  --profile-cover-surface: var(--surface-raised);
+  --profile-cover-fade: var(--surface-base);
+  --profile-cover-hint: var(--foreground-subtle);
   /* Light hover uses a visible neutral layer instead of the page background. */
   --action-hover: var(--neutral-200);
   /* Learn resources drawer row: one neutral step off the drawer background (--background = neutral-50). */
@@ -1480,6 +1486,9 @@
   --home-xp-panel-surface: var(--surface-base);
   --home-xp-panel-art-opacity: 1;
   --home-xp-progress-track: var(--surface-raised);
+  --profile-cover-surface: var(--neutral-700);
+  --profile-cover-fade: var(--neutral-800);
+  --profile-cover-hint: var(--neutral-500);
   /* Dark hover maps to the Figma neutral raised surface. */
   --action-hover: var(--neutral-700);
   /* Figma Neutral/800 row on the dark drawer. */
