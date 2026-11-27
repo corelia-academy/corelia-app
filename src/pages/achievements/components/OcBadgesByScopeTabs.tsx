@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 
+import { SectionHeader } from "@/components/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -89,10 +90,7 @@ export function OcBadgesByScopeTabs({
       <div className="flex flex-col gap-12">
         {groups.map((group) => (
           <section key={group.key} aria-label={group.title} className="flex flex-col gap-4">
-            <header className="flex flex-col gap-3">
-              <h2 data-profile-heading className="text-base font-medium text-foreground">{group.title}</h2>
-              <div className="h-px w-full bg-stroke-divider" />
-            </header>
+            <SectionHeader title={group.title} />
             <ul className={cn("grid gap-6", group.columns)}>
               {group.items.map((badge) => (
                 <li key={badge.id} className="min-w-0">

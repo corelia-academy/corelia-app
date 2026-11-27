@@ -18,7 +18,9 @@ import { toast } from "sonner";
 
 import { UserAvatar } from "@/components/UserAvatar";
 import { AvatarAction } from "@/components/ui/avatar";
+import { SectionHeader } from "@/components/SectionHeader";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { FollowButton } from "@/components/social/FollowButton";
 import { FollowerPreview } from "@/components/social/FollowerPreview";
 import { FollowingListDialog } from "@/components/social/FollowingListDialog";
@@ -79,17 +81,11 @@ function ProfileCount({
   ariaLabel: string;
   onClick?: () => void;
 }) {
-  const className = "rounded-sm px-1 py-1 text-cta-small font-cta text-foreground";
-  if (!onClick) return <span className={className}>{label}</span>;
+  if (!onClick) return <span className="px-md text-cta-small font-cta text-foreground">{label}</span>;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={ariaLabel}
-      className={`${className} hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40`}
-    >
+    <Button type="button" variant="cta" hierarchy="tertiary" size="xsmall" onClick={onClick} aria-label={ariaLabel}>
       {label}
-    </button>
+    </Button>
   );
 }
 
@@ -111,19 +107,12 @@ function ProfileSidebar({
         aria-labelledby="profile-info-title"
         className="flex flex-col gap-2.5 rounded-2xl border border-stroke-divider px-4 pb-4 pt-3"
       >
-        <header className="flex flex-col gap-2">
-          <div className="flex items-center gap-2.5">
-            <ListChecks
-              aria-hidden
-              weight="duotone"
-              className="size-5 shrink-0 text-foreground-muted"
-            />
-            <h2 id="profile-info-title" data-profile-heading className="text-foreground">
-              {t("userProfile.info.title")}
-            </h2>
-          </div>
-          <div className="h-px w-full bg-stroke-divider" />
-        </header>
+        <SectionHeader
+          className="gap-2"
+          titleId="profile-info-title"
+          icon={<ListChecks aria-hidden weight="duotone" className="size-5 shrink-0 text-foreground-muted" />}
+          title={t("userProfile.info.title")}
+        />
 
         <div className="flex flex-col gap-6">
           {/* TODO(figma-links): chưa có dữ liệu Github/LinkedIn cho người dùng thường; tạm hiển thị website */}
@@ -382,7 +371,7 @@ export default function UserProfileLayout() {
                       profile.profile_public ? () => setFollowerDialogOpen(true) : undefined
                     }
                   />
-                  <span aria-hidden className="h-full w-px bg-stroke-divider" />
+                  <Separator orientation="vertical" className="border-stroke-divider" aria-hidden="true" />
                   <ProfileCount
                     label={t("userProfile.counts.following", { value: followingProfileCount })}
                     ariaLabel={t("userProfile.actions.viewFollowing")}

@@ -14,15 +14,16 @@ import {
   DropdownMenuList,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuTrigger,
+  DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
 import { Modal } from "@/components/ui/modal";
 import { avatarAssets } from "@/lib/avatarAssets";
 import { cn } from "@/lib/utils";
 import { displayPart, useAvatarEditor } from "./useAvatarEditor";
 
+// Đúng bộ class ô chọn ở mục "Dropdown trigger indicator" của trang showcase Dropdown.
 const FIELD_CLASS =
-  "flex h-10 w-full items-center gap-2 rounded-md border border-input-field-border bg-surface-base px-lg text-left text-body-large font-body text-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-input-field-focus-ring";
+  "flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left text-body-large text-foreground";
 const LABEL_CLASS = "text-label-medium font-body leading-[1.4] text-foreground-subtle";
 
 // Thứ tự và cách ghép ô chọn với ô màu theo Figma "Chỉnh sửa avatar".
@@ -99,14 +100,15 @@ function PartSelect({
       <span id={`avatar-${slot}-label`} className={LABEL_CLASS}>{label}</span>
       <div className="relative">
         <DropdownMenu>
-          <DropdownMenuTrigger
+          <DropdownMenuTriggerWithIndicator
             id={`avatar-${slot}`}
             type="button"
+            icon={null}
             aria-labelledby={`avatar-${slot}-label`}
             className={cn(FIELD_CLASS, "pr-10")}
           >
             <span className="min-w-0 flex-1 truncate">{selected}</span>
-          </DropdownMenuTrigger>
+          </DropdownMenuTriggerWithIndicator>
           <DropdownMenuContent layout="multiple-list" className="w-(--anchor-width) max-w-[calc(100vw-2rem)]">
             <DropdownMenuList>
               <DropdownMenuRadioGroup value={value} onValueChange={(next) => onChange(String(next))}>

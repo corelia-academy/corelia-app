@@ -2,6 +2,7 @@ import { BadgeCheck, Lock, Loader2, AlertCircle, ArrowUpRight } from "lucide-rea
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { BADGE_PLACEHOLDER, CERT_PLACEHOLDER } from "../constants";
@@ -46,11 +47,10 @@ export function BadgeCard({
       if (!badge.locked && !isPending) onOpenModal({ kind: "badge", data: badge });
     };
     const status = isFailed && onRetry ? (
-      <button type="button" onClick={handleRetry} disabled={retrying}
-        className="flex w-fit items-center gap-1 rounded bg-destructive px-2 py-1 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50">
+      <Button type="button" variant="destructive" size="xsmall" className="w-fit" onClick={handleRetry} disabled={retrying}>
         {retrying && <Loader2 className="size-3 animate-spin" />}
         {t("achievements.badges.retry")}
-      </button>
+      </Button>
     ) : isPending ? (
       <p className="text-xs font-medium text-primary animate-pulse">{t("achievements.badges.pendingPrefix")}</p>
     ) : isAwaitingHolder ? (

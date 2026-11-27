@@ -14,7 +14,7 @@ import { listProjectTaxonomyOptions } from "@/lib/projectTaxonomy";
 import { useAuth } from "@/stores/authStore";
 import type { PublicProfile } from "@/types/database";
 
-import { UserProfileSectionHeader } from "./UserProfileSectionHeader";
+import { SectionHeader } from "@/components/SectionHeader";
 
 const VISIBLE_PROJECTS = 4;
 
@@ -73,7 +73,7 @@ export function UserProfileProjectsSection({ profile, isSelf = false }: { profil
   return (
     <div className="flex flex-col gap-12">
       <section aria-label={title} className="flex flex-col gap-4">
-        <UserProfileSectionHeader title={title} action={toggle(expanded, items.length, setExpanded)} />
+        <SectionHeader title={title} action={toggle(expanded, items.length, setExpanded)} />
         {projectsQuery.isPending ? (
           <div className="flex flex-col gap-4">
             <Skeleton className="h-60 w-full rounded-md" />
@@ -113,7 +113,7 @@ export function UserProfileProjectsSection({ profile, isSelf = false }: { profil
 
       {isSelf ? (
         <section aria-label={t("userProfile.projects.saved")} className="flex flex-col gap-4">
-          <UserProfileSectionHeader title={t("userProfile.projects.saved")} action={toggle(savedExpanded, savedItems.length, setSavedExpanded)} />
+          <SectionHeader title={t("userProfile.projects.saved")} action={toggle(savedExpanded, savedItems.length, setSavedExpanded)} />
           {savedLoading ? (
             <div className="grid gap-6 sm:grid-cols-2">
               <Skeleton className="h-60 w-full rounded-md" />

@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Pulse } from "@phosphor-icons/react";
 
+import { SectionHeader } from "@/components/SectionHeader";
 import { Button } from "@/components/ui/button";
+import { Timestamp } from "@/components/ui/timestamp";
 import { getMyXpDayBreakdown, getMyXpHistory, getXpSummary, utcDate, xpIntensity } from "@/lib/xp";
 import type { XpEntry } from "@/lib/xp";
 import { intlLocaleFor } from "@/lib/locales";
@@ -22,6 +23,7 @@ const intensityClass = [
   "bg-primary border-primary",
 ];
 const noDataClass = "bg-surface-raised border-border-subtle border-dashed opacity-45";
+const sectionIcon = <Pulse aria-hidden weight="duotone" className="size-5 shrink-0 text-foreground-muted" />;
 
 function startOfUtcWeek(date: Date): Date {
   const day = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
@@ -39,21 +41,6 @@ function calendarCells<T extends { date: string }>(items: T[]): Array<T | null> 
   if (!items.length) return [];
   const weekday = new Date(`${items[0].date}T00:00:00Z`).getUTCDay();
   return [...Array<T | null>((weekday + 6) % 7).fill(null), ...items];
-}
-
-function SectionHeader({ title, action }: { title: string; action?: ReactNode }) {
-  return (
-    <header className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <Pulse aria-hidden weight="duotone" className="size-5 shrink-0 text-foreground-muted" />
-          <h2 data-profile-heading className="text-base font-medium text-foreground">{title}</h2>
-        </div>
-        {action}
-      </div>
-      <div className="h-px w-full bg-stroke-divider" />
-    </header>
-  );
 }
 
 export function XpActivity({ userId, own = false }: { userId: string; own?: boolean }) {
@@ -137,7 +124,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
     return (
       <div className="text-sm">
         <p>{t("xp.error")}</p>
-        <button type="button" onClick={() => void summary.refetch()} className="mt-2 text-primary underline">{t("profile.retry")}</button>
+        <Button type="button" variant="cta" hierarchy="tertiary" size="small" className="mt-2" onClick={() => void summary.refetch()}>{t("profile.retry")}</Button>
       </div>
     );
   }
@@ -148,7 +135,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
   return (
     <div className="flex flex-col gap-8">
       <section aria-label={t("xp.title")} className="flex flex-col gap-4">
-        <SectionHeader title={t("xp.title")} />
+        <SectionHeader icon={sectionIcon} title={t("xp.title")} />
         <div className="flex items-start gap-4">
           <div aria-hidden className="grid shrink-0 grid-rows-[repeat(7,16px)] gap-[5px] pt-6 text-title-medium text-foreground-muted">
             {weekdayLabels.map((label, index) => (
@@ -213,6 +200,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
       {own ? (
         <section aria-label={t("xp.weekChart")} className="flex flex-col gap-4">
           <SectionHeader
+            icon={sectionIcon}
             title={t("xp.weekTotal", { count: formatted(weekTotal) })}
             action={
               <div className="flex items-center gap-1">
@@ -249,6 +237,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
       {own ? (
         <section aria-label={t("xp.history")} className="flex flex-col gap-4">
           <SectionHeader
+            icon={sectionIcon}
             title={t("xp.history")}
             action={
               history.data && history.data.length > VISIBLE_HISTORY && !historyExpanded ? (
@@ -261,7 +250,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
           {history.isPending ? (
             <p className="text-sm text-foreground-muted">{t("xp.loading")}</p>
           ) : history.isError ? (
-            <button type="button" onClick={() => void history.refetch()} className="w-fit text-sm text-primary underline">{t("profile.retry")}</button>
+            <Button type="button" variant="cta" hierarchy="tertiary" size="small" className="w-fit" onClick={() => void history.refetch()}>{t("profile.retry")}</Button>
           ) : (
             <>
               <ul className="flex flex-col gap-2">
@@ -271,11 +260,12 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
                     <li key={entry.id} className="flex items-start justify-between gap-4 rounded-lg border border-stroke-divider px-5 py-4 sm:gap-10">
                       <div className="flex min-w-0 flex-col gap-2">
                         <p className="text-sm font-medium text-foreground">{sourceLabels[entry.source] ?? entry.source.replaceAll("_", " ")}</p>
-                        <p className="flex items-center gap-2 text-xs text-foreground-muted">
-                          {when.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
-                          <span aria-hidden className="h-3 w-px bg-stroke-divider" />
-                          {when.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })} UTC
-                        </p>
+                        <Timestamp
+                          size="medium"
+                          date={when.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
+                          time={when.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })}
+                          timezone="UTC"
+                        />
                       </div>
                       <p className="shrink-0 text-sm font-medium text-foreground">{entry.points > 0 ? "+" : ""}{entry.points} XP</p>
                     </li>
@@ -289,8 +279,8 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
                     {tc("userProfile.xpHistory.collapse")}
                   </Button>
                   <div className="flex gap-2">
-                    <button type="button" disabled={historyPage === 0} onClick={() => setHistoryPage((p) => p - 1)} className="text-primary disabled:opacity-40">{t("xp.previous")}</button>
-                    <button type="button" disabled={history.data.length < 20} onClick={() => setHistoryPage((p) => p + 1)} className="text-primary disabled:opacity-40">{t("xp.next")}</button>
+                    <Button type="button" variant="cta" hierarchy="tertiary" size="small" disabled={historyPage === 0} onClick={() => setHistoryPage((p) => p - 1)}>{t("xp.previous")}</Button>
+                    <Button type="button" variant="cta" hierarchy="tertiary" size="small" disabled={history.data.length < 20} onClick={() => setHistoryPage((p) => p + 1)}>{t("xp.next")}</Button>
                   </div>
                 </div>
               ) : null}
