@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
   Eye,
@@ -157,7 +157,6 @@ export default function UserProfileLayout() {
   const { t } = useTranslation("common");
   const { handle } = useParams<{ handle: string }>();
   const { user, profile: currentUserProfile } = useAuth();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get("tab");
   const activeTab: ProfileTab = isProfileTab(requestedTab) ? requestedTab : "activity";
@@ -404,7 +403,6 @@ export default function UserProfileLayout() {
                     open={editOpen}
                     onOpenChange={setEditOpen}
                     onEditAvatar={openAvatarEditor}
-                    onUsernameChanged={(username) => navigate(`/@${username}`, { replace: true })}
                   />
                   <AvatarEditorModal key={`avatar-${avatarSession}`} open={avatarOpen} onOpenChange={setAvatarOpen} />
                 </>

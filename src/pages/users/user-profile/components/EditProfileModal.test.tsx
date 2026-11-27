@@ -36,7 +36,6 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 let cleanup: (() => void) | undefined;
 const onOpenChange = vi.fn();
 const onEditAvatar = vi.fn();
-const onUsernameChanged = vi.fn();
 
 beforeEach(() => {
   vi.mocked(updateProfileForUser).mockResolvedValue({} as never);
@@ -52,28 +51,16 @@ async function renderModal() {
   const root = createRoot(container);
   cleanup = () => { act(() => root.unmount()); container.remove(); };
   await act(async () => {
-    root.render(<EditProfileModal open onOpenChange={onOpenChange} onEditAvatar={onEditAvatar} onUsernameChanged={onUsernameChanged} />);
+    root.render(<EditProfileModal open onOpenChange={onOpenChange} onEditAvatar={onEditAvatar} />);
   });
-}
-
-function setValue(input: HTMLInputElement | HTMLTextAreaElement, value: string) {
-  const proto = input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-  Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(input, value);
-  input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 const modal = (type: "slot" | "confirmation") => document.querySelector<HTMLElement>(`[data-slot="modal"][data-type="${type}"]`)!;
 const confirmButton = (type: "slot" | "confirmation") =>
   [...modal(type).querySelectorAll<HTMLButtonElement>('[data-slot="modal-actions"] button')].find((button) => button.textContent === "userProfile.edit.confirm")!;
-const usernameInput = () => [...modal("slot").querySelectorAll<HTMLInputElement>("input")].find((input) => input.value === "admin_local")!;
-
-async function submit() {
-  await act(async () => confirmButton("slot").click());
-  await act(async () => confirmButton("confirmation").click());
-}
 
 describe("edit profile modal", () => {
-  it("asks for confirmation and saves without sending an unchanged username", async () => {
+  it("asks for confirmation and saves only the public profile fields", async () => {
     await renderModal();
     await act(async () => confirmButton("slot").click());
     expect(updateProfileForUser).not.toHaveBeenCalled();
@@ -87,25 +74,22 @@ describe("edit profile modal", () => {
     expect(refreshProfile).toHaveBeenCalled();
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(toast.success).toHaveBeenCalledWith("profile.success.updated");
-    expect(onUsernameChanged).not.toHaveBeenCalled();
   });
 
-  it("sends a changed username and reports the new one", async () => {
+  it("has no username field: the username is changed in Settings", async () => {
     await renderModal();
-    act(() => setValue(usernameInput(), "admin_local2"));
-    await submit();
-    expect(updateProfileForUser).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ username: "admin_local2" }));
-    expect(onUsernameChanged).toHaveBeenCalledWith("admin_local2");
+    const values = [...modal("slot").querySelectorAll<HTMLInputElement>("input")].map((input) => input.value);
+    expect(values).not.toContain("admin_local");
+    expect(modal("slot").textContent).not.toContain("profile.username.label");
   });
 
-  it("shows the old taken-username message and keeps the form open", async () => {
-    vi.mocked(updateProfileForUser).mockRejectedValue(new Error('duplicate key value violates unique constraint "profiles_username_lower_key"'));
+  it("shows the old save error and keeps the form open", async () => {
+    vi.mocked(updateProfileForUser).mockRejectedValue(new Error("profile_name_too_long"));
     await renderModal();
-    act(() => setValue(usernameInput(), "student2"));
-    await submit();
-    expect(modal("slot").querySelector('[role="alert"]')?.textContent).toBe("profile.errors.usernameTaken");
+    await act(async () => confirmButton("slot").click());
+    await act(async () => confirmButton("confirmation").click());
+    expect(modal("slot").querySelector('[role="alert"]')?.textContent).toBe("profile.errors.invalidName");
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
-    expect(onUsernameChanged).not.toHaveBeenCalled();
   });
 
   it("opens the avatar editor from the avatar row", async () => {

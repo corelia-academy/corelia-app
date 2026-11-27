@@ -16,18 +16,15 @@ export function EditProfileModal({
   open,
   onOpenChange,
   onEditAvatar,
-  onUsernameChanged,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEditAvatar: () => void;
-  onUsernameChanged: (username: string) => void;
 }) {
   const { t } = useTranslation("common");
   const { t: tAccount } = useTranslation("account");
   const { user, profile, refreshProfile } = useAuth();
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
-  const [username, setUsername] = useState(profile?.username ?? "");
   const [bio, setBio] = useState(profile?.bio ?? "");
   const [website, setWebsite] = useState(profile?.website ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -39,11 +36,7 @@ export function EditProfileModal({
     setSaving(true);
     setError(null);
     try {
-      const newUsername = username.trim() || null;
-      // Chỉ gửi username khi thực sự thay đổi (tránh unique constraint tự conflict)
-      const usernameChanged = newUsername?.toLowerCase() !== (profile?.username ?? "").toLowerCase();
       await updateProfileForUser(user, {
-        ...(usernameChanged ? { username: newUsername } : {}),
         full_name: fullName.trim() || null,
         bio: bio.trim() || null,
         website: website.trim() || null,
@@ -53,19 +46,15 @@ export function EditProfileModal({
       setConfirmOpen(false);
       onOpenChange(false);
       toast.success(tAccount("profile.success.updated"));
-      // Link hồ sơ cũ /@tên-cũ không còn hợp lệ nên chuyển sang link mới
-      if (usernameChanged && newUsername) onUsernameChanged(newUsername);
     } catch (err) {
       const raw = err instanceof Error ? err.message : "";
       setConfirmOpen(false);
       setError(
-        raw.includes("profiles_username_lower_key") || raw.includes("duplicate key") || raw.includes("23505")
-          ? tAccount("profile.errors.usernameTaken")
-          : raw.includes("profile_name_")
-            ? tAccount("profile.errors.invalidName")
-            : raw.includes("profile_text_invalid") || raw.includes("profile_username_too_long")
-              ? tAccount("profile.errors.invalidText")
-              : raw || tAccount("profile.errors.updateFailed"),
+        raw.includes("profile_name_")
+          ? tAccount("profile.errors.invalidName")
+          : raw.includes("profile_text_invalid")
+            ? tAccount("profile.errors.invalidText")
+            : raw || tAccount("profile.errors.updateFailed"),
       );
     } finally {
       setSaving(false);
@@ -106,16 +95,6 @@ export function EditProfileModal({
               maxLength={PROFILE_NAME_MAX_LENGTH}
               onChange={(e) => setFullName(e.target.value)}
               placeholder={tAccount("profile.fullName.placeholder")}
-            />
-          </Field>
-          <Field label={tAccount("profile.username.label")} hint={tAccount("profile.username.hint")}>
-            <Input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder={tAccount("profile.username.placeholder")}
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
             />
           </Field>
           {/* TODO(figma-bio-limit): Figma có bộ đếm 0/500; form cũ không giới hạn bio */}
