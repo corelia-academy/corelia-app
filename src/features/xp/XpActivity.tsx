@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+// TODO(figma-xp): thiết kế mới chưa dùng biểu đồ tuần
+// import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Pulse } from "@phosphor-icons/react";
 
 import { SectionHeader } from "@/components/SectionHeader";
@@ -25,11 +26,13 @@ const intensityClass = [
 const noDataClass = "bg-surface-raised border-border-subtle border-dashed opacity-45";
 const sectionIcon = <Pulse aria-hidden weight="duotone" className="size-5 shrink-0 text-foreground-muted" />;
 
+/* TODO(figma-xp): thiết kế mới chưa dùng biểu đồ tuần
 function startOfUtcWeek(date: Date): Date {
   const day = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
   day.setUTCDate(day.getUTCDate() - (day.getUTCDay() + 6) % 7);
   return day;
 }
+*/
 
 function addDays(date: Date, count: number): Date {
   const result = new Date(date);
@@ -47,7 +50,8 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
   const { t, i18n } = useTranslation("account");
   const { t: tc } = useTranslation("common");
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const [weekShift, setWeekShift] = useState(0);
+  // TODO(figma-xp): thiết kế mới chưa dùng biểu đồ tuần
+  // const [weekShift, setWeekShift] = useState(0);
   const [historyPage, setHistoryPage] = useState(0);
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -79,8 +83,10 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
       return { date, xp, noData: date < (summary.data?.trackingSince ?? today) && !byDate.has(date) };
     });
   }, [summary.data?.days, summary.data?.trackingSince, rangeStart, today]);
-  const currentWeek = startOfUtcWeek(now);
+  // TODO(figma-xp): thiết kế mới chưa dùng biểu đồ tuần
+  // const currentWeek = startOfUtcWeek(now);
   const cells = calendarCells(days);
+  /* TODO(figma-xp): thiết kế mới chưa dùng biểu đồ tuần
   const weekStart = addDays(currentWeek, weekShift * 7);
   const weekDays = Array.from({ length: 7 }, (_, index) => {
     const date = utcDate(addDays(weekStart, index));
@@ -88,6 +94,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
   });
   const weekTotal = weekDays.reduce((sum, day) => sum + (day.future ? 0 : day.xp), 0);
   const maxWeek = Math.max(1, ...weekDays.map((day) => day.xp));
+  */
   const locale = intlLocaleFor(i18n.language);
   const formatted = (value: number) => new Intl.NumberFormat(locale).format(value);
   const dayLabel = (day: { date: string; xp: number; noData?: boolean }) => `${day.date}: ${day.noData ? t("xp.noData") : `${formatted(day.xp)} XP`}`;
@@ -197,6 +204,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
         {summary.data.total === 0 ? <p className="text-sm text-foreground-muted">{t("xp.empty")}</p> : null}
       </section>
 
+      {/* TODO(figma-xp): thiết kế mới chưa dùng biểu đồ tuần
       {own ? (
         <section aria-label={t("xp.weekChart")} className="flex flex-col gap-4">
           <SectionHeader
@@ -233,6 +241,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
           </div>
         </section>
       ) : null}
+      */}
 
       {own ? (
         <section aria-label={t("xp.history")} className="flex flex-col gap-4">

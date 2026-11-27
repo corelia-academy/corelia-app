@@ -66,7 +66,7 @@ describe("XpActivity", () => {
 
   it("lets the owner pick a day and see its breakdown", async () => {
     const container = await renderActivity(true);
-    expect(sections(container)).toEqual(["xp.title", "xp.weekChart", "xp.history"]);
+    expect(sections(container)).toEqual(["xp.title", "xp.history"]);
     const todayCell = [...container.querySelectorAll<HTMLButtonElement>('[role="group"] button')].find((cell) => cell.getAttribute("aria-label")?.includes("5 XP"))!;
     await act(async () => todayCell.click());
     await until(() => container.textContent?.includes("xp.sources.lesson_completed: +5 XP") ?? false);
@@ -75,7 +75,8 @@ describe("XpActivity", () => {
     expect(container.textContent).toContain("xp.sources.lesson_completed: +5 XP");
   });
 
-  it("moves between weeks and stops at the current week", async () => {
+  // TODO(figma-xp): thiết kế mới chưa dùng biểu đồ tuần
+  it.skip("moves between weeks and stops at the current week", async () => {
     const container = await renderActivity(true);
     const previous = container.querySelector<HTMLButtonElement>('button[aria-label="xp.previousWeek"]')!;
     const next = container.querySelector<HTMLButtonElement>('button[aria-label="xp.nextWeek"]')!;
