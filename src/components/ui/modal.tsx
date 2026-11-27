@@ -224,7 +224,8 @@ function Modal({
         </div>
         <div
           data-slot="modal-slot"
-          className="min-h-0 flex-1 overflow-y-auto scrollbar-design"
+          // p-1 chừa chỗ cho viền focus (vẽ lấn ra ngoài ô 3px); -m-1 bù lại để bố cục không đổi
+          className="-m-1 min-h-0 flex-1 overflow-y-auto p-1 scrollbar-design"
         >
           {children}
         </div>
