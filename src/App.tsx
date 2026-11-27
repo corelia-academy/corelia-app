@@ -581,6 +581,26 @@ function ApplicationRoutes() {
                 }
               />
               <Route
+                path="account/settings"
+                element={
+                  <RequireAuth>
+                    <Suspense fallback={<AccountFormFallback />}>
+                      <AccountSettingsRoute />
+                    </Suspense>
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="account/cv"
+                element={
+                  <RequireAuth>
+                    <Suspense fallback={<AccountFormFallback />}>
+                      <AccountCvRoute />
+                    </Suspense>
+                  </RequireAuth>
+                }
+              />
+              <Route
                 path="account"
                 element={
                   <RequireAuth>
@@ -596,22 +616,6 @@ function ApplicationRoutes() {
                   element={
                     <Suspense fallback={<AccountFormFallback />}>
                       <AccountProfileRoute />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="cv"
-                  element={
-                    <Suspense fallback={<AccountFormFallback />}>
-                      <AccountCvRoute />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="settings"
-                  element={
-                    <Suspense fallback={<AccountFormFallback />}>
-                      <AccountSettingsRoute />
                     </Suspense>
                   }
                 />

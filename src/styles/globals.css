@@ -139,6 +139,7 @@
 
   --color-foreground: var(--foreground);
   --color-project-editor-heading: var(--project-editor-heading);
+  --color-settings-text: var(--settings-text);
   --color-hackathon-timeline-title: var(--hackathon-timeline-title);
   --color-stepper-focused-ring: var(--stepper-focused-ring);
   --color-stepper-focused-surface: var(--stepper-focused-surface);
@@ -949,6 +950,7 @@
   /* Chữ xám đậm trung tính kiểu Google (#202124) */
   --foreground: var(--text-primary-2);
   --project-editor-heading: var(--foreground);
+  --settings-text: var(--foreground);
   --hackathon-timeline-title: var(--foreground);
   --hackathon-stat-label: var(--blue-700);
   --foreground-muted: var(--text-secondary);
@@ -1330,6 +1332,7 @@
   --background: var(--neutral-900);
   --foreground: var(--neutral-50);
   --project-editor-heading: var(--neutral-200);
+  --settings-text: var(--neutral-200);
   --hackathon-timeline-title: var(--neutral-200);
   --hackathon-stat-label: var(--blue-400);
   --foreground-muted: var(--neutral-300);
