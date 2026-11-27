@@ -261,6 +261,11 @@
       "add": "Add cover image"
     },
     "edit": {
+      "linksHint": "Links follow your profile's public or private setting. Change it in Settings.",
+      "linkGithub": "GitHub link",
+      "linkLinkedin": "LinkedIn link",
+      "linkOther": "Other link",
+      "addLink": "Add another link",
       "subtitle": "Change the information shown on your profile",
       "cancel": "Cancel",
       "confirm": "Confirm",

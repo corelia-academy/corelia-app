@@ -261,6 +261,11 @@
       "add": "添加封面图片"
     },
     "edit": {
+      "linksHint": "链接随个人资料的公开或私密设置显示，可在设置中更改。",
+      "linkGithub": "GitHub 链接",
+      "linkLinkedin": "LinkedIn 链接",
+      "linkOther": "其他链接",
+      "addLink": "添加其他链接",
       "subtitle": "更改显示在你个人资料上的信息",
       "cancel": "取消",
       "confirm": "确认",

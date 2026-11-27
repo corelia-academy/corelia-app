@@ -43,6 +43,8 @@ import { UserProfileProjectsSection } from "./components/UserProfileProjectsSect
 import { useUserProfileLayoutData } from "./hooks/useUserProfileLayoutData";
 import {
   isValidHttpUrl,
+  LINK_ICONS,
+  LINK_NAMES,
   profileTitle,
   readableProfileText,
 } from "./utils/profileDisplay";
@@ -97,7 +99,10 @@ function ProfileSidebar({
   website: string | null;
 }) {
   const { t, i18n } = useTranslation("common");
-  const hasWebsite = Boolean(website && isValidHttpUrl(website));
+  const links = [
+    ...(profile.instructor_social_links ?? []),
+    ...(website ? [{ platform: "website" as const, url: website, label: t("userProfile.labels.website") }] : []),
+  ].filter((link, index, all) => isValidHttpUrl(link.url) && all.findIndex((other) => other.url === link.url) === index);
 
   return (
     <aside className="flex flex-col gap-6 lg:sticky lg:top-24">
@@ -115,24 +120,29 @@ function ProfileSidebar({
         />
 
         <div className="flex flex-col gap-6">
-          {/* TODO(figma-links): chưa có dữ liệu Github/LinkedIn cho người dùng thường; tạm hiển thị website */}
-          {hasWebsite ? (
+          {links.length ? (
             <div className="flex flex-col gap-2.5">
               <p className="text-title-medium text-foreground-subtle">
                 {t("userProfile.info.links")}
               </p>
-              <a
-                href={website ?? undefined}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex min-w-0 items-center gap-2 text-body-medium text-foreground hover:underline"
-              >
-                <LinkIcon aria-hidden className="size-5 shrink-0" />
-                <span className="min-w-0 flex-1 truncate">
-                  {t("userProfile.labels.website")}
-                </span>
-                <ArrowUpRight aria-hidden className="size-3 shrink-0 text-foreground-muted" />
-              </a>
+              {links.map((link) => {
+                const Icon = LINK_ICONS[link.platform];
+                return (
+                  <a
+                    key={link.url}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex min-w-0 items-center gap-2 text-body-medium text-foreground hover:underline"
+                  >
+                    {Icon ? <Icon aria-hidden weight="duotone" className="size-5 shrink-0" /> : <LinkIcon aria-hidden className="size-5 shrink-0" />}
+                    <span className="min-w-0 flex-1 truncate">
+                      {link.label?.trim() || LINK_NAMES[link.platform] || new URL(link.url).hostname.replace(/^www\./, "")}
+                    </span>
+                    <ArrowUpRight aria-hidden className="size-3 shrink-0 text-foreground-muted" />
+                  </a>
+                );
+              })}
             </div>
           ) : null}
 

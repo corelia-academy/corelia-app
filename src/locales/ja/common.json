@@ -261,6 +261,11 @@
       "add": "カバー画像を追加"
     },
     "edit": {
+      "linksHint": "リンクはプロフィールの公開設定に従います。設定で変更できます。",
+      "linkGithub": "GitHubのリンク",
+      "linkLinkedin": "LinkedInのリンク",
+      "linkOther": "その他のリンク",
+      "addLink": "リンクを追加",
       "subtitle": "プロフィールに表示される情報を変更します",
       "cancel": "キャンセル",
       "confirm": "確認",

@@ -261,6 +261,11 @@
       "add": "커버 이미지 추가"
     },
     "edit": {
+      "linksHint": "링크는 프로필 공개 설정을 따릅니다. 설정에서 변경하세요.",
+      "linkGithub": "GitHub 링크",
+      "linkLinkedin": "LinkedIn 링크",
+      "linkOther": "기타 링크",
+      "addLink": "링크 추가",
       "subtitle": "프로필에 표시되는 정보를 변경합니다",
       "cancel": "취소",
       "confirm": "확인",

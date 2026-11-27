@@ -261,6 +261,11 @@
       "add": "Thêm ảnh bìa"
     },
     "edit": {
+      "linksHint": "Link hiển thị theo chế độ Công khai hoặc Riêng tư của hồ sơ, chỉnh trong Cài đặt.",
+      "linkGithub": "Đường dẫn GitHub",
+      "linkLinkedin": "Đường dẫn LinkedIn",
+      "linkOther": "Đường dẫn khác",
+      "addLink": "Thêm link khác",
       "subtitle": "Thay đổi thông tin hiển thị trên hồ sơ",
       "cancel": "Huỷ",
       "confirm": "Xác nhận",

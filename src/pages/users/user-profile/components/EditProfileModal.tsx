@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Globe, Lock, Plus } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -11,6 +12,8 @@ import { updateProfileForUser } from "@/lib/profile";
 import { PROFILE_NAME_MAX_LENGTH } from "@/lib/profileName";
 import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/stores/authStore";
+import type { InstructorSocialLink } from "@/types/database";
+import { filledLinks, isValidHttpUrl, LINK_ICONS, toLinkFields } from "../utils/profileDisplay";
 
 export function EditProfileModal({
   open,
@@ -27,9 +30,44 @@ export function EditProfileModal({
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
   const [bio, setBio] = useState(profile?.bio ?? "");
   const [website, setWebsite] = useState(profile?.website ?? "");
+  const [links, setLinks] = useState(() => toLinkFields(profile?.instructor_social_links ?? []));
+  const [showWebsite, setShowWebsite] = useState(Boolean(profile?.website));
+  const nextLinks = filledLinks(links);
+  // Chỉ gửi link khi có thay đổi, để sửa tên không làm đảo thứ tự link của giảng viên
+  const linksChanged = JSON.stringify(nextLinks) !== JSON.stringify(filledLinks(toLinkFields(profile?.instructor_social_links ?? [])));
+  const isPublic = profile?.profile_public ?? true;
+  const VisibilityIcon = isPublic ? Globe : Lock;
   const [error, setError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  function requestSave() {
+    if ([...nextLinks.map((link) => link.url), website.trim()].some((url) => url && !isValidHttpUrl(url))) {
+      setError(tAccount("instructorProfile.socialLinks.errors.urlInvalid"));
+      return;
+    }
+    setError(null);
+    setConfirmOpen(true);
+  }
+
+  function linkInput(link: InstructorSocialLink, index: number) {
+    const Icon = LINK_ICONS[link.platform] ?? Globe;
+    const placeholder = link.platform === "github" ? t("userProfile.edit.linkGithub")
+      : link.platform === "linkedin" ? t("userProfile.edit.linkLinkedin") : t("userProfile.edit.linkOther");
+    return (
+      <Input
+        key={index}
+        type="url"
+        variant="icon-leading"
+        statusIcon={null}
+        leadingIcon={<Icon className="size-5" weight="duotone" aria-hidden />}
+        aria-label={link.label?.trim() || placeholder}
+        placeholder={placeholder}
+        value={link.url}
+        onChange={(e) => setLinks((prev) => prev.map((item, i) => (i === index ? { ...item, url: e.target.value } : item)))}
+      />
+    );
+  }
 
   async function handleSave() {
     if (!user || saving) return;
@@ -40,6 +78,7 @@ export function EditProfileModal({
         full_name: fullName.trim() || null,
         bio: bio.trim() || null,
         website: website.trim() || null,
+        ...(linksChanged ? { instructor_social_links: nextLinks.length ? nextLinks : null } : {}),
       });
       await refreshProfile(user);
       void queryClient.invalidateQueries({ queryKey: ["xp"] });
@@ -71,7 +110,7 @@ export function EditProfileModal({
         description={t("userProfile.edit.subtitle")}
         cancelLabel={t("userProfile.edit.cancel")}
         confirmLabel={t("userProfile.edit.confirm")}
-        onConfirm={() => setConfirmOpen(true)}
+        onConfirm={requestSave}
       >
         <div className="flex flex-col gap-5">
           <div className="flex items-center gap-4">
@@ -107,15 +146,41 @@ export function EditProfileModal({
               placeholder={tAccount("profile.bio.placeholder")}
             />
           </Field>
-          {/* TODO(figma-links): Figma có Github, LinkedIn, "Thêm Link Khác"; app chỉ có một trường website */}
-          <Field label={tAccount("profile.website.label")} hint={tAccount("profile.website.hint")}>
-            <Input
-              type="url"
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-              placeholder={tAccount("profile.website.placeholder")}
-            />
-          </Field>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-title-medium text-foreground-subtle">{t("userProfile.info.links")}</p>
+              <span className="flex items-center gap-1.5 text-body-medium text-foreground-subtle">
+                <VisibilityIcon className="size-4" weight="duotone" aria-hidden />
+                {tAccount(isPublic ? "profile.publicProfile.status.public" : "profile.publicProfile.status.private")}
+              </span>
+            </div>
+            <p className="text-body-small text-foreground-subtle">{t("userProfile.edit.linksHint")}</p>
+            {links.slice(0, 2).map((link, index) => linkInput(link, index))}
+            {showWebsite ? (
+              <Input
+                type="url"
+                variant="icon-leading"
+                statusIcon={null}
+                leadingIcon={<Globe className="size-5" weight="duotone" aria-hidden />}
+                aria-label={tAccount("profile.website.label")}
+                placeholder={t("userProfile.edit.linkOther")}
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+              />
+            ) : null}
+            {links.slice(2).map((link, index) => linkInput(link, index + 2))}
+            <Button
+              type="button"
+              variant="cta"
+              hierarchy="tertiary"
+              size="small"
+              className="self-center"
+              trailingIcon={<Plus className="size-4" aria-hidden />}
+              onClick={() => (showWebsite ? setLinks((prev) => [...prev, { platform: "other", url: "" }]) : setShowWebsite(true))}
+            >
+              {t("userProfile.edit.addLink")}
+            </Button>
+          </div>
           {error ? (
             <p role="alert" className="text-body-medium text-input-field-error">
               {error}

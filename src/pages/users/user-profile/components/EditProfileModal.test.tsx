@@ -98,4 +98,48 @@ describe("edit profile modal", () => {
     act(() => button.click());
     expect(onEditAvatar).toHaveBeenCalled();
   });
+
+  const setValue = (input: HTMLInputElement, value: string) => act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, value);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  const linkField = (label: string) => modal("slot").querySelector<HTMLInputElement>(`input[aria-label="${label}"]`)!;
+
+  it("saves a GitHub link into the social links list", async () => {
+    await renderModal();
+    await setValue(linkField("userProfile.edit.linkGithub"), "https://github.com/corelia");
+    await act(async () => confirmButton("slot").click());
+    await act(async () => confirmButton("confirmation").click());
+    expect(updateProfileForUser).toHaveBeenCalledWith(expect.anything(),
+      expect.objectContaining({ instructor_social_links: [{ platform: "github", url: "https://github.com/corelia" }] }));
+  });
+
+  it("blocks a link that is not http or https", async () => {
+    await renderModal();
+    await setValue(linkField("userProfile.edit.linkLinkedin"), "javascript:alert(1)");
+    await act(async () => confirmButton("slot").click());
+    expect(modal("confirmation")).toBeNull();
+    expect(modal("slot").querySelector('[role="alert"]')?.textContent).toBe("instructorProfile.socialLinks.errors.urlInvalid");
+    expect(updateProfileForUser).not.toHaveBeenCalled();
+  });
+
+  it("shows the website field first, then adds more link fields", async () => {
+    await renderModal();
+    const count = () => modal("slot").querySelectorAll('input[type="url"]').length;
+    const add = () => act(async () => [...modal("slot").querySelectorAll("button")].find((b) => b.textContent === "userProfile.edit.addLink")!.click());
+    expect(count()).toBe(2);
+    await add();
+    expect(count()).toBe(3);
+    await add();
+    expect(count()).toBe(4);
+  });
+
+  it("blocks a website that is not http or https", async () => {
+    await renderModal();
+    await act(async () => [...modal("slot").querySelectorAll("button")].find((b) => b.textContent === "userProfile.edit.addLink")!.click());
+    await setValue(linkField("profile.website.label"), "abc.com");
+    await act(async () => confirmButton("slot").click());
+    expect(modal("confirmation")).toBeNull();
+    expect(updateProfileForUser).not.toHaveBeenCalled();
+  });
 });

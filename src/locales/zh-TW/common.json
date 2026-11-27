@@ -261,6 +261,11 @@
       "add": "新增封面圖片"
     },
     "edit": {
+      "linksHint": "連結依個人檔案的公開或不公開設定顯示，可在設定中變更。",
+      "linkGithub": "GitHub 連結",
+      "linkLinkedin": "LinkedIn 連結",
+      "linkOther": "其他連結",
+      "addLink": "新增其他連結",
       "subtitle": "變更顯示在你個人檔案上的資訊",
       "cancel": "取消",
       "confirm": "確認",

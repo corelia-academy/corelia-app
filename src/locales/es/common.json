@@ -261,6 +261,11 @@
       "add": "Añadir imagen de portada"
     },
     "edit": {
+      "linksHint": "Los enlaces siguen la visibilidad de tu perfil. Cámbiala en Ajustes.",
+      "linkGithub": "Enlace de GitHub",
+      "linkLinkedin": "Enlace de LinkedIn",
+      "linkOther": "Otro enlace",
+      "addLink": "Añadir otro enlace",
       "subtitle": "Cambia la información que se muestra en tu perfil",
       "cancel": "Cancelar",
       "confirm": "Confirmar",

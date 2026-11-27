@@ -1,4 +1,22 @@
-import type { PublicProfile } from "@/types/database";
+import { GithubLogo, LinkedinLogo } from "@phosphor-icons/react";
+import type { InstructorSocialLink, InstructorSocialPlatform, PublicProfile } from "@/types/database";
+
+export const LINK_ICONS: Partial<Record<InstructorSocialPlatform, typeof GithubLogo>> = { github: GithubLogo, linkedin: LinkedinLogo };
+export const LINK_NAMES: Partial<Record<InstructorSocialPlatform, string>> = { github: "GitHub", linkedin: "LinkedIn" };
+
+/** GitHub và LinkedIn đứng đầu theo Figma; link khác giữ nguyên nền tảng và nhãn. */
+export function toLinkFields(links: InstructorSocialLink[]): InstructorSocialLink[] {
+  const rest = [...links];
+  const take = (platform: InstructorSocialPlatform): InstructorSocialLink => {
+    const index = rest.findIndex((link) => link.platform === platform);
+    return index < 0 ? { platform, url: "" } : rest.splice(index, 1)[0];
+  };
+  return [take("github"), take("linkedin"), ...rest];
+}
+
+export function filledLinks(links: InstructorSocialLink[]) {
+  return links.map((link) => ({ ...link, url: link.url.trim() })).filter((link) => link.url);
+}
 
 export function readableProfileText(value: string | null | undefined): string | null {
   const next = value
