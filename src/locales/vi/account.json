@@ -63,13 +63,13 @@
       "title": "Ngôn ngữ",
       "description": "Thay đổi ngôn ngữ hiển thị cho toàn bộ ứng dụng. Với tài khoản đã đăng nhập, lựa chọn này sẽ được đồng bộ trên các thiết bị.",
       "meta": {
-        "en": "Tiếng Anh (EN)",
-        "zh-CN": "Tiếng Trung giản thể (zh-CN)",
-        "ko": "Tiếng Hàn (KO)",
-        "es": "Tiếng Tây Ban Nha (ES)",
-        "zh-TW": "Tiếng Trung phồn thể (zh-TW)",
-        "vi": "Tiếng Việt (VI)",
-        "ja": "Tiếng Nhật (JA)"
+        "en": "Tiếng Anh (En)",
+        "zh-CN": "Tiếng Trung giản thể (Cn)",
+        "ko": "Tiếng Hàn (Ko)",
+        "es": "Tiếng Tây Ban Nha (Es)",
+        "zh-TW": "Tiếng Trung phồn thể (Tw)",
+        "vi": "Tiếng Việt (Vi)",
+        "ja": "Tiếng Nhật (Ja)"
       },
       "active": "Đang dùng"
     },

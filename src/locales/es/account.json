@@ -63,13 +63,13 @@
       "title": "Idioma",
       "description": "Cambia el idioma de la aplicación. Si has iniciado sesión, esta preferencia se sincroniza entre tus dispositivos.",
       "meta": {
-        "en": "Inglés (EN)",
-        "zh-CN": "Chino simplificado (zh-CN)",
-        "ko": "Coreano (KO)",
-        "es": "Español (ES)",
-        "zh-TW": "Chino tradicional (zh-TW)",
-        "vi": "Vietnamita (VI)",
-        "ja": "Japonés (JA)"
+        "en": "Inglés (En)",
+        "zh-CN": "Chino simplificado (Cn)",
+        "ko": "Coreano (Ko)",
+        "es": "Español (Es)",
+        "zh-TW": "Chino tradicional (Tw)",
+        "vi": "Vietnamita (Vi)",
+        "ja": "Japonés (Ja)"
       },
       "active": "Activo"
     },

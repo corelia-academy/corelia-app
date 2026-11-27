@@ -65,7 +65,7 @@ describe("language & display settings", () => {
     const container = await render();
     await openMenu(container, "settings.language.title");
     expect(items()).toHaveLength(7);
-    await pick("English");
+    await pick("settings.language.meta.en");
     expect(setLanguage).toHaveBeenCalledWith("en");
   });
 
