@@ -11,7 +11,9 @@ import {
 } from "lucide-react";
 import {
   ArrowUpRight,
+  DotsThree,
   ListChecks,
+  PencilSimple,
   ShareFat,
 } from "@phosphor-icons/react";
 import { toast } from "sonner";
@@ -20,6 +22,15 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { AvatarAction } from "@/components/ui/avatar";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuItemContent,
+  DropdownMenuList,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { FollowButton } from "@/components/social/FollowButton";
 import { FollowerPreview } from "@/components/social/FollowerPreview";
@@ -194,6 +205,10 @@ export default function UserProfileLayout() {
     setAvatarSession((n) => n + 1);
     setAvatarOpen(true);
   };
+  const openEditProfile = () => {
+    setEditSession((n) => n + 1);
+    setEditOpen(true);
+  };
   const [followerDialogOpen, setFollowerDialogOpen] = useState(false);
   const [followingDialogOpen, setFollowingDialogOpen] = useState(false);
   const [followerCountOverride, setFollowerCountOverride] = useState<{
@@ -251,31 +266,63 @@ export default function UserProfileLayout() {
         </div>
 
         <div className="px-4 sm:px-8">
-          <div className="relative -mt-20 size-[120px]">
-            {loading ? (
-              <Skeleton className="size-[120px] rounded-full" />
-            ) : (
-              <UserAvatar
-                userId={profile?.id}
-                avatarUrl={profile?.avatar_url}
-                avatarSeed={profile?.avatar_seed}
-                avatarConfig={profile?.avatar_config}
-                alt={profile ? profileTitle(profile) : ""}
-                fallback={<User className="size-7" aria-hidden />}
-                size="5XLarge"
-                className="rounded-full"
-                imageClassName="rounded-full"
-                fallbackClassName="rounded-full"
-              >
-                {effectiveIsSelf ? (
-                  <AvatarAction
-                    kind="edit"
-                    aria-label={t("userProfile.actions.editAvatar")}
-                    onClick={openAvatarEditor}
-                  />
-                ) : null}
-              </UserAvatar>
-            )}
+          <div className="flex items-start justify-between gap-3">
+            <div className="relative -mt-20 size-[120px]">
+              {loading ? (
+                <Skeleton className="size-[120px] rounded-full" />
+              ) : (
+                <UserAvatar
+                  userId={profile?.id}
+                  avatarUrl={profile?.avatar_url}
+                  avatarSeed={profile?.avatar_seed}
+                  avatarConfig={profile?.avatar_config}
+                  alt={profile ? profileTitle(profile) : ""}
+                  fallback={<User className="size-7" aria-hidden />}
+                  size="5XLarge"
+                  className="rounded-full"
+                  imageClassName="rounded-full"
+                  fallbackClassName="rounded-full"
+                >
+                  {effectiveIsSelf ? (
+                    <AvatarAction
+                      kind="edit"
+                      aria-label={t("userProfile.actions.editAvatar")}
+                      onClick={openAvatarEditor}
+                    />
+                  ) : null}
+                </UserAvatar>
+              )}
+            </div>
+            {!loading && profile && effectiveIsSelf ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button type="button" variant="cta" hierarchy="tertiary" size="small" iconOnly className="-mb-2 mt-1 min-[520px]:hidden" aria-label={t("userProfile.actions.more")}>
+                      <DotsThree aria-hidden weight="bold" className="size-5" />
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent layout="multiple-list" align="end" className="w-max min-w-[200px] max-w-(--available-width)">
+                  <DropdownMenuList>
+                    <DropdownMenuItem size="large" onClick={() => setPreviewAsGuest(true)}>
+                      <DropdownMenuItemContent leading={<Eye className="size-5" aria-hidden />}>
+                        {t("userProfile.actions.previewAsGuest")}
+                      </DropdownMenuItemContent>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem size="large" onClick={openEditProfile}>
+                      <DropdownMenuItemContent leading={<PencilSimple className="size-5" weight="duotone" aria-hidden />}>
+                        {t("userProfile.actions.editProfile")}
+                      </DropdownMenuItemContent>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem size="large" onClick={onShare}>
+                      <DropdownMenuItemContent leading={<ShareFat className="size-5" weight="duotone" aria-hidden />}>
+                        {t("userProfile.actions.share")}
+                      </DropdownMenuItemContent>
+                    </DropdownMenuItem>
+                  </DropdownMenuList>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
           </div>
 
           <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
@@ -304,7 +351,8 @@ export default function UserProfileLayout() {
             </div>
 
             <div className="flex min-w-0 flex-col gap-3 md:items-end">
-              <div className="flex flex-wrap items-center gap-4 md:justify-end">
+              {/* Hồ sơ của mình: dưới 520px, 3 nút chuyển vào menu "…" cạnh avatar */}
+              <div className={cn("items-center gap-4 md:justify-end", effectiveIsSelf ? "hidden min-[520px]:flex" : "flex flex-wrap")}>
                 {loading ? <Skeleton className="h-8 w-36 rounded" /> : null}
 
                 {/* Ngoài phạm vi: Figma không có nút "Xem tư cách khách"; giữ tạm để không mất chức năng */}
@@ -338,10 +386,7 @@ export default function UserProfileLayout() {
                     variant="cta"
                     hierarchy="primary"
                     size="small"
-                    onClick={() => {
-                      setEditSession((n) => n + 1);
-                      setEditOpen(true);
-                    }}
+                    onClick={openEditProfile}
                   >
                     {t("userProfile.actions.editProfile")}
                   </Button>

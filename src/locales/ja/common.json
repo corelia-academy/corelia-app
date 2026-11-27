@@ -246,6 +246,7 @@
       "achievementsTab": "実績"
     },
     "actions": {
+      "more": "その他の操作",
       "editProfile": "プロフィールを編集",
       "previewAsGuest": "ゲストとしてプレビュー",
       "exitPreview": "プレビューを終了",

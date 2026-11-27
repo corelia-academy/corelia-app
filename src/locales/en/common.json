@@ -246,6 +246,7 @@
       "achievementsTab": "Achievements"
     },
     "actions": {
+      "more": "More actions",
       "editProfile": "Edit profile",
       "previewAsGuest": "Preview as guest",
       "exitPreview": "Exit preview",

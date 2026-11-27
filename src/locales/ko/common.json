@@ -246,6 +246,7 @@
       "achievementsTab": "성과"
     },
     "actions": {
+      "more": "추가 작업",
       "editProfile": "프로필 편집",
       "previewAsGuest": "방문자로 미리보기",
       "exitPreview": "미리보기 종료",

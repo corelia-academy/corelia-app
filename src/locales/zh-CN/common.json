@@ -246,6 +246,7 @@
       "achievementsTab": "成就"
     },
     "actions": {
+      "more": "更多操作",
       "editProfile": "编辑资料",
       "previewAsGuest": "以访客身份预览",
       "exitPreview": "退出预览",
