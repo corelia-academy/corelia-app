@@ -246,6 +246,24 @@ export default function UserProfileLayout() {
     );
   };
 
+  // Hàng người theo dõi dùng ở hai vị trí: dưới tên (điện thoại) và dưới nhóm nút (từ 768px)
+  const renderCounts = (className: string) =>
+    !loading && profile ? (
+      <div className={cn("h-6 items-center gap-2.5", className)}>
+        <ProfileCount
+          label={t("userProfile.counts.followers", { value: followerCount })}
+          ariaLabel={t("userProfile.actions.viewFollowers")}
+          onClick={profile.profile_public ? () => setFollowerDialogOpen(true) : undefined}
+        />
+        <Separator orientation="vertical" className="border-stroke-divider" aria-hidden="true" />
+        <ProfileCount
+          label={t("userProfile.counts.following", { value: followingProfileCount })}
+          ariaLabel={t("userProfile.actions.viewFollowing")}
+          onClick={profile.profile_public ? () => setFollowingDialogOpen(true) : undefined}
+        />
+      </div>
+    ) : null;
+
   return (
     <div className="container-app pb-6 pt-0 sm:py-8 lg:py-10">
       <section>
@@ -337,6 +355,7 @@ export default function UserProfileLayout() {
                   <h1 data-profile-title className="text-heading-large font-display text-foreground [overflow-wrap:anywhere]">
                     {profileTitle(profile)}
                   </h1>
+                  {renderCounts("-ml-[9px] mt-3 flex md:hidden")}
                   {bio ? (
                     <p className="mt-2 max-w-[499px] text-body-large font-body text-foreground-subtle [overflow-wrap:anywhere]">
                       {bio}
@@ -416,25 +435,7 @@ export default function UserProfileLayout() {
                 ) : null}
               </div>
 
-              {!loading && profile ? (
-                <div className="flex h-6 items-center gap-2.5">
-                  <ProfileCount
-                    label={t("userProfile.counts.followers", { value: followerCount })}
-                    ariaLabel={t("userProfile.actions.viewFollowers")}
-                    onClick={
-                      profile.profile_public ? () => setFollowerDialogOpen(true) : undefined
-                    }
-                  />
-                  <Separator orientation="vertical" className="border-stroke-divider" aria-hidden="true" />
-                  <ProfileCount
-                    label={t("userProfile.counts.following", { value: followingProfileCount })}
-                    ariaLabel={t("userProfile.actions.viewFollowing")}
-                    onClick={
-                      profile.profile_public ? () => setFollowingDialogOpen(true) : undefined
-                    }
-                  />
-                </div>
-              ) : null}
+              {renderCounts("hidden md:flex")}
               {!loading && profile?.profile_public ? (
                 <>
                   <FollowerPreview
