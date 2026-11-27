@@ -101,7 +101,7 @@ describe("CoursesPage catalog states", () => {
     expect(markup).toContain("justify-center");
     expect(markup).not.toContain("xl:grid-cols-[repeat(3,335px)]");
     expect(markup).toMatch(
-      /<span\b(?=[^>]*data-slot="chip")(?=[^>]*class="[^"]*\btext-\[10px\][^"]*")[^>]*>1<\/span>/,
+      /<span\b(?=[^>]*data-slot="chip")(?=[^>]*class="[^"]*text-\[10px\][^"]*")[^>]*>1<\/span>/,
     );
   });
 
