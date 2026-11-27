@@ -44,6 +44,21 @@
     }
   },
   "settings": {
+    "display": {
+      "title": "Ngôn ngữ & Hiển thị"
+    },
+    "visibility": {
+      "title": "Trạng thái hiển thị hồ sơ"
+    },
+    "account": {
+      "signedInWith": "Đã đăng nhập với {{provider}}",
+      "password": "Mật khẩu",
+      "changePhone": "Thay đổi số điện thoại",
+      "title": "Tài khoản",
+      "changeUsername": "Thay đổi username",
+      "usernameInfo": "Phần tên sẽ hiển thị trong đường dẫn đến hồ sơ của bạn (nếu hồ sơ ở trạng thái công khai).",
+      "noUsername": "Chưa đặt username"
+    },
     "language": {
       "title": "Ngôn ngữ",
       "description": "Thay đổi ngôn ngữ hiển thị cho toàn bộ ứng dụng. Với tài khoản đã đăng nhập, lựa chọn này sẽ được đồng bộ trên các thiết bị.",

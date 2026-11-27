@@ -44,6 +44,21 @@
     }
   },
   "settings": {
+    "display": {
+      "title": "Language & display"
+    },
+    "visibility": {
+      "title": "Profile visibility"
+    },
+    "account": {
+      "signedInWith": "Signed in with {{provider}}",
+      "password": "Password",
+      "changePhone": "Change phone number",
+      "title": "Account",
+      "changeUsername": "Change username",
+      "usernameInfo": "The name shown in the link to your profile (if your profile is public).",
+      "noUsername": "No username yet"
+    },
     "language": {
       "title": "Language",
       "description": "Change the app display language. When signed in, this preference is synced across your devices.",

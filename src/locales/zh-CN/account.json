@@ -44,6 +44,21 @@
     }
   },
   "settings": {
+    "display": {
+      "title": "语言与显示"
+    },
+    "visibility": {
+      "title": "个人资料可见性"
+    },
+    "account": {
+      "signedInWith": "已使用 {{provider}} 登录",
+      "password": "密码",
+      "changePhone": "更改电话号码",
+      "title": "账户",
+      "changeUsername": "更改用户名",
+      "usernameInfo": "显示在你个人资料链接中的名称（当资料公开时）。",
+      "noUsername": "尚未设置用户名"
+    },
     "language": {
       "title": "语言",
       "description": "更改应用显示语言。登录后，此偏好会在您的各台设备间同步。",
