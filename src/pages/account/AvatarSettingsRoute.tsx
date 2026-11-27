@@ -188,7 +188,7 @@ export function AvatarEditorModal({ open, onOpenChange }: { open: boolean; onOpe
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-5 gap-y-6">
+          <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
             {PART_FIELDS.map(({ slot, color }) => (
               <div key={slot} className="flex items-end gap-[10px]">
                 <PartSelect
