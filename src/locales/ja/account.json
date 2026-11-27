@@ -44,17 +44,32 @@
     }
   },
   "settings": {
+    "display": {
+      "title": "言語と表示"
+    },
+    "visibility": {
+      "title": "プロフィールの公開設定"
+    },
+    "account": {
+      "signedInWith": "{{provider}}でログイン済み",
+      "password": "パスワード",
+      "changePhone": "電話番号を変更",
+      "title": "アカウント",
+      "changeUsername": "ユーザー名を変更",
+      "usernameInfo": "プロフィールへのリンクに表示される名前です（プロフィールが公開の場合）。",
+      "noUsername": "ユーザー名は未設定です"
+    },
     "language": {
       "title": "言語",
       "description": "アプリの表示言語を変更します。ログインしている場合、この設定はお使いのすべてのデバイスで同期されます。",
       "meta": {
-        "en": "英語 (EN)",
-        "zh-CN": "中国語（簡体字）(zh-CN)",
-        "ko": "韓国語 (KO)",
-        "es": "スペイン語 (ES)",
-        "zh-TW": "中国語（繁体字）(zh-TW)",
-        "vi": "ベトナム語 (VI)",
-        "ja": "日本語 (JA)"
+        "en": "英語 (En)",
+        "zh-CN": "中国語（簡体字）(Cn)",
+        "ko": "韓国語 (Ko)",
+        "es": "スペイン語 (Es)",
+        "zh-TW": "中国語（繁体字）(Tw)",
+        "vi": "ベトナム語 (Vi)",
+        "ja": "日本語 (Ja)"
       },
       "active": "使用中"
     },
@@ -521,6 +536,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "変更を破棄",
+    "previousOption": "前の選択肢",
+    "nextOption": "次の選択肢",
     "title": "アバターを編集",
     "description": "見た目を選んで、プロフィールに保存します。",
     "edit": "アバターを編集",

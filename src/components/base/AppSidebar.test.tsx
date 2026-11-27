@@ -68,4 +68,30 @@ describe("AppSidebar navigation", () => {
     queryClient.clear();
     container.remove();
   });
+
+  it.each(["/account/settings", "/account/cv"])("swaps to the settings menu on %s", async (path) => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={[path]}>
+            <SidebarProvider>
+              <AppSidebar collapsible="none" />
+            </SidebarProvider>
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    });
+
+    expect([...container.querySelectorAll("a")].map((a) => a.getAttribute("href"))).toEqual(["/", "/account/settings", "/account/cv"]);
+    expect(container.querySelector(`a[href="${path}"]`)?.getAttribute("aria-current")).toBe("page");
+
+    await act(async () => root.unmount());
+    queryClient.clear();
+    container.remove();
+  });
 });

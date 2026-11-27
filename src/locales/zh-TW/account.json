@@ -44,17 +44,32 @@
     }
   },
   "settings": {
+    "display": {
+      "title": "語言與顯示"
+    },
+    "visibility": {
+      "title": "個人檔案顯示狀態"
+    },
+    "account": {
+      "signedInWith": "已使用 {{provider}} 登入",
+      "password": "密碼",
+      "changePhone": "變更電話號碼",
+      "title": "帳戶",
+      "changeUsername": "變更使用者名稱",
+      "usernameInfo": "顯示在你個人檔案連結中的名稱（當檔案公開時）。",
+      "noUsername": "尚未設定使用者名稱"
+    },
     "language": {
       "title": "語言",
       "description": "變更應用程式顯示語言。登入後，此偏好會在您的各台裝置間同步。",
       "meta": {
-        "en": "英語 (EN)",
-        "zh-CN": "簡體中文 (zh-CN)",
-        "ko": "韓語 (KO)",
-        "es": "西班牙語 (ES)",
-        "zh-TW": "繁體中文 (zh-TW)",
-        "vi": "越南語 (VI)",
-        "ja": "日語 (JA)"
+        "en": "英語 (En)",
+        "zh-CN": "簡體中文 (Cn)",
+        "ko": "韓語 (Ko)",
+        "es": "西班牙語 (Es)",
+        "zh-TW": "繁體中文 (Tw)",
+        "vi": "越南語 (Vi)",
+        "ja": "日語 (Ja)"
       },
       "active": "使用中"
     },
@@ -521,6 +536,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "捨棄變更",
+    "previousOption": "上一個選項",
+    "nextOption": "下一個選項",
     "title": "編輯頭像",
     "description": "選擇您的形象，然後儲存到您的資料。",
     "edit": "編輯頭像",

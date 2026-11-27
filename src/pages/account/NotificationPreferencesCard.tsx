@@ -13,51 +13,8 @@ import {
 import { resolvedTimeZone } from "@/lib/timezone";
 import { useAuth } from "@/stores/authStore";
 import { QueryErrorState } from "@/components/QueryErrorState";
-
-function Toggle({
-  id,
-  checked,
-  onChange,
-  label,
-  description,
-}: {
-  id: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: string;
-  description?: string;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-3">
-      <div className="min-w-0">
-        <label htmlFor={id} className="text-sm font-medium text-foreground cursor-pointer">
-          {label}
-        </label>
-        {description && (
-          <p className="mt-0.5 text-xs text-foreground-muted">{description}</p>
-        )}
-      </div>
-      <button
-        id={id}
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={[
-          "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
-          checked ? "bg-primary" : "bg-border",
-        ].join(" ")}
-      >
-        <span
-          className={[
-            "pointer-events-none inline-block size-5 rounded-full bg-primary-foreground shadow-sm transition-transform duration-200",
-            checked ? "translate-x-5" : "translate-x-0",
-          ].join(" ")}
-        />
-      </button>
-    </div>
-  );
-}
+import { Toggle } from "@/components/ui/toggle";
+import { SettingsRow, SettingsSection } from "./SettingsLayout";
 
 export function NotificationPreferencesCard() {
   const { t } = useTranslation("account");
@@ -93,49 +50,36 @@ export function NotificationPreferencesCard() {
 
   if (preferencesQuery.isPending) return null;
 
+  const rows: { key: Exclude<keyof NotificationPreferences, "digest_timezone">; label: string; description?: string }[] = [
+    { key: "in_app_likes", label: t("settings.notifications.likes") },
+    { key: "in_app_follows", label: t("settings.notifications.follows") },
+    { key: "email_social_digest", label: t("settings.notifications.digest"), description: t("settings.notifications.digestDescription", { timezone: prefs.digest_timezone }) },
+    { key: "email_learning_reminders", label: t("settings.notifications.emailLearningReminders"), description: t("settings.notifications.emailLearningRemindersDesc") },
+    { key: "email_course_blast", label: t("settings.notifications.emailCourseBlast") },
+    { key: "in_app_course_blast", label: t("settings.notifications.inAppCourseBlast") },
+  ];
+
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
-      <h2 className="text-heading-medium font-display text-foreground">
-        {t("settings.notifications.title")}
-      </h2>
-      <p className="mt-1 text-sm text-foreground-muted">
-        {t("settings.notifications.description")}
-      </p>
+    <SettingsSection title={t("settings.notifications.title")}>
+      <p className="text-body-medium text-foreground-subtle">{t("settings.notifications.description")}</p>
 
       {/* Never present defaults as the user's saved settings when they failed to load. */}
       {preferencesQuery.isError && !preferencesQuery.data ? (
         <QueryErrorState
-          className="mt-4"
           message={t("settings.notifications.loadFailed")}
           retrying={preferencesQuery.isFetching}
           onRetry={() => void preferencesQuery.refetch()}
         />
       ) : (
-      <div className="mt-4 divide-y divide-border-subtle rounded-md border border-border-subtle px-4">
-        <Toggle id="pref-likes" checked={prefs.in_app_likes} onChange={() => !saveMutation.isPending && toggle("in_app_likes")} label={t("settings.notifications.likes")} />
-        <Toggle id="pref-follows" checked={prefs.in_app_follows} onChange={() => !saveMutation.isPending && toggle("in_app_follows")} label={t("settings.notifications.follows")} />
-        <Toggle id="pref-social-digest" checked={prefs.email_social_digest} onChange={() => !saveMutation.isPending && toggle("email_social_digest")} label={t("settings.notifications.digest")} description={t("settings.notifications.digestDescription", { timezone: prefs.digest_timezone })} />
-        <Toggle
-          id="pref-email-learning"
-          checked={prefs.email_learning_reminders}
-          onChange={() => !saveMutation.isPending && toggle("email_learning_reminders")}
-          label={t("settings.notifications.emailLearningReminders")}
-          description={t("settings.notifications.emailLearningRemindersDesc")}
-        />
-        <Toggle
-          id="pref-email-course"
-          checked={prefs.email_course_blast}
-          onChange={() => !saveMutation.isPending && toggle("email_course_blast")}
-          label={t("settings.notifications.emailCourseBlast")}
-        />
-        <Toggle
-          id="pref-inapp-course"
-          checked={prefs.in_app_course_blast}
-          onChange={() => !saveMutation.isPending && toggle("in_app_course_blast")}
-          label={t("settings.notifications.inAppCourseBlast")}
-        />
-      </div>
+        rows.map(({ key, label, description }) => (
+          <SettingsRow
+            key={key}
+            title={label}
+            description={description}
+            action={<Toggle aria-label={label} checked={prefs[key]} onCheckedChange={() => { if (!saveMutation.isPending) toggle(key); }} />}
+          />
+        ))
       )}
-    </section>
+    </SettingsSection>
   );
 }

@@ -2,6 +2,7 @@ import * as React from "react"
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar"
 import { Pencil, Plus } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 export const AVATAR_SIZES = [
@@ -238,6 +239,7 @@ const avatarActionSizes: readonly AvatarSize[] = [
   "2XLarge",
   "3XLarge",
   "4XLarge",
+  "5XLarge",
 ]
 
 function Avatar({
@@ -379,16 +381,31 @@ function AvatarGroupCount({
 type AvatarActionKind = "edit" | "add"
 
 export type AvatarActionProps = Omit<
-  React.ButtonHTMLAttributes<HTMLButtonElement>,
-  "children"
+  React.ComponentProps<typeof Button>,
+  | "children"
+  | "variant"
+  | "hierarchy"
+  | "size"
+  | "iconOnly"
+  | "leadingIcon"
+  | "trailingIcon"
 > & {
   kind: AvatarActionKind
   "aria-label": string
+  /** Icon thay thế; bỏ trống thì dùng icon mặc định theo `kind`. */
+  icon?: React.ElementType
+}
+
+// Figma: icon 12px cho XLarge → 3XLarge; 16px cho 4XLarge; 20px cho 5XLarge.
+const actionIconSizes: Partial<Record<AvatarSize, string>> = {
+  "4XLarge": "size-4",
+  "5XLarge": "size-5",
 }
 
 function AvatarAction({
   className,
   kind,
+  icon,
   "aria-label": ariaLabel,
   disabled,
   ...props
@@ -405,36 +422,44 @@ function AvatarAction({
   }
 
   const isAvatarDisabled = avatar?.type === "Disabled"
-  const Icon = kind === "edit" ? Pencil : Plus
+  const Icon = icon ?? (kind === "edit" ? Pencil : Plus)
 
   return (
-    <button
+    // size="medium": Button small/xsmall thêm `pointer-coarse:relative` sẽ phá `absolute`;
+    // kích thước thật do các class size-* bên dưới quyết định.
+    <Button
       type="button"
+      variant="cta"
+      hierarchy="primary"
+      size="medium"
+      iconOnly
       aria-label={ariaLabel}
       aria-disabled={isAvatarDisabled || undefined}
       disabled={disabled || isAvatarDisabled}
       data-slot="avatar-action"
       data-avatar-action={kind}
       className={cn(
-        "absolute right-0 bottom-0 z-20 inline-flex size-4 shrink-0 items-center justify-center rounded-full p-0 shadow-avatar-action focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-avatar-action-focus disabled:pointer-events-none disabled:opacity-50",
-        "overflow-visible before:absolute before:-inset-3.5 before:rounded-full before:content-['']",
-        "data-[avatar-action=edit]:border data-[avatar-action=edit]:border-avatar-action-edit-border data-[avatar-action=edit]:bg-avatar-action-edit data-[avatar-action=edit]:text-avatar-icon",
-        "data-[avatar-action=add]:bg-avatar-action-add data-[avatar-action=add]:text-avatar-icon",
+        "absolute right-0 bottom-0 z-20 size-4 min-h-0! overflow-visible rounded-full border-0 p-0 shadow-avatar-action before:absolute before:-inset-3.5 before:rounded-full before:content-['']",
         "group-data-[avatar-size=xlarge]/avatar:size-4",
         "group-data-[avatar-size=xlarge-1-5]/avatar:size-5",
         "group-data-[avatar-size=xlarge-2]/avatar:size-5",
         "group-data-[avatar-size=xlarge-3]/avatar:size-6",
-        "group-data-[avatar-size=xlarge-4]/avatar:size-6",
+        "group-data-[avatar-size=xlarge-4]/avatar:size-8",
+        "group-data-[avatar-size=xlarge-5]/avatar:size-10",
         "group-data-[avatar-size=xlarge-1-5]/avatar:before:-inset-3",
         "group-data-[avatar-size=xlarge-2]/avatar:before:-inset-3",
         "group-data-[avatar-size=xlarge-3]/avatar:before:-inset-2.5",
         "group-data-[avatar-size=xlarge-4]/avatar:before:-inset-2.5",
+        "group-data-[avatar-size=xlarge-5]/avatar:before:-inset-1",
         className
       )}
       {...props}
     >
-      <Icon aria-hidden="true" className="size-3" />
-    </button>
+      <Icon
+        aria-hidden="true"
+        className={(avatar && actionIconSizes[avatar.size]) ?? "size-3"}
+      />
+    </Button>
   )
 }
 

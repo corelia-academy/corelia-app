@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 
+import { SectionHeader } from "@/components/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -16,12 +17,15 @@ export function OcBadgesByScopeTabs({
   onOpenModal,
   onRetry,
   emptyLabel,
+  layout = "tabs",
 }: {
   badges: BadgeItem[];
   loading: boolean;
   onOpenModal: (item: ModalItem) => void;
   onRetry?: (badge: BadgeItem) => Promise<void>;
   emptyLabel?: string;
+  /** "tabs" giữ nguyên cách cũ (nút lọc); "sections" chia hai nhóm theo Figma cho hồ sơ. */
+  layout?: "tabs" | "sections";
 }) {
   const { t } = useTranslation("common");
   const [tab, setTab] = useState<TabKey>("all");
@@ -70,6 +74,32 @@ export function OcBadgesByScopeTabs({
       <div className="flex flex-col items-center gap-3 py-12 text-center">
         <Loader2 className="size-6 animate-spin text-foreground-muted" aria-hidden />
         <p className="text-sm font-medium text-foreground">{t("achievements.vaults.badges.loading")}</p>
+      </div>
+    );
+  }
+
+  if (layout === "sections") {
+    const groups = [
+      { key: "certificates", title: t("userProfile.achievements.certificatesTitle"), items: buckets.oca, variant: "certificate" as const, columns: "sm:grid-cols-2" },
+      { key: "badges", title: t("userProfile.achievements.badgesTitle"), items: [...buckets.ocb, ...buckets.activity_milestone], variant: "badge" as const, columns: "grid-cols-2 sm:grid-cols-3" },
+    ].filter((group) => group.items.length > 0);
+    if (groups.length === 0) {
+      return <p className="text-sm text-foreground-muted">{emptyLabel ?? t("achievements.ocVault.empty", { defaultValue: "No badges in this category yet." })}</p>;
+    }
+    return (
+      <div className="flex flex-col gap-12">
+        {groups.map((group) => (
+          <section key={group.key} aria-label={group.title} className="flex flex-col gap-4">
+            <SectionHeader title={group.title} />
+            <ul className={cn("grid gap-6", group.columns)}>
+              {group.items.map((badge) => (
+                <li key={badge.id} className="min-w-0">
+                  <BadgeCard badge={badge} variant={group.variant} onOpenModal={onOpenModal} onRetry={onRetry} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
     );
   }

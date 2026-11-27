@@ -51,11 +51,42 @@ describe("Avatar Figma contract", () => {
       </Avatar>,
     )
 
+    const user5x = renderToStaticMarkup(
+      <Avatar type="User" size="5XLarge">
+        <AvatarFallback>OR</AvatarFallback>
+        <AvatarAction kind="edit" aria-label="Edit avatar" />
+      </Avatar>,
+    )
+
+    expect(user5x).toContain('data-avatar-action="edit"')
     expect(userAction).toContain('data-avatar-action="edit"')
     expect(userAction).toContain("absolute right-0 bottom-0")
+    expect(userAction).toContain("hover:bg-button-primary-hover")
+    expect(userAction).toContain("min-h-0!")
     expect(setAction).toContain('data-avatar-action="add"')
     expect(textAction).toContain('data-avatar-action="edit"')
     expect(smallUser).not.toContain("data-avatar-action")
+  })
+
+  it("renders a custom icon when provided and keeps the default otherwise", () => {
+    const Custom = ({ className }: { className?: string }) => (
+      <svg data-testid="custom-icon" className={className} />
+    )
+    const custom = renderToStaticMarkup(
+      <Avatar type="User" size="XLarge">
+        <AvatarFallback>OR</AvatarFallback>
+        <AvatarAction kind="edit" icon={Custom} aria-label="Edit avatar" />
+      </Avatar>,
+    )
+    const fallback = renderToStaticMarkup(
+      <Avatar type="User" size="XLarge">
+        <AvatarFallback>OR</AvatarFallback>
+        <AvatarAction kind="edit" aria-label="Edit avatar" />
+      </Avatar>,
+    )
+
+    expect(custom).toContain('data-testid="custom-icon"')
+    expect(fallback).not.toContain("custom-icon")
   })
 
   it("does not render an active action for a disabled avatar", () => {

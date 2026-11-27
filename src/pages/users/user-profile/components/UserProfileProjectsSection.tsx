@@ -1,241 +1,153 @@
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
-import { useMemo } from "react";
-import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
-import { ExternalLink, FolderGit2 } from "lucide-react";
 
-import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
+import { ProjectCard } from "@/components/projects/ProjectCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getProjectCoverImageUrl } from "@/lib/projects";
-import type { PublicProfile } from "@/types/database";
-import type { Project } from "@/types/projects";
-import { isHackathonProjectSource, projectSourceLabelKey } from "@/lib/projectSource";
-import { useAuth } from "@/stores/authStore";
+import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import { publicProfileProjectsQueryOptions } from "@/features/profiles/publicProfileQueries";
+import { publicProjectEntriesByIdsQueryOptions, publicProjectTeamsQueryOptions } from "@/features/projects/projectQueries";
+import { mySavedProjectIdsQueryOptions, projectSavesQueryOptions } from "@/features/projects/projectSaveQueries";
 import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
+import { listProjectTaxonomyOptions } from "@/lib/projectTaxonomy";
+import { useAuth } from "@/stores/authStore";
+import type { PublicProfile } from "@/types/database";
 
-function sourceLink(project: Project): string | null {
-  if (isHackathonProjectSource(project.source_type)) {
-    const slugOrId = project.hackathon_slug || project.source_id;
-    if (slugOrId) {
-      return `/hackathons/${slugOrId}/overview`;
-    }
-  }
-  if (project.source_type === "course" && project.source_id) {
-    return `/courses/${project.source_id}`;
-  }
-  return null;
-}
+import { SectionHeader } from "@/components/SectionHeader";
 
-export function UserProfileProjectsSection({
-  profile,
-}: {
-  profile: PublicProfile;
-}) {
+const VISIBLE_PROJECTS = 4;
+
+export function UserProfileProjectsSection({ profile, isSelf = false }: { profile: PublicProfile; isSelf?: boolean }) {
   const { user } = useAuth();
   const { t, i18n } = useTranslation("common");
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const [expanded, setExpanded] = useState(false);
+  const [savedExpanded, setSavedExpanded] = useState(false);
+
   const projectsQuery = useQuery(publicProfileProjectsQueryOptions(profile.id, i18n.language));
   const items = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data]);
-  const projectIds = useMemo(() => items.map((project) => project.id), [items]);
+  // Dự án đã lưu là riêng tư: chỉ chủ hồ sơ mới thấy
+  const savedIdsQuery = useQuery(mySavedProjectIdsQueryOptions(user?.id, isSelf));
+  const savedIds = useMemo(() => savedIdsQuery.data ?? [], [savedIdsQuery.data]);
+  const savedEntriesQuery = useQuery(publicProjectEntriesByIdsQueryOptions(isSelf ? savedIds : [], locale));
+  const savedItems = useMemo(() => (isSelf ? savedEntriesQuery.data ?? [] : []), [isSelf, savedEntriesQuery.data]);
+  const savedLoading = savedIdsQuery.isPending || (savedIds.length > 0 && savedEntriesQuery.isPending);
+
+  const projectIds = useMemo(() => [...items.map((project) => project.id), ...savedItems.map(({ project }) => project.id)], [items, savedItems]);
   const heartsQuery = useQuery(projectHeartsQueryOptions(user?.id, projectIds));
-  const heartedIds = heartsQuery.data ?? new Set<string>();
-  const loading = projectsQuery.isPending;
-  const error = projectsQuery.error ? t("userProfile.errors.loadFailed") : null;
+  const savesQuery = useQuery(projectSavesQueryOptions(user?.id, projectIds));
+  const teamsQuery = useQuery(publicProjectTeamsQueryOptions(projectIds));
+  const hackathonsQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
+  const taxonomyQuery = useQuery({
+    queryKey: ["projects", "taxonomy", locale],
+    queryFn: () => listProjectTaxonomyOptions(locale),
+    staleTime: 5 * 60_000,
+  });
+  const hackathons = hackathonsQuery.data ?? [];
+  const systemTaxonomy = taxonomyQuery.data ?? [];
+  const visible = expanded ? items : items.slice(0, VISIBLE_PROJECTS);
+  const savedVisible = savedExpanded ? savedItems : savedItems.slice(0, VISIBLE_PROJECTS);
+  const title = isSelf ? t("userProfile.projects.mine") : t("projects.title");
 
-  if (loading) {
-    return (
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-heading-small font-display text-foreground">
-            {t("projects.title")}
-          </h2>
-        </div>
-        <Skeleton className="h-56 w-full rounded-2xl" />
-        <Skeleton className="h-40 w-full rounded-2xl" />
-      </section>
-    );
-  }
+  const toggle = (shown: boolean, count: number, setShown: (value: boolean) => void) =>
+    count > VISIBLE_PROJECTS && !shown ? (
+      <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setShown(true)}>
+        {t("userProfile.xpHistory.viewAll")}
+      </Button>
+    ) : undefined;
+  const collapse = (shown: boolean, count: number, setShown: (value: boolean) => void) =>
+    shown && count > VISIBLE_PROJECTS ? (
+      <div className="flex">
+        <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setShown(false)}>
+          {t("userProfile.xpHistory.collapse")}
+        </Button>
+      </div>
+    ) : null;
 
-  if (error) {
-    return (
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-heading-small font-display text-foreground">
-            {t("projects.title")}
-          </h2>
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted shadow-card sm:p-6">
-          {error}
-        </div>
-      </section>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-heading-small font-display text-foreground">
-            {t("projects.title")}
-          </h2>
-        </div>
-        <div className="rounded-2xl border border-dashed border-border-subtle bg-surface-base p-6 text-sm text-foreground-muted shadow-card">
-          {t("userProfile.projects.empty")}
-        </div>
-      </section>
-    );
-  }
+  const cardProps = {
+    systemTaxonomy,
+    saveStateReady: savesQuery.isSuccess && !savesQuery.isPlaceholderData,
+  };
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-heading-small font-display text-foreground">
-            {t("projects.title")}
-          </h2>
-        </div>
-        <span className="rounded-full border border-border-subtle bg-surface-raised px-2.5 py-1 text-xs font-medium tabular-nums text-foreground-muted">
-          {items.length}
-        </span>
-      </div>
-
-      <div className="grid gap-4">
-        {items.map((project) => {
-          const href = sourceLink(project);
-          const coverUrl = getProjectCoverImageUrl(project);
-
-          return (
-            <article
-              key={project.id}
-              className="group overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[background-color,border-color,box-shadow] duration-200 hover:border-border hover:bg-surface-raised"
-            >
-              <div className="grid min-w-0 gap-0 md:grid-cols-[minmax(220px,0.42fr)_minmax(0,1fr)]">
-                <div className="relative aspect-video overflow-hidden border-b border-border-subtle bg-surface-raised md:aspect-auto md:min-h-56 md:border-r md:border-b-0">
-                  {coverUrl ? (
-                    <img
-                      src={optimizedImageUrl(coverUrl, { width: 480 })} srcSet={optimizedImageSrcSet(coverUrl, 480)} decoding="async"
-                      alt={project.title}
-                      className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex size-full items-center justify-center p-6 text-center">
-                      <div>
-                        <FolderGit2
-                          className="mx-auto size-8 text-foreground-subtle"
-                          aria-hidden
-                        />
-                        <div className="mt-3 line-clamp-2 text-sm font-medium text-foreground-muted">
-                          {project.title}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex min-w-0 flex-col p-4 sm:p-5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="min-w-0 flex-1 truncate text-heading-small font-display text-foreground">
-                      {project.title}
-                    </h3>
-                    <span className="shrink-0 rounded-full border border-border-subtle bg-surface-raised px-2 py-0.5 text-[10px] font-medium uppercase text-foreground-muted">
-                      {t(projectSourceLabelKey(project.source_type))}
-                    </span>
-                  </div>
-
-                  {project.summary ? (
-                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-foreground-muted">
-                      {project.summary}
-                    </p>
-                  ) : (
-                    <p className="mt-2 text-sm leading-6 text-foreground-muted">
-                      {t("projects.card.noSummary")}
-                    </p>
-                  )}
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {href ? (
-                      <Button
-                        size="small"
-                        variant="cta" hierarchy="secondary"
-                        render={<NavLink to={href} />}
-                        nativeButton={false}
-                      >
-                        {t("userProfile.projects.viewSource")}
-                      </Button>
-                    ) : null}
-                    {project.demo_url ? (
-                      <Button
-                        size="small"
-                        variant="cta" hierarchy="secondary"
-                        render={
-                          <a href={project.demo_url} target="_blank" rel="noreferrer" />
-                        }
-                        nativeButton={false}
-                        className="gap-1"
-                      >
-                        <ExternalLink className="size-4" aria-hidden />
-                        {t("userProfile.projects.demo")}
-                      </Button>
-                    ) : null}
-                    {project.repo_url ? (
-                      <Button
-                        size="small"
-                        variant="cta" hierarchy="secondary"
-                        render={
-                          <a href={project.repo_url} target="_blank" rel="noreferrer" />
-                        }
-                        nativeButton={false}
-                        className="gap-1"
-                      >
-                        <ExternalLink className="size-4" aria-hidden />
-                        {t("userProfile.projects.repo")}
-                      </Button>
-                    ) : null}
-                    {project.slide_url ? (
-                      <Button
-                        size="small"
-                        variant="cta" hierarchy="secondary"
-                        render={
-                          <a href={project.slide_url} target="_blank" rel="noreferrer" />
-                        }
-                        nativeButton={false}
-                        className="gap-1"
-                      >
-                        <ExternalLink className="size-4" aria-hidden />
-                        {t("userProfile.projects.slides")}
-                      </Button>
-                    ) : null}
-                    {project.video_url ? (
-                      <Button
-                        size="small"
-                        variant="cta" hierarchy="secondary"
-                        render={
-                          <a href={project.video_url} target="_blank" rel="noreferrer" />
-                        }
-                        nativeButton={false}
-                        className="gap-1"
-                      >
-                        <ExternalLink className="size-4" aria-hidden />
-                        {t("userProfile.projects.video")}
-                      </Button>
-                    ) : null}
-                  </div>
-
-                  <ProjectSocialBlock
-                    projectId={project.id}
-                    likeCount={Number(project.like_count ?? 0)}
-                    hearted={heartedIds.has(project.id)}
-                    className="mt-4"
+    <div className="flex flex-col gap-12">
+      <section aria-label={title} className="flex flex-col gap-4">
+        <SectionHeader title={title} action={toggle(expanded, items.length, setExpanded)} />
+        {projectsQuery.isPending ? (
+          <div className="flex flex-col gap-4">
+            <Skeleton className="h-60 w-full rounded-md" />
+            <Skeleton className="h-60 w-full rounded-md" />
+          </div>
+        ) : projectsQuery.isError ? (
+          <p className="text-sm text-foreground-muted">{t("userProfile.errors.loadFailed")}</p>
+        ) : items.length === 0 ? (
+          <p className="text-sm text-foreground-muted">{t("userProfile.projects.empty")}</p>
+        ) : (
+          <>
+            <div className="flex flex-col gap-4">
+              {visible.map((project) => {
+                const ownedByProfile = project.owner_id === profile.id;
+                return (
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    {...cardProps}
+                    taxonomy={hackathons.find((item) => item.id === project.source_id)}
+                    hearted={heartsQuery.data?.has(project.id) ?? false}
+                    saved={savesQuery.data?.has(project.id) ?? false}
+                    ownerLabel={ownedByProfile ? profile.full_name ?? profile.username : undefined}
+                    ownerHandle={ownedByProfile ? profile.username ?? profile.ocid : undefined}
+                    ownerAvatarUrl={ownedByProfile ? profile.avatar_url : undefined}
+                    ownerAvatarSeed={ownedByProfile ? profile.avatar_seed : undefined}
+                    ownerAvatarConfig={ownedByProfile ? profile.avatar_config : undefined}
+                    teamMembers={teamsQuery.data?.[project.id] ?? []}
                   />
-                </div>
+                );
+              })}
+            </div>
+            {collapse(expanded, items.length, setExpanded)}
+          </>
+        )}
+      </section>
+
+      {isSelf ? (
+        <section aria-label={t("userProfile.projects.saved")} className="flex flex-col gap-4">
+          <SectionHeader title={t("userProfile.projects.saved")} action={toggle(savedExpanded, savedItems.length, setSavedExpanded)} />
+          {savedLoading ? (
+            <div className="grid gap-6 sm:grid-cols-2">
+              <Skeleton className="h-60 w-full rounded-md" />
+              <Skeleton className="h-60 w-full rounded-md" />
+            </div>
+          ) : savedIdsQuery.isError || savedEntriesQuery.isError ? (
+            <p className="text-sm text-foreground-muted">{t("userProfile.errors.loadFailed")}</p>
+          ) : savedItems.length === 0 ? (
+            <p className="text-sm text-foreground-muted">{t("userProfile.projects.savedEmpty")}</p>
+          ) : (
+            <>
+              <div className="grid gap-6 sm:grid-cols-2">
+                {savedVisible.map(({ project, owner }) => (
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    {...cardProps}
+                    taxonomy={hackathons.find((item) => item.id === project.source_id)}
+                    hearted={heartsQuery.data?.has(project.id) ?? false}
+                    saved={savesQuery.data?.has(project.id) ?? false}
+                    ownerLabel={owner?.full_name ?? owner?.username}
+                    ownerHandle={owner?.username ?? owner?.ocid}
+                    ownerAvatarUrl={owner?.avatar_url}
+                    ownerAvatarSeed={owner?.avatar_seed}
+                    ownerAvatarConfig={owner?.avatar_config}
+                    teamMembers={teamsQuery.data?.[project.id] ?? []}
+                  />
+                ))}
               </div>
-            </article>
-          );
-        })}
-      </div>
-    </section>
+              {collapse(savedExpanded, savedItems.length, setSavedExpanded)}
+            </>
+          )}
+        </section>
+      ) : null}
+    </div>
   );
 }

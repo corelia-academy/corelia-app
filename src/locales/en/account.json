@@ -44,17 +44,32 @@
     }
   },
   "settings": {
+    "display": {
+      "title": "Language & display"
+    },
+    "visibility": {
+      "title": "Profile visibility"
+    },
+    "account": {
+      "signedInWith": "Signed in with {{provider}}",
+      "password": "Password",
+      "changePhone": "Change phone number",
+      "title": "Account",
+      "changeUsername": "Change username",
+      "usernameInfo": "The name shown in the link to your profile (if your profile is public).",
+      "noUsername": "No username yet"
+    },
     "language": {
       "title": "Language",
       "description": "Change the app display language. When signed in, this preference is synced across your devices.",
       "meta": {
-        "en": "English (EN)",
-        "zh-CN": "Simplified Chinese (zh-CN)",
-        "ko": "Korean (KO)",
-        "es": "Spanish (ES)",
-        "zh-TW": "Traditional Chinese (zh-TW)",
-        "vi": "Vietnamese (VI)",
-        "ja": "Japanese (JA)"
+        "en": "English (En)",
+        "zh-CN": "Simplified Chinese (Cn)",
+        "ko": "Korean (Ko)",
+        "es": "Spanish (Es)",
+        "zh-TW": "Traditional Chinese (Tw)",
+        "vi": "Vietnamese (Vi)",
+        "ja": "Japanese (Ja)"
       },
       "active": "Active"
     },
@@ -522,6 +537,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "Discard changes",
+    "previousOption": "Previous option",
+    "nextOption": "Next option",
     "title": "Edit avatar",
     "description": "Choose your look, then save it to your profile.",
     "edit": "Edit avatar",

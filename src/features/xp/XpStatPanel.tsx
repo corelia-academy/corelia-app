@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { MonitorPlay } from "@phosphor-icons/react";
+import { Sparkle } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 
 import xpPanelBackground from "@/assets/illustrations/xp-panel-background.svg";
@@ -10,7 +10,7 @@ import { getXpTotals } from "@/lib/xp";
 import { getXpRank, XP_RANKS } from "@/lib/xpRanks";
 import { intlLocaleFor } from "@/lib/locales";
 
-export function HomeXpPanel({ userId }: { userId: string | undefined }) {
+export function XpStatPanel({ userId }: { userId: string | undefined }) {
   const { t: tCommon, i18n } = useTranslation("common");
   const { t: tAccount } = useTranslation("account");
   const query = useQuery({
@@ -73,12 +73,12 @@ export function HomeXpPanel({ userId }: { userId: string | undefined }) {
 
       <header className="relative z-10 flex w-full flex-col gap-2">
         <div className="flex items-center gap-2.5">
-          <MonitorPlay
+          <Sparkle
             aria-hidden="true"
             className="size-5 shrink-0 text-foreground-muted"
             weight="duotone"
           />
-          <h2 id="home-xp-title" className="text-sm font-medium text-foreground">
+          <h2 id="home-xp-title" data-xp-panel-title className="text-title-large text-foreground">
             {tCommon("home.xp.title")}
           </h2>
         </div>
@@ -87,10 +87,11 @@ export function HomeXpPanel({ userId }: { userId: string | undefined }) {
 
       <div className="relative z-10 flex w-full flex-col items-center gap-2 text-center">
         <div className="flex flex-col gap-1">
-          <p className="text-sm font-medium text-foreground">
+          {/* TODO(figma-xp-info): Figma có biểu tượng ⓘ cạnh tên hạng; chờ chốt hành vi (tooltip hoặc hộp thoại) */}
+          <p className="text-title-large text-foreground">
             {title}
           </p>
-          <p className="text-xs leading-4 text-foreground-muted">{description}</p>
+          <p className="text-body-small text-foreground-subtle">{description}</p>
         </div>
 
         <div

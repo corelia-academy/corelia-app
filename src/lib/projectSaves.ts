@@ -21,6 +21,26 @@ export async function listMyProjectSaveIds(projectIds: string[]): Promise<Set<st
   return new Set((data ?? []).map((row) => row.project_id as string));
 }
 
+/** Mã các dự án đã lưu của chính người dùng (mới lưu trước); RLS chỉ cho đọc dòng của mình. */
+export async function listMySavedProjectIds(limit = 200): Promise<string[]> {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError) throw new Error(userError.message);
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("project_saves")
+    .select("project_id")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => row.project_id as string);
+}
+
 export async function setProjectSaved(
   projectId: string,
   saved: boolean,

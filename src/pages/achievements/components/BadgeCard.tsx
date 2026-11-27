@@ -1,10 +1,11 @@
-import { BadgeCheck, Lock, Loader2, AlertCircle } from "lucide-react";
+import { BadgeCheck, Lock, Loader2, AlertCircle, ArrowUpRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import { BADGE_PLACEHOLDER } from "../constants";
+import { BADGE_PLACEHOLDER, CERT_PLACEHOLDER } from "../constants";
 import type { BadgeItem, ModalItem } from "../types";
 import { OcClaimBadge } from "./OcClaimBadge";
 import { appPath } from "@/lib/appUrl";
@@ -13,10 +14,13 @@ export function BadgeCard({
   badge,
   onOpenModal,
   onRetry,
+  variant = "default",
 }: {
   badge: BadgeItem;
   onOpenModal: (item: ModalItem) => void;
   onRetry?: (badge: BadgeItem) => Promise<void>;
+  /** "default" giữ nguyên thẻ cũ; "certificate" và "badge" là kiểu hiển thị của hồ sơ theo Figma. */
+  variant?: "default" | "certificate" | "badge";
 }) {
   const { t } = useTranslation("common");
   const [retrying, setRetrying] = useState(false);
@@ -36,6 +40,64 @@ export function BadgeCard({
       setRetrying(false);
     }
   };
+
+  if (variant !== "default") {
+    const isCertificate = variant === "certificate";
+    const openDetails = () => {
+      if (!badge.locked && !isPending) onOpenModal({ kind: "badge", data: badge });
+    };
+    const status = isFailed && onRetry ? (
+      <Button type="button" variant="destructive" size="xsmall" className="w-fit" onClick={handleRetry} disabled={retrying}>
+        {retrying && <Loader2 className="size-3 animate-spin" />}
+        {t("achievements.badges.retry")}
+      </Button>
+    ) : isPending ? (
+      <p className="text-xs font-medium text-primary animate-pulse">{t("achievements.badges.pendingPrefix")}</p>
+    ) : isAwaitingHolder ? (
+      <p className="text-xs font-medium text-warning">{t("achievements.oc.badge.awaitingHolder")}</p>
+    ) : isReconciling ? (
+      <p className="text-xs font-medium text-primary">{t("achievements.oc.badge.reconciling")}</p>
+    ) : isCertificate && badge.ocCredentialUrl ? (
+      <a href={badge.ocCredentialUrl} target="_blank" rel="noreferrer"
+        className="inline-flex w-fit items-center gap-1.5 text-body-medium text-foreground hover:underline">
+        {t("userProfile.achievements.viewCredential")}
+        <ArrowUpRight aria-hidden className="size-3 text-foreground-subtle" />
+      </a>
+    ) : null;
+
+    return isCertificate ? (
+      <div className="flex min-w-0 flex-col">
+        <button type="button" onClick={openDetails}
+          className="flex min-w-0 flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+          <span className="block aspect-[3/2] overflow-hidden rounded-lg border border-border bg-surface-raised">
+            <img src={badge.imageUrl ?? CERT_PLACEHOLDER} alt="" loading="lazy"
+              className={cn("size-full object-cover", isPending && "opacity-60")} />
+          </span>
+          <span className="flex flex-col gap-2 p-4 pb-0">
+            <span className="text-heading-medium font-display text-foreground">{badge.title}</span>
+            {badge.earnedAt && badge.earnedAt !== "-" && !isPending ? (
+              <span className={cn("text-body-medium", isFailed ? "text-destructive" : "text-foreground-subtle")}>
+                {isFailed ? t("achievements.badges.failedPrefix") : t("userProfile.achievements.completedAt", { date: badge.earnedAt })}
+              </span>
+            ) : null}
+          </span>
+        </button>
+        {status ? <div className="p-4 pt-4">{status}</div> : null}
+      </div>
+    ) : (
+      <div className="flex min-w-0 flex-col items-center gap-1 text-center">
+        <button type="button" onClick={openDetails}
+          className="flex min-w-0 flex-col items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+          <img src={imageUrl} alt="" loading="lazy" className={cn("size-50 object-contain", isPending && "opacity-60")} />
+          <span className="flex flex-col gap-0.5 px-4">
+            <span className="text-heading-medium font-display text-foreground">{badge.title}</span>
+            {badge.description ? <span className="line-clamp-2 text-body-small text-foreground-subtle">{badge.description}</span> : null}
+          </span>
+        </button>
+        {status}
+      </div>
+    );
+  }
 
   return (
     <div

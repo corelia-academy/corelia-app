@@ -5,7 +5,7 @@ import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { MenuIcon, Search } from "lucide-react";
-import { UserCircle, Shield, Gear, UserSwitch, Sun, Moon, CircleHalf } from "@phosphor-icons/react";
+import { UserCircle, Gear, UserSwitch, Sun, Moon, CircleHalf } from "@phosphor-icons/react";
 import { IconToggle } from "@/components/ui/toggle";
 import { setThemeWithTransition } from "@/lib/themeTransition";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -181,11 +181,12 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
         label: t("header.personalProfile"),
         icon: <UserCircle weight="duotone" aria-hidden />,
       },
-      {
-        to: "/account/profile",
-        label: t("nav.account"),
-        icon: <Shield weight="duotone" aria-hidden />,
-      },
+      // TODO(figma-menu): Figma menu chưa có mục Account, ẩn tạm; bật lại khi có thiết kế (cần import lại Shield)
+      // {
+      //   to: "/account/profile",
+      //   label: t("nav.account"),
+      //   icon: <Shield weight="duotone" aria-hidden />,
+      // },
       {
         to: "/account/settings",
         label: tAccount("nav.settings.title"),

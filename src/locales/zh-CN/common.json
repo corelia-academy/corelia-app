@@ -239,15 +239,50 @@
       "overview": "概览",
       "achievements": "成就",
       "courses": "课程",
-      "contests": "黑客松"
+      "contests": "黑客松",
+      "label": "个人资料栏目",
+      "activity": "动态",
+      "projects": "项目",
+      "achievementsTab": "成就"
     },
     "actions": {
+      "more": "更多操作",
       "editProfile": "编辑资料",
       "previewAsGuest": "以访客身份预览",
       "exitPreview": "退出预览",
       "exitPreviewShort": "退出预览",
       "viewFollowers": "查看关注者",
-      "viewFollowing": "查看该用户关注的资料"
+      "viewFollowing": "查看该用户关注的资料",
+      "share": "分享个人资料",
+      "shareCopied": "已复制个人资料链接。",
+      "shareCopyFailed": "无法复制链接。",
+      "editAvatar": "编辑头像"
+    },
+    "cover": {
+      "add": "添加封面图片"
+    },
+    "edit": {
+      "linksHint": "链接随个人资料的公开或私密设置显示，可在设置中更改。",
+      "linkGithub": "GitHub 链接",
+      "linkLinkedin": "LinkedIn 链接",
+      "linkOther": "其他链接",
+      "addLink": "添加其他链接",
+      "subtitle": "更改显示在你个人资料上的信息",
+      "cancel": "取消",
+      "confirm": "确认",
+      "confirmDescription": "确认保存你所做的更改吗？"
+    },
+    "info": {
+      "title": "信息与链接",
+      "links": "链接与附件"
+    },
+    "xpHistory": {
+      "viewAll": "查看全部",
+      "collapse": "收起"
+    },
+    "counts": {
+      "followers": "{{value}} 位关注者",
+      "following": "{{value}} 个关注"
     },
     "labels": {
       "ocid": "OCID：{{ocid}}",
@@ -287,7 +322,11 @@
       "cta": "打开成就",
       "privateTitle": "成就详情为私密",
       "privateDescription": "成就详情不会在此资料中公开显示。",
-      "openVault": "打开成就库"
+      "openVault": "打开成就库",
+      "certificatesTitle": "学习证书",
+      "badgesTitle": "完成徽章",
+      "completedAt": "完成于 {{date}}",
+      "viewCredential": "查看 OC 凭证"
     },
     "courses": {
       "privateByDefault": "学员的课程默认私密。",
@@ -303,6 +342,9 @@
       "updatedAt": "更新于 {{date}}"
     },
     "projects": {
+      "saved": "已保存的项目",
+      "savedEmpty": "你还没有保存任何项目。",
+      "mine": "我的项目",
       "empty": "暂无公开项目。",
       "viewSource": "查看源码",
       "demo": "演示",

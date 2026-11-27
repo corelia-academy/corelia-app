@@ -11,6 +11,9 @@ import {
   ChatText,
   Compass,
   MegaphoneSimple,
+  ArrowLeft,
+  Gear,
+  IdentificationCard,
 } from "@phosphor-icons/react";
 import {
   Sidebar,
@@ -91,6 +94,12 @@ const sidebarUtilityLinks = [
   },
 ] as const;
 
+// Khu Cài đặt theo Figma: menu trái đổi thành "Quay lại" và các trang cùng khu.
+const settingsNav = [
+  { labelKey: "nav.settings.title", href: "/account/settings", icon: Gear },
+  { labelKey: "nav.cv.title", href: "/account/cv", icon: IdentificationCard },
+] as const;
+
 export default function AppSidebar({
   collapsible = "icon",
   className,
@@ -107,6 +116,28 @@ export default function AppSidebar({
   const location = useLocation();
   const pathname = location.pathname;
   const locale = i18n.resolvedLanguage ?? i18n.language;
+  const { t: tAccount } = useTranslation("account");
+  const isSettingsArea = settingsNav.some((item) => pathname === item.href);
+  const settingsRows = [
+    { href: "/", label: t("actions.back"), icon: ArrowLeft, active: false },
+    ...settingsNav.map((item) => ({ href: item.href, label: tAccount(item.labelKey), icon: item.icon, active: pathname === item.href })),
+  ];
+  const settingsRow = ({ href, label, icon: Icon, active }: (typeof settingsRows)[number]) => (
+    <SidebarMenuItem key={href}>
+      <SidebarMenuButton
+        size="appNav"
+        className="min-h-0! gap-lg rounded-md p-2md"
+        tooltip={label}
+        isActive={active}
+        render={
+          <NavLink to={href} end className="flex w-full items-center">
+            <Icon className="size-5! shrink-0" weight="duotone" aria-hidden />
+            <span>{label}</span>
+          </NavLink>
+        }
+      />
+    </SidebarMenuItem>
+  );
 
   const prefetchPrimaryRoute = async (href: string) => {
     if (!canSpeculativelyPrefetch()) return;
@@ -198,6 +229,18 @@ export default function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup> */}
 
+        {isSettingsArea ? (
+          <SidebarGroup className="gap-xl p-0">
+            <SidebarGroupContent>
+              <SidebarMenu>{settingsRow(settingsRows[0])}</SidebarMenu>
+            </SidebarGroupContent>
+            <SidebarSeparator className="mx-0" />
+            <SidebarGroupContent>
+              <SidebarMenu>{settingsRows.slice(1).map(settingsRow)}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : (
+          <>
         <SidebarGroup className="gap-2xl p-0">
           {primaryNavSections.map((section) => (
             <SidebarGroupContent
@@ -321,6 +364,8 @@ export default function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
 
       <SidebarRail />

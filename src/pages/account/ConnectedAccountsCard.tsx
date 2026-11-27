@@ -1,8 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { readAccountConnectionError } from "@/lib/accountConnectionCallback";
 import { useQuery } from "@tanstack/react-query";
-import { GithubLogo } from "@phosphor-icons/react";
-import { Wallet, Mail, CheckCircle2 } from "lucide-react";
+import { GithubLogo, GoogleLogo, Wallet } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,8 @@ import { useAuth } from "@/stores/authStore";
 import { connectedIdentitiesQueryOptions, connectedWalletsQueryOptions } from "@/features/account/accountQueries";
 import { availableSolanaWallets, connectEthereumWallet, connectSolanaWallet, disconnectWallet, injectedEthereumWallet } from "@/lib/walletConnections";
 import type { ConnectedWallet } from "@/lib/walletConnections";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Modal } from "@/components/ui/modal";
+import { SettingsRow } from "./SettingsLayout";
 import type { DiscoveredEthereumWallet, EthereumProvider } from "@/lib/walletConnections";
 import { queryClient } from "@/lib/queryClient";
 
@@ -28,6 +28,7 @@ export function ConnectedAccountsCard() {
     if (callback) navigate({ pathname: location.pathname, search: callback.search, hash: callback.hash }, { replace: true });
   }, [location.pathname, location.search, location.hash, navigate]);
   const { t } = useTranslation("account");
+  const { t: tc } = useTranslation("common");
   const [error, setError] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [walletBusy, setWalletBusy] = useState(false);
@@ -125,50 +126,67 @@ export function ConnectedAccountsCard() {
     }
   }
 
-  return <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
-    <h2 className="font-display text-heading-medium">{t("xp.connections.title")}</h2>
-    {callbackError ? <p role="alert" className="mt-3 rounded-lg border border-destructive p-3 text-sm text-destructive">{t(callbackError.messageKey)}</p> : null}
-    <div id="connected-github" tabIndex={-1} className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border-subtle p-3">
-      <div className="flex items-center gap-2"><GithubLogo className="size-5" weight="duotone" aria-hidden /><div><span className="font-medium">GitHub</span><p className="break-all text-xs text-foreground-muted">{identities.isSuccess ? githubIdentity ? githubIdentity.identity_data?.user_name || githubIdentity.identity_data?.email : t("xp.connections.notConnected") : null}</p></div></div>
-      {identities.isPending ? <span className="text-sm text-foreground-muted">{t("xp.connections.loading")}</span> : identities.isError ? <span className="text-sm text-destructive">{t("xp.connections.loadFailed")}</span> : githubIdentity ? <span className="text-sm text-primary">{t("xp.connections.connected")}</span> : <button type="button" disabled={connecting} onClick={() => void connectIdentity("github")} className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">{connecting ? t("xp.connections.loading") : t("xp.connections.connectGithub")}</button>}
-    </div>
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border-subtle p-3">
-      <div className="flex items-center gap-2"><Mail className="size-5" aria-hidden /><div><span className="font-medium">Google</span><p className="break-all text-xs text-foreground-muted">{identities.isSuccess ? googleIdentity ? googleIdentity.identity_data?.email : t("xp.connections.notConnected") : null}</p></div></div>
-      {identities.isPending ? <span className="text-sm text-foreground-muted">{t("xp.connections.loading")}</span> : identities.isError ? <span className="text-sm text-destructive">{t("xp.connections.loadFailed")}</span> : googleIdentity ? <span className="text-sm text-primary">{t("xp.connections.connected")}</span> : <button type="button" disabled={connecting} onClick={() => void connectIdentity("google")} className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">{connecting ? t("xp.connections.loading") : t("xp.connections.connectGoogle")}</button>}
-    </div>
+  const identityRows = [
+    { provider: "github" as const, name: "GitHub", Icon: GithubLogo, identity: githubIdentity, detail: githubIdentity?.identity_data?.user_name || githubIdentity?.identity_data?.email, connectLabel: t("xp.connections.connectGithub") },
+    { provider: "google" as const, name: "Google", Icon: GoogleLogo, identity: googleIdentity, detail: googleIdentity?.identity_data?.email, connectLabel: t("xp.connections.connectGoogle") },
+  ];
+
+  return <div className="flex flex-col gap-5">
+    {callbackError ? <p role="alert" className="text-body-medium text-destructive">{t(callbackError.messageKey)}</p> : null}
+    {identityRows.map(({ provider, name, Icon, identity, detail, connectLabel }) => (
+      <div key={provider} id={provider === "github" ? "connected-github" : undefined} tabIndex={provider === "github" ? -1 : undefined} className="rounded-md">
+        <SettingsRow
+          leading={<Icon className="size-5 shrink-0" weight="duotone" aria-hidden />}
+          title={name}
+          description={identities.isSuccess ? identity ? detail : t("xp.connections.notConnected") : undefined}
+          action={
+            identities.isPending ? <span className="text-body-medium text-foreground-subtle">{t("xp.connections.loading")}</span>
+              : identities.isError ? <span className="text-body-medium text-destructive">{t("xp.connections.loadFailed")}</span>
+                : identity ? <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled>{t("xp.connections.connected")}</Button>
+                  : <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={connecting} onClick={() => void connectIdentity(provider)}>{connecting ? t("xp.connections.loading") : connectLabel}</Button>
+          }
+        />
+      </div>
+    ))}
+    {identities.isError ? <div><Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => void identities.refetch()}>{t("profile.retry")}</Button></div> : null}
     {(["ethereum", "solana"] as const).map((chain) => {
       const linked = wallets.data?.filter((wallet) => wallet.chain === chain) ?? [];
-      const name = chain === "ethereum" ? "Ethereum" : "Solana";
-      return <div key={chain} id={`connected-${chain}`} tabIndex={-1} className="mt-3 space-y-3 rounded-xl border border-border-subtle p-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2 font-medium"><Wallet className="size-5" aria-hidden />{name}</div>
-          <span className="flex items-center gap-1.5 text-sm text-foreground-muted">
-            {linked.length > 0 && !wallets.isError ? <CheckCircle2 className="size-4 text-primary" aria-hidden /> : null}
-            {wallets.isPending ? t("xp.connections.loading") : wallets.isError ? t("xp.connections.loadFailed") : linked.length ? t("xp.connections.walletCount", { count: linked.length }) : t("xp.connections.notConnected")}
-          </span>
-        </div>
-        {linked.map((wallet) => <div key={wallet.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface-raised p-3"><p className="min-w-0 break-all font-mono text-sm">{wallet.address}</p><Button type="button" size="small" variant="cta" hierarchy="secondary" disabled={walletBusy} onClick={() => setUnlinking(wallet)}>{t("xp.connections.walletDisconnect")}</Button></div>)}
-        {wallets.isError ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void wallets.refetch()}>{t("profile.retry")}</Button> : !wallets.isPending ? <>
-          <Button type="button" variant="cta" hierarchy="secondary" disabled={walletBusy} aria-expanded={addingWallet === chain} onClick={() => setAddingWallet(addingWallet === chain ? null : chain)}>{t(linked.length ? "xp.connections.addWallet" : "xp.connections.chooseWallet")}</Button>
-          {addingWallet === chain ? <div className="flex flex-wrap gap-2">
-            {chain === "ethereum" ? ethereumWallets.length === 0 ? <p className="text-sm text-foreground-muted">{t("xp.connections.noEthereumWallet")}</p> : ethereumWallets.map((wallet) => <Button key={wallet.id} type="button" variant="cta" hierarchy="secondary" disabled={walletBusy} onClick={() => void connectWallet(() => connectEthereumWallet(wallet.provider))}>{wallet.name}</Button>) : solanaWallets.length === 0 ? <p className="text-sm text-foreground-muted">{t("xp.connections.noSolanaWallet")}</p> : solanaWallets.map((wallet) => <Button key={wallet.name} type="button" variant="cta" hierarchy="secondary" disabled={walletBusy} onClick={() => void connectWallet(() => connectSolanaWallet(wallet))}>{wallet.name}</Button>)}
-            {walletBusy ? <p role="status" className="w-full text-sm text-foreground-muted">{t("xp.connections.confirmWallet")}</p> : null}
-          </div> : null}
-        </> : null}
+      return <div key={chain} id={`connected-${chain}`} tabIndex={-1} className="flex flex-col gap-3 rounded-md">
+        <SettingsRow
+          leading={<Wallet className="size-5 shrink-0" weight="duotone" aria-hidden />}
+          title={chain === "ethereum" ? "Ethereum" : "Solana"}
+          description={wallets.isPending ? t("xp.connections.loading") : wallets.isError ? t("xp.connections.loadFailed") : linked.length ? t("xp.connections.walletCount", { count: linked.length }) : t("xp.connections.notConnected")}
+          action={
+            wallets.isError ? <Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => void wallets.refetch()}>{t("profile.retry")}</Button>
+              : !wallets.isPending ? <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={walletBusy} aria-expanded={addingWallet === chain} onClick={() => setAddingWallet(addingWallet === chain ? null : chain)}>{t(linked.length ? "xp.connections.addWallet" : "xp.connections.chooseWallet")}</Button>
+                : undefined
+          }
+        />
+        {linked.map((wallet) => <div key={wallet.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
+          <p className="min-w-0 break-all font-mono text-body-medium">{wallet.address}</p>
+          <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={walletBusy} onClick={() => setUnlinking(wallet)}>{t("xp.connections.walletDisconnect")}</Button>
+        </div>)}
+        {addingWallet === chain && !wallets.isError && !wallets.isPending ? <div className="flex flex-wrap justify-end gap-2">
+          {chain === "ethereum" ? ethereumWallets.length === 0 ? <p className="text-body-medium text-foreground-subtle">{t("xp.connections.noEthereumWallet")}</p> : ethereumWallets.map((wallet) => <Button key={wallet.id} type="button" variant="cta" hierarchy="secondary" size="small" disabled={walletBusy} onClick={() => void connectWallet(() => connectEthereumWallet(wallet.provider))}>{wallet.name}</Button>) : solanaWallets.length === 0 ? <p className="text-body-medium text-foreground-subtle">{t("xp.connections.noSolanaWallet")}</p> : solanaWallets.map((wallet) => <Button key={wallet.name} type="button" variant="cta" hierarchy="secondary" size="small" disabled={walletBusy} onClick={() => void connectWallet(() => connectSolanaWallet(wallet))}>{wallet.name}</Button>)}
+          {walletBusy ? <p role="status" className="w-full text-body-medium text-foreground-subtle">{t("xp.connections.confirmWallet")}</p> : null}
+        </div> : null}
       </div>;
     })}
-    {identities.isError ? <button type="button" onClick={() => void identities.refetch()} className="mt-2 text-sm text-primary underline">{t("profile.retry")}</button> : null}
-    {error ? <p role="alert" className="mt-2 text-sm text-destructive">{error}</p> : null}
-    {notice ? <p role="status" className="mt-2 text-sm text-primary">{notice}</p> : null}
-    <Dialog open={unlinking !== null} onOpenChange={(open) => { if (!open && !walletBusy) setUnlinking(null); }}>
-      <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>{t("xp.connections.walletDisconnectTitle")}</DialogTitle><DialogDescription>{t("xp.connections.walletDisconnectBody")}</DialogDescription></DialogHeader>
-        {unlinking ? <p className="break-all rounded-lg bg-surface-raised p-3 font-mono text-sm">{unlinking.address}</p> : null}
-        <DialogFooter>
-          <Button type="button" variant="cta" hierarchy="secondary" disabled={walletBusy} onClick={() => setUnlinking(null)}>{t("xp.connections.walletDisconnectCancel")}</Button>
-          <Button type="button" disabled={walletBusy} onClick={() => void confirmDisconnect()}>{t("xp.connections.walletDisconnectConfirm")}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  </section>;
+    {error ? <p role="alert" className="text-body-medium text-destructive">{error}</p> : null}
+    {notice ? <p role="status" className="text-body-medium text-success">{notice}</p> : null}
+    <Modal
+      type="destructive"
+      open={unlinking !== null}
+      onOpenChange={(open) => { if (!open && !walletBusy) setUnlinking(null); }}
+      title={t("xp.connections.walletDisconnectTitle")}
+      description={t("xp.connections.walletDisconnectBody")}
+      cancelLabel={t("xp.connections.walletDisconnectCancel")}
+      confirmLabel={t("xp.connections.walletDisconnectConfirm")}
+      closeLabel={tc("actions.close")}
+      confirmDisabled={walletBusy}
+      onConfirm={() => void confirmDisconnect()}
+    >
+      {unlinking ? <p className="break-all rounded-md bg-surface-raised p-3 font-mono text-body-medium">{unlinking.address}</p> : null}
+    </Modal>
+  </div>;
 }

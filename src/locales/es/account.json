@@ -44,17 +44,32 @@
     }
   },
   "settings": {
+    "display": {
+      "title": "Idioma y apariencia"
+    },
+    "visibility": {
+      "title": "Visibilidad del perfil"
+    },
+    "account": {
+      "signedInWith": "Sesión iniciada con {{provider}}",
+      "password": "Contraseña",
+      "changePhone": "Cambiar teléfono",
+      "title": "Cuenta",
+      "changeUsername": "Cambiar nombre de usuario",
+      "usernameInfo": "El nombre que aparece en el enlace a tu perfil (si tu perfil es público).",
+      "noUsername": "Sin nombre de usuario"
+    },
     "language": {
       "title": "Idioma",
       "description": "Cambia el idioma de la aplicación. Si has iniciado sesión, esta preferencia se sincroniza entre tus dispositivos.",
       "meta": {
-        "en": "Inglés (EN)",
-        "zh-CN": "Chino simplificado (zh-CN)",
-        "ko": "Coreano (KO)",
-        "es": "Español (ES)",
-        "zh-TW": "Chino tradicional (zh-TW)",
-        "vi": "Vietnamita (VI)",
-        "ja": "Japonés (JA)"
+        "en": "Inglés (En)",
+        "zh-CN": "Chino simplificado (Cn)",
+        "ko": "Coreano (Ko)",
+        "es": "Español (Es)",
+        "zh-TW": "Chino tradicional (Tw)",
+        "vi": "Vietnamita (Vi)",
+        "ja": "Japonés (Ja)"
       },
       "active": "Activo"
     },
@@ -523,6 +538,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "Descartar cambios",
+    "previousOption": "Opción anterior",
+    "nextOption": "Opción siguiente",
     "title": "Editar avatar",
     "description": "Elige tu aspecto y luego guárdalo en tu perfil.",
     "edit": "Editar avatar",

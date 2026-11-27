@@ -239,15 +239,50 @@
       "overview": "概要",
       "achievements": "実績",
       "courses": "コース",
-      "contests": "ハッカソン"
+      "contests": "ハッカソン",
+      "label": "プロフィールのセクション",
+      "activity": "アクティビティ",
+      "projects": "プロジェクト",
+      "achievementsTab": "実績"
     },
     "actions": {
+      "more": "その他の操作",
       "editProfile": "プロフィールを編集",
       "previewAsGuest": "ゲストとしてプレビュー",
       "exitPreview": "プレビューを終了",
       "exitPreviewShort": "プレビューを終了",
       "viewFollowers": "フォロワーを見る",
-      "viewFollowing": "このユーザーがフォローしているプロフィールを見る"
+      "viewFollowing": "このユーザーがフォローしているプロフィールを見る",
+      "share": "プロフィールを共有",
+      "shareCopied": "プロフィールのリンクをコピーしました。",
+      "shareCopyFailed": "リンクをコピーできませんでした。",
+      "editAvatar": "アバターを編集"
+    },
+    "cover": {
+      "add": "カバー画像を追加"
+    },
+    "edit": {
+      "linksHint": "リンクはプロフィールの公開設定に従います。設定で変更できます。",
+      "linkGithub": "GitHubのリンク",
+      "linkLinkedin": "LinkedInのリンク",
+      "linkOther": "その他のリンク",
+      "addLink": "リンクを追加",
+      "subtitle": "プロフィールに表示される情報を変更します",
+      "cancel": "キャンセル",
+      "confirm": "確認",
+      "confirmDescription": "変更内容を保存してよろしいですか？"
+    },
+    "info": {
+      "title": "情報とリンク",
+      "links": "リンクと添付ファイル"
+    },
+    "xpHistory": {
+      "viewAll": "すべて表示",
+      "collapse": "表示を減らす"
+    },
+    "counts": {
+      "followers": "フォロワー {{value}} 人",
+      "following": "フォロー中 {{value}} 人"
     },
     "labels": {
       "ocid": "OCID：{{ocid}}",
@@ -287,7 +322,11 @@
       "cta": "実績を開く",
       "privateTitle": "実績の詳細は非公開です",
       "privateDescription": "実績の詳細は、このプロフィールでは公開表示されません。",
-      "openVault": "実績ボックスを開く"
+      "openVault": "実績ボックスを開く",
+      "certificatesTitle": "学習修了証",
+      "badgesTitle": "修了バッジ",
+      "completedAt": "{{date}} に完了",
+      "viewCredential": "OC クレデンシャルを表示"
     },
     "courses": {
       "privateByDefault": "受講生のコースは既定で非公開です。",
@@ -303,6 +342,9 @@
       "updatedAt": "{{date}} 更新"
     },
     "projects": {
+      "saved": "保存したプロジェクト",
+      "savedEmpty": "保存したプロジェクトはまだありません。",
+      "mine": "マイプロジェクト",
       "empty": "公開されているプロジェクトはまだありません。",
       "viewSource": "ソースを見る",
       "demo": "デモ",

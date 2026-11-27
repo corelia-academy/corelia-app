@@ -244,23 +244,22 @@ describe("issue #393 - profile hackathon links regression behavior", () => {
     queryCalls.length = 0;
   });
 
-  it("renders UserProfileProjectsSection and verifies canonical slug href and UUID fallback href in DOM", async () => {
+  it("renders UserProfileProjectsSection as project cards that link to each project page", async () => {
     const { container, cleanup } = renderWithProviders(
       <UserProfileProjectsSection profile={mockPublicProfile} />,
     );
     await settle();
 
-    const anchorElements = Array.from(container.querySelectorAll("a"));
-    const hrefs = anchorElements.map((a) => a.getAttribute("href"));
+    const hrefs = Array.from(container.querySelectorAll("a")).map((a) => a.getAttribute("href"));
 
-    // Project 1 has hackathon_slug resolved from hackathons table -> rendered href uses slug
-    expect(hrefs).toContain("/hackathons/summer-code-challenge/overview");
+    // Mỗi dự án là một ProjectCard dùng chung, tiêu đề dẫn tới trang dự án (slug)
+    expect(hrefs).toContain("/projects/my-project");
+    expect(hrefs).toContain("/projects/orphan-project");
+    expect(hrefs).toContain("/projects/course-project");
 
-    // Project 2 has source_id but no slug in document -> rendered href safely falls back to UUID
-    expect(hrefs).toContain("/hackathons/hack-uuid-2/overview");
-
-    // Project 3 is a course project -> rendered href uses course route
-    expect(hrefs).toContain("/courses/course-uuid-1");
+    // Liên kết hackathon của hồ sơ nay thuộc khối Hackathon (UserProfileContestsSection, test bên dưới);
+    // thẻ dự án không còn nút "Xem nguồn" riêng.
+    expect(hrefs.some((href) => href?.startsWith("/hackathons/"))).toBe(false);
 
     await cleanup();
   });

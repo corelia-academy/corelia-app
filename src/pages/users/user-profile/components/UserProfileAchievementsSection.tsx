@@ -45,9 +45,9 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
     : { 
         ...publicAchievements, 
         claiming: false, 
-        handleClaim: async () => {}, 
+        handleClaim: async () => {},
         handleRetryBadge: undefined,
-        ocidConnectOpen: false, 
+        ocidConnectOpen: false,
         setOcidConnectOpen: () => {} 
       };
 
@@ -73,14 +73,20 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
   const shouldHidePublicAchievementContent = !isSelf && Boolean(loadError);
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-heading-small font-display text-foreground">
-            {t("userProfile.tabs.achievements")}
-          </h2>
-        </div>
-        {isSelf ? (
+    <section className="space-y-6">
+      {isSelf ? (
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Button
+            type="button"
+            variant="cta" hierarchy="secondary"
+            size="small"
+            className="gap-2"
+            onClick={() => setCredentialManagerOpen(true)}
+            disabled={loading}
+          >
+            <SlidersHorizontal className="size-4" aria-hidden />
+            {t("achievements.profileVisibility.manage")}
+          </Button>
           <Button
             type="button"
             variant="cta" hierarchy="secondary"
@@ -91,8 +97,8 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
             <ExternalLink className="size-4" aria-hidden />
             {t("userProfile.achievements.openVault")}
           </Button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {loadError && (
         <div
@@ -129,58 +135,25 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
       ) : null}
 
       {!shouldShowPublicPrivacyState && !shouldHidePublicAchievementContent ? (
-      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <div className="text-sm font-medium text-foreground">
-              {isSelf
-                ? t("achievements.profileVisibility.title")
-                : t("achievements.profileVisibility.publicVaultTitle")}
-            </div>
-            <p className="mt-1 text-sm text-foreground-muted">
-              {isSelf
-                ? t("achievements.profileVisibility.description")
-                : t("achievements.profileVisibility.publicVaultDescription")}
-            </p>
+        loading ? (
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Skeleton className="h-56 w-full rounded-md" />
+            <Skeleton className="h-56 w-full rounded-md" />
           </div>
-          {isSelf ? (
-            <Button
-              type="button"
-              variant="cta" hierarchy="secondary"
-              size="small"
-              className="shrink-0 gap-2 sm:self-start"
-              onClick={() => setCredentialManagerOpen(true)}
-              disabled={loading}
-            >
-              <SlidersHorizontal className="size-4" aria-hidden />
-              {t("achievements.profileVisibility.manage")}
-            </Button>
-          ) : null}
-        </div>
-
-        <div className="mt-4">
-          {loading ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
-              <Skeleton className="h-32 w-full rounded-md" />
-              <Skeleton className="h-32 w-full rounded-md" />
-              <Skeleton className="h-32 w-full rounded-md" />
-              <Skeleton className="h-32 w-full rounded-md" />
-            </div>
-          ) : (
-            <OcBadgesByScopeTabs
-              badges={earnedBadges}
-              loading={loading}
-              onOpenModal={openModal}
-              onRetry={handleRetryBadge}
-              emptyLabel={
-                isSelf && earnedBadges.length === 0
-                  ? t("achievements.profileVisibility.emptyPublic")
-                  : undefined
-              }
-            />
-          )}
-        </div>
-      </div>
+        ) : (
+          <OcBadgesByScopeTabs
+            layout="sections"
+            badges={earnedBadges}
+            loading={false}
+            onOpenModal={openModal}
+            onRetry={handleRetryBadge}
+            emptyLabel={
+              isSelf && earnedBadges.length === 0
+                ? t("achievements.profileVisibility.emptyPublic")
+                : undefined
+            }
+          />
+        )
       ) : null}
 
       <OcCredentialModal

@@ -44,17 +44,32 @@
     }
   },
   "settings": {
+    "display": {
+      "title": "Ngôn ngữ & Hiển thị"
+    },
+    "visibility": {
+      "title": "Trạng thái hiển thị hồ sơ"
+    },
+    "account": {
+      "signedInWith": "Đã đăng nhập với {{provider}}",
+      "password": "Mật khẩu",
+      "changePhone": "Thay đổi số điện thoại",
+      "title": "Tài khoản",
+      "changeUsername": "Thay đổi username",
+      "usernameInfo": "Phần tên sẽ hiển thị trong đường dẫn đến hồ sơ của bạn (nếu hồ sơ ở trạng thái công khai).",
+      "noUsername": "Chưa đặt username"
+    },
     "language": {
       "title": "Ngôn ngữ",
       "description": "Thay đổi ngôn ngữ hiển thị cho toàn bộ ứng dụng. Với tài khoản đã đăng nhập, lựa chọn này sẽ được đồng bộ trên các thiết bị.",
       "meta": {
-        "en": "Tiếng Anh (EN)",
-        "zh-CN": "Tiếng Trung giản thể (zh-CN)",
-        "ko": "Tiếng Hàn (KO)",
-        "es": "Tiếng Tây Ban Nha (ES)",
-        "zh-TW": "Tiếng Trung phồn thể (zh-TW)",
-        "vi": "Tiếng Việt (VI)",
-        "ja": "Tiếng Nhật (JA)"
+        "en": "Tiếng Anh (En)",
+        "zh-CN": "Tiếng Trung giản thể (Cn)",
+        "ko": "Tiếng Hàn (Ko)",
+        "es": "Tiếng Tây Ban Nha (Es)",
+        "zh-TW": "Tiếng Trung phồn thể (Tw)",
+        "vi": "Tiếng Việt (Vi)",
+        "ja": "Tiếng Nhật (Ja)"
       },
       "active": "Đang dùng"
     },
@@ -522,6 +537,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "Huỷ thay đổi",
+    "previousOption": "Lựa chọn trước",
+    "nextOption": "Lựa chọn tiếp theo",
     "title": "Chỉnh sửa avatar",
     "description": "Chọn diện mạo rồi lưu vào hồ sơ của bạn.",
     "edit": "Chỉnh sửa avatar",

@@ -239,15 +239,50 @@
       "overview": "Overview",
       "achievements": "Achievements",
       "courses": "Courses",
-      "contests": "Hackathons"
+      "contests": "Hackathons",
+      "label": "Profile sections",
+      "activity": "Activity",
+      "projects": "Projects",
+      "achievementsTab": "Achievements"
     },
     "actions": {
+      "more": "More actions",
       "editProfile": "Edit profile",
       "previewAsGuest": "Preview as guest",
       "exitPreview": "Exit preview",
       "exitPreviewShort": "Exit preview",
       "viewFollowers": "View followers",
-      "viewFollowing": "View profiles this user follows"
+      "viewFollowing": "View profiles this user follows",
+      "share": "Share profile",
+      "shareCopied": "Profile link copied.",
+      "shareCopyFailed": "Couldn't copy the link.",
+      "editAvatar": "Edit avatar"
+    },
+    "cover": {
+      "add": "Add cover image"
+    },
+    "edit": {
+      "linksHint": "Links follow your profile's public or private setting. Change it in Settings.",
+      "linkGithub": "GitHub link",
+      "linkLinkedin": "LinkedIn link",
+      "linkOther": "Other link",
+      "addLink": "Add another link",
+      "subtitle": "Change the information shown on your profile",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "confirmDescription": "Confirm saving the changes you made?"
+    },
+    "info": {
+      "title": "Info & links",
+      "links": "Links & attachments"
+    },
+    "xpHistory": {
+      "viewAll": "View all",
+      "collapse": "Show less"
+    },
+    "counts": {
+      "followers": "{{value}} Followers",
+      "following": "{{value}} Following"
     },
     "labels": {
       "ocid": "OCID: {{ocid}}",
@@ -287,7 +322,11 @@
       "cta": "Open Achievements",
       "privateTitle": "Achievement details are private",
       "privateDescription": "Achievement details are not displayed publicly on this profile.",
-      "openVault": "Open achievements vault"
+      "openVault": "Open achievements vault",
+      "certificatesTitle": "Learning certificates",
+      "badgesTitle": "Completion badges",
+      "completedAt": "Completed on {{date}}",
+      "viewCredential": "View OC credential"
     },
     "courses": {
       "privateByDefault": "Courses are private for students by default.",
@@ -303,6 +342,9 @@
       "updatedAt": "Updated {{date}}"
     },
     "projects": {
+      "saved": "Saved projects",
+      "savedEmpty": "You haven’t saved any projects yet.",
+      "mine": "My projects",
       "empty": "No public projects yet.",
       "viewSource": "View source",
       "demo": "Demo",

@@ -44,17 +44,32 @@
     }
   },
   "settings": {
+    "display": {
+      "title": "언어 및 화면"
+    },
+    "visibility": {
+      "title": "프로필 공개 설정"
+    },
+    "account": {
+      "signedInWith": "{{provider}}(으)로 로그인됨",
+      "password": "비밀번호",
+      "changePhone": "전화번호 변경",
+      "title": "계정",
+      "changeUsername": "사용자 이름 변경",
+      "usernameInfo": "프로필 링크에 표시되는 이름입니다(프로필이 공개인 경우).",
+      "noUsername": "사용자 이름이 없습니다"
+    },
     "language": {
       "title": "언어",
       "description": "앱 표시 언어를 변경합니다. 로그인하면 이 설정이 모든 기기에 동기화됩니다.",
       "meta": {
-        "en": "영어 (EN)",
-        "zh-CN": "중국어 간체 (zh-CN)",
-        "ko": "한국어 (KO)",
-        "es": "스페인어 (ES)",
-        "zh-TW": "중국어 번체 (zh-TW)",
-        "vi": "베트남어 (VI)",
-        "ja": "일본어 (JA)"
+        "en": "영어 (En)",
+        "zh-CN": "중국어 간체 (Cn)",
+        "ko": "한국어 (Ko)",
+        "es": "스페인어 (Es)",
+        "zh-TW": "중국어 번체 (Tw)",
+        "vi": "베트남어 (Vi)",
+        "ja": "일본어 (Ja)"
       },
       "active": "사용 중"
     },
@@ -521,6 +536,9 @@
     }
   },
   "avatarEditor": {
+    "cancel": "변경 취소",
+    "previousOption": "이전 옵션",
+    "nextOption": "다음 옵션",
     "title": "아바타 편집",
     "description": "스타일을 고른 뒤 프로필에 저장하세요.",
     "edit": "아바타 편집",

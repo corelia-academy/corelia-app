@@ -51,8 +51,8 @@ vi.mock("./components/HomeHeader", () => ({
   HomeHeader: () => <header data-testid="home-header" />,
 }));
 
-vi.mock("./components/HomeXpPanel", () => ({
-  HomeXpPanel: () => <div data-testid="home-xp-panel" />,
+vi.mock("@/features/xp/XpStatPanel", () => ({
+  XpStatPanel: () => <div data-testid="home-xp-panel" />,
 }));
 
 vi.mock("./components/HomeXpMissionsPanel", () => ({

@@ -239,15 +239,50 @@
       "overview": "概覽",
       "achievements": "成就",
       "courses": "課程",
-      "contests": "黑客松"
+      "contests": "黑客松",
+      "label": "個人檔案區塊",
+      "activity": "動態",
+      "projects": "專案",
+      "achievementsTab": "成就"
     },
     "actions": {
+      "more": "更多操作",
       "editProfile": "編輯資料",
       "previewAsGuest": "以訪客身分預覽",
       "exitPreview": "結束預覽",
       "exitPreviewShort": "結束預覽",
       "viewFollowers": "檢視追蹤者",
-      "viewFollowing": "檢視此使用者追蹤的資料"
+      "viewFollowing": "檢視此使用者追蹤的資料",
+      "share": "分享個人檔案",
+      "shareCopied": "已複製個人檔案連結。",
+      "shareCopyFailed": "無法複製連結。",
+      "editAvatar": "編輯頭像"
+    },
+    "cover": {
+      "add": "新增封面圖片"
+    },
+    "edit": {
+      "linksHint": "連結依個人檔案的公開或不公開設定顯示，可在設定中變更。",
+      "linkGithub": "GitHub 連結",
+      "linkLinkedin": "LinkedIn 連結",
+      "linkOther": "其他連結",
+      "addLink": "新增其他連結",
+      "subtitle": "變更顯示在你個人檔案上的資訊",
+      "cancel": "取消",
+      "confirm": "確認",
+      "confirmDescription": "確認儲存你所做的變更嗎？"
+    },
+    "info": {
+      "title": "資訊與連結",
+      "links": "連結與附件"
+    },
+    "xpHistory": {
+      "viewAll": "檢視全部",
+      "collapse": "收合"
+    },
+    "counts": {
+      "followers": "{{value}} 位追蹤者",
+      "following": "{{value}} 個追蹤中"
     },
     "labels": {
       "ocid": "OCID：{{ocid}}",
@@ -287,7 +322,11 @@
       "cta": "開啟成就",
       "privateTitle": "成就詳情為私人",
       "privateDescription": "成就詳情不會在此資料中公開顯示。",
-      "openVault": "開啟成就庫"
+      "openVault": "開啟成就庫",
+      "certificatesTitle": "學習證書",
+      "badgesTitle": "完成徽章",
+      "completedAt": "完成於 {{date}}",
+      "viewCredential": "檢視 OC 憑證"
     },
     "courses": {
       "privateByDefault": "學員的課程預設為私人。",
@@ -303,6 +342,9 @@
       "updatedAt": "更新於 {{date}}"
     },
     "projects": {
+      "saved": "已儲存的專案",
+      "savedEmpty": "你還沒有儲存任何專案。",
+      "mine": "我的專案",
       "empty": "尚無公開專案。",
       "viewSource": "檢視原始碼",
       "demo": "展示",

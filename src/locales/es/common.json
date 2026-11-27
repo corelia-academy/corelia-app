@@ -239,15 +239,50 @@
       "overview": "Resumen",
       "achievements": "Logros",
       "courses": "Cursos",
-      "contests": "Hackathons"
+      "contests": "Hackathons",
+      "label": "Secciones del perfil",
+      "activity": "Actividad",
+      "projects": "Proyectos",
+      "achievementsTab": "Logros"
     },
     "actions": {
+      "more": "Más acciones",
       "editProfile": "Editar perfil",
       "previewAsGuest": "Ver como invitado",
       "exitPreview": "Salir de la vista previa",
       "exitPreviewShort": "Salir de la vista previa",
       "viewFollowers": "Ver seguidores",
-      "viewFollowing": "Ver los perfiles que sigue este usuario"
+      "viewFollowing": "Ver los perfiles que sigue este usuario",
+      "share": "Compartir perfil",
+      "shareCopied": "Enlace del perfil copiado.",
+      "shareCopyFailed": "No se pudo copiar el enlace.",
+      "editAvatar": "Editar avatar"
+    },
+    "cover": {
+      "add": "Añadir imagen de portada"
+    },
+    "edit": {
+      "linksHint": "Los enlaces siguen la visibilidad de tu perfil. Cámbiala en Ajustes.",
+      "linkGithub": "Enlace de GitHub",
+      "linkLinkedin": "Enlace de LinkedIn",
+      "linkOther": "Otro enlace",
+      "addLink": "Añadir otro enlace",
+      "subtitle": "Cambia la información que se muestra en tu perfil",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "confirmDescription": "¿Confirmas que quieres guardar los cambios?"
+    },
+    "info": {
+      "title": "Información y enlaces",
+      "links": "Enlaces y archivos adjuntos"
+    },
+    "xpHistory": {
+      "viewAll": "Ver todo",
+      "collapse": "Ver menos"
+    },
+    "counts": {
+      "followers": "{{value}} seguidores",
+      "following": "{{value}} siguiendo"
     },
     "labels": {
       "ocid": "OCID: {{ocid}}",
@@ -287,7 +322,11 @@
       "cta": "Abrir Logros",
       "privateTitle": "Los detalles de los logros son privados",
       "privateDescription": "Los detalles de los logros no se muestran públicamente en este perfil.",
-      "openVault": "Abrir la caja de logros"
+      "openVault": "Abrir la caja de logros",
+      "certificatesTitle": "Certificados de aprendizaje",
+      "badgesTitle": "Insignias de finalización",
+      "completedAt": "Completado el {{date}}",
+      "viewCredential": "Ver credencial de OC"
     },
     "courses": {
       "privateByDefault": "Los cursos de los estudiantes son privados de forma predeterminada.",
@@ -303,6 +342,9 @@
       "updatedAt": "Actualizado el {{date}}"
     },
     "projects": {
+      "saved": "Proyectos guardados",
+      "savedEmpty": "Aún no has guardado ningún proyecto.",
+      "mine": "Mis proyectos",
       "empty": "Aún no hay proyectos públicos.",
       "viewSource": "Ver código fuente",
       "demo": "Demo",

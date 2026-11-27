@@ -1,60 +1,72 @@
-import { cn } from "@/lib/utils";
-import { useLocale } from "@/hooks/useLocale";
-import { CONTENT_LOCALES, LOCALE_META } from "@/lib/locales";
 import { useTranslation } from "react-i18next";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItemContent,
+  DropdownMenuList,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTriggerWithIndicator,
+} from "@/components/ui/dropdown-menu";
+import { useLocale } from "@/hooks/useLocale";
+import type { SupportedLanguage } from "@/i18n";
+import flagCn from "flag-icons/flags/4x3/cn.svg";
+import flagEs from "flag-icons/flags/4x3/es.svg";
+import flagGb from "flag-icons/flags/4x3/gb.svg";
+import flagJp from "flag-icons/flags/4x3/jp.svg";
+import flagKr from "flag-icons/flags/4x3/kr.svg";
+import flagTw from "flag-icons/flags/4x3/tw.svg";
+import flagVn from "flag-icons/flags/4x3/vn.svg";
+import { CONTENT_LOCALES, type ContentLocale } from "@/lib/locales";
+import { SettingsRow } from "./SettingsLayout";
+
+// Dùng ảnh vì emoji cờ có máy chỉ hiện hai chữ cái. Tiếng Anh dùng cờ Anh theo Figma
+const FLAG_SRC: Record<ContentLocale, string> = {
+  en: flagGb, "zh-CN": flagCn, ko: flagKr, es: flagEs, "zh-TW": flagTw, vi: flagVn, ja: flagJp,
+};
 
 export function LanguageSettingsCard() {
   const { t } = useTranslation("account");
   const { language, setLanguage } = useLocale();
 
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
-      <div className="min-w-0">
-        <h2 className="text-heading-medium font-display text-foreground">
-          {t("settings.language.title")}
-        </h2>
-        <p className="mt-1 text-sm text-foreground-muted">
-          {t("settings.language.description")}
-        </p>
-      </div>
-
-      <div className="mt-4 grid gap-2 sm:grid-cols-2">
-        {CONTENT_LOCALES.map((locale) => {
-          const meta = LOCALE_META[locale];
-          const active = language === locale;
-          return (
-            <button
-              key={locale}
+    <SettingsRow
+      title={t("settings.language.title")}
+      description={t("settings.language.description")}
+      action={
+        <div className="w-max min-w-[200px] max-w-full">
+          <DropdownMenu>
+            <DropdownMenuTriggerWithIndicator
+              indicatorClassName="[&_svg]:size-5 [&_svg]:text-foreground"
               type="button"
-              onClick={() => void setLanguage(locale)}
-              aria-pressed={active}
-              className={cn(
-                "flex min-h-11 items-center justify-between gap-3 rounded-md border px-3 py-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
-                active
-                  ? "border-primary/20 bg-primary/10 text-primary"
-                  : "border-border-subtle bg-surface-base hover:bg-surface-raised",
-              )}
+              aria-label={`${t("settings.language.title")}: ${t(`settings.language.meta.${language}`)}`}
+              className="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left text-body-large text-foreground"
             >
-              <div className="flex min-w-0 items-center gap-3">
-                <span aria-hidden="true" className="text-xl">{meta.flag}</span>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-foreground" lang={locale}>
-                    {meta.endonym}
-                  </div>
-                  <div className="mt-0.5 text-xs text-foreground-muted">
-                    {t(`settings.language.meta.${locale}`)}
-                  </div>
-                </div>
-              </div>
-              {active ? (
-                <span className="text-xs font-medium text-primary">
-                  {t("settings.language.active")}
-                </span>
-              ) : null}
-            </button>
-          );
-        })}
-      </div>
-    </section>
+              <img src={FLAG_SRC[language]} alt="" className="h-[15px] w-5 shrink-0" />
+              <span className="min-w-0 flex-1 truncate">{t(`settings.language.meta.${language}`)}</span>
+            </DropdownMenuTriggerWithIndicator>
+            <DropdownMenuContent layout="multiple-list" align="end" className="w-max min-w-(--anchor-width) max-w-(--available-width)">
+              <DropdownMenuList className="max-h-none">
+                <DropdownMenuRadioGroup value={language} onValueChange={(next) => void setLanguage(next as SupportedLanguage)}>
+                  {CONTENT_LOCALES.map((locale) => (
+                    <DropdownMenuRadioItem
+                      key={locale}
+                      size="large"
+                      value={locale}
+                      className="[&_[data-slot=dropdown-menu-radio-item-indicator]]:hidden"
+                    >
+                      <DropdownMenuItemContent leading={<img src={FLAG_SRC[locale]} alt="" className="h-[18px] w-6" />}>
+                        {t(`settings.language.meta.${locale}`)}
+                      </DropdownMenuItemContent>
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuList>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      }
+    />
   );
 }

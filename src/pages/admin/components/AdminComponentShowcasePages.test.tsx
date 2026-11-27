@@ -266,7 +266,7 @@ describe("admin component detail pages", () => {
     expect(container.querySelectorAll('[data-testid^="avatar-case-"]')).toHaveLength(60);
     expect(container.querySelectorAll('[data-testid^="avatar-type-row-"]')).toHaveLength(6);
     expect(container.querySelectorAll('[data-testid^="avatar-user-trigger-"]')).toHaveLength(1);
-    expect(container.querySelectorAll('[data-slot="avatar-action"]')).toHaveLength(15);
+    expect(container.querySelectorAll('[data-slot="avatar-action"]')).toHaveLength(18);
     expect(
       container
         .querySelector('[data-testid="avatar-case-brand-logos-xsmall"] [data-slot="avatar-image"]')
@@ -279,7 +279,7 @@ describe("admin component detail pages", () => {
     ).toBe("Open Campus logo");
     expect(
       container.querySelectorAll('[data-testid^="avatar-case-text-"] [data-slot="avatar-action"]'),
-    ).toHaveLength(5);
+    ).toHaveLength(6);
     const userTrigger = container.querySelector<HTMLButtonElement>(
       '[data-testid="avatar-user-trigger-interactive"]',
     );
