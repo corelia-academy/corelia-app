@@ -116,7 +116,7 @@ function ProfileSidebar({
   ].filter((link, index, all) => isValidHttpUrl(link.url) && all.findIndex((other) => other.url === link.url) === index);
 
   return (
-    <aside className="flex flex-col gap-6 lg:sticky lg:top-24">
+    <aside className="grid grid-cols-[minmax(0,1fr)] gap-6 min-[536px]:grid-cols-2 min-[536px]:items-start min-[536px]:gap-4 lg:sticky lg:top-4 lg:col-start-2 lg:row-start-2 lg:flex lg:flex-col lg:items-stretch lg:gap-6 lg:self-start">
       <XpStatPanel userId={profile.id} />
 
       <section
@@ -495,13 +495,15 @@ export default function UserProfileLayout() {
                 if (isProfileTab(value)) setActiveTab(value);
               }}
             >
-              <Tabs.List activateOnFocus level="3a" className="gap-2" aria-label={t("userProfile.tabs.label")}>
-                <Tabs.Tab value="activity">{t("userProfile.tabs.activity")}</Tabs.Tab>
-                <Tabs.Tab value="projects">{t("userProfile.tabs.projects")}</Tabs.Tab>
-                <Tabs.Tab value="achievements">{t("userProfile.tabs.achievementsTab")}</Tabs.Tab>
-              </Tabs.List>
-              <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-12">
-                <div className="min-w-0">
+              {/* Như trang chủ: trên điện thoại khối XP và liên kết đứng trước nội dung; từ lg nằm ở cột phải */}
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-y-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-x-12">
+                <ProfileSidebar profile={profile} website={website} />
+                <Tabs.List activateOnFocus level="3a" className="gap-2 lg:col-span-2 lg:row-start-1" aria-label={t("userProfile.tabs.label")}>
+                  <Tabs.Tab value="activity">{t("userProfile.tabs.activity")}</Tabs.Tab>
+                  <Tabs.Tab value="projects">{t("userProfile.tabs.projects")}</Tabs.Tab>
+                  <Tabs.Tab value="achievements">{t("userProfile.tabs.achievementsTab")}</Tabs.Tab>
+                </Tabs.List>
+                <div className="min-w-0 lg:col-start-1 lg:row-start-2">
                   <Tabs.Panel value="activity">
                     <XpActivity userId={profile.id} own={effectiveIsSelf} />
                   </Tabs.Panel>
@@ -518,7 +520,6 @@ export default function UserProfileLayout() {
                   <UserProfileContestsSection profile={profile} isSelf={effectiveIsSelf} />
                   */}
                 </div>
-                <ProfileSidebar profile={profile} website={website} />
               </div>
             </Tabs.Root>
           ) : (
