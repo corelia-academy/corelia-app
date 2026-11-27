@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TooltipPreview } from "@/components/ui/tooltip";
 import { updateProfileForUser } from "@/lib/profile";
 import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/stores/authStore";
@@ -89,20 +89,16 @@ export function UsernameSettingsRow() {
       <SettingsRow
         title={t("profile.username.label")}
         info={
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button type="button" variant="cta" hierarchy="tertiary" size="xsmall" iconOnly style={{ minHeight: 0 }} aria-label={t("settings.account.usernameInfo")}>
-                    <Info className="size-5" weight="duotone" aria-hidden />
-                  </Button>
-                }
-              />
-              <TooltipContent side="bottom" supportingText={t("settings.account.usernameInfo")}>
-                {t("profile.username.label")}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <TooltipPreview
+            arrow="top-center"
+            side="bottom"
+            triggerLabel={t("settings.account.usernameInfo")}
+            triggerClassName="size-6 [@media(pointer:coarse)]:size-11"
+            trigger={<Info className="size-5" weight="duotone" aria-hidden />}
+            supportingText={t("settings.account.usernameInfo")}
+          >
+            {t("profile.username.label")}
+          </TooltipPreview>
         }
         description={profile?.username || t("settings.account.noUsername")}
         action={
