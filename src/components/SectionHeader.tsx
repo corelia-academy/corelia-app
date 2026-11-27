@@ -26,7 +26,7 @@ export function SectionHeader({
         </div>
         {action}
       </div>
-      <Separator className="border-stroke-divider" />
+      <Separator className="border-border" />
     </header>
   );
 }

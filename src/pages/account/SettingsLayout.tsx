@@ -23,7 +23,7 @@ export function SettingsSection({ title, children }: { title: string; children: 
     <section aria-label={title} className="flex flex-col gap-5">
       <header className="flex flex-col gap-2.5">
         <h2 className="text-heading-medium font-display text-foreground-subtle">{title}</h2>
-        <Separator className="border-stroke-divider" />
+        <Separator className="border-border" />
       </header>
       <div className="flex flex-col gap-5">{children}</div>
     </section>

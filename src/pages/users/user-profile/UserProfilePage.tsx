@@ -121,7 +121,7 @@ function ProfileSidebar({
 
       <section
         aria-labelledby="profile-info-title"
-        className="flex flex-col gap-2.5 rounded-2xl border border-stroke-divider px-4 pb-4 pt-3"
+        className="flex flex-col gap-2.5 rounded-2xl border border-border px-4 pb-4 pt-3"
       >
         <SectionHeader
           className="gap-2"
@@ -255,7 +255,7 @@ export default function UserProfileLayout() {
           ariaLabel={t("userProfile.actions.viewFollowers")}
           onClick={profile.profile_public ? () => setFollowerDialogOpen(true) : undefined}
         />
-        <Separator orientation="vertical" className="border-stroke-divider" aria-hidden="true" />
+        <Separator orientation="vertical" className="border-border" aria-hidden="true" />
         <ProfileCount
           label={t("userProfile.counts.following", { value: followingProfileCount })}
           ariaLabel={t("userProfile.actions.viewFollowing")}

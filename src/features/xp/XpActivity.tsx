@@ -17,13 +17,13 @@ const CELL_PITCH = 21; // ô 16px + khoảng cách 5px (Figma)
 const VISIBLE_HISTORY = 4;
 
 const intensityClass = [
-  "bg-surface-raised border-border-subtle",
+  "bg-border border-border dark:bg-surface-raised dark:border-border-subtle",
   "bg-primary/20 border-primary/20",
   "bg-primary/40 border-primary/30",
   "bg-primary/65 border-primary/40",
   "bg-primary border-primary",
 ];
-const noDataClass = "bg-surface-raised border-border-subtle border-dashed opacity-45";
+const noDataClass = "bg-surface-raised border-border border-dashed dark:border-border-subtle dark:opacity-45";
 const sectionIcon = <Pulse aria-hidden weight="duotone" className="size-5 shrink-0 text-foreground-muted" />;
 
 /* TODO(figma-xp): thiết kế mới chưa dùng biểu đồ tuần
@@ -266,7 +266,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
                 {historyRows.map((entry: XpEntry) => {
                   const when = new Date(entry.occurred_at ?? entry.created_at);
                   return (
-                    <li key={entry.id} className="flex items-start justify-between gap-4 rounded-lg border border-stroke-divider px-5 py-4 sm:gap-10">
+                    <li key={entry.id} className="flex items-start justify-between gap-4 rounded-lg border border-border px-5 py-4 sm:gap-10">
                       <div className="flex min-w-0 flex-col gap-2">
                         <p className="text-sm font-medium text-foreground">{sourceLabels[entry.source] ?? entry.source.replaceAll("_", " ")}</p>
                         <Timestamp

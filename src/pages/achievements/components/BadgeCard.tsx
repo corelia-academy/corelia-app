@@ -69,7 +69,7 @@ export function BadgeCard({
       <div className="flex min-w-0 flex-col">
         <button type="button" onClick={openDetails}
           className="flex min-w-0 flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-          <span className="block aspect-[3/2] overflow-hidden rounded-lg border border-stroke-divider bg-surface-raised">
+          <span className="block aspect-[3/2] overflow-hidden rounded-lg border border-border bg-surface-raised">
             <img src={badge.imageUrl ?? CERT_PLACEHOLDER} alt="" loading="lazy"
               className={cn("size-full object-cover", isPending && "opacity-60")} />
           </span>

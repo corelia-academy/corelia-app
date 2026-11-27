@@ -162,7 +162,7 @@ export function ConnectedAccountsCard() {
                 : undefined
           }
         />
-        {linked.map((wallet) => <div key={wallet.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-stroke-divider px-3 py-2">
+        {linked.map((wallet) => <div key={wallet.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
           <p className="min-w-0 break-all font-mono text-body-medium">{wallet.address}</p>
           <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={walletBusy} onClick={() => setUnlinking(wallet)}>{t("xp.connections.walletDisconnect")}</Button>
         </div>)}
